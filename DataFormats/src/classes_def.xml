@@ -1,0 +1,17 @@
+<lcgdict>
+  <class name="TowerHelper::TowerHit"/>
+  <class name="TowerHelper::TowerCluster"/>
+  <class name="std::vector<TowerHelper::TowerCluster>"/>
+  <class name="edm::Wrapper<std::vector<TowerHelper::TowerCluster>>"/>
+
+  <class name="HGClusterHelper::HGCluster"/>
+  <class name="std::vector<HGClusterHelper::HGCluster>"/>
+  <class name="edm::Wrapper<std::vector<HGClusterHelper::HGCluster>>"/>
+
+  <class name="GenHelper::GenTau"/>
+  <class name="GenHelper::GenJet"/>
+  <class name="std::vector<GenHelper::GenTau>"/>
+  <class name="std::vector<GenHelper::GenJet>"/>
+  <class name="edm::Wrapper<std::vector<GenHelper::GenTau>>"/>
+  <class name="edm::Wrapper<std::vector<GenHelper::GenJet>>"/>
+</lcgdict>
