@@ -1,0 +1,1 @@
+/store/mc/Phase2HLTTDRWinter20DIGI/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/0195AA7A-2336-0344-850B-9F3F4FBF1D6E.root

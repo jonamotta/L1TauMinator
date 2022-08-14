@@ -19,8 +19,9 @@ namespace TowerHelper
         int   towerIem = 0;
         int   towerIhad = 0;
         int   towerIet = 0;
-        bool  stale = false;
         bool  isBarrel = true;
+        bool  stale = false;
+        bool  stale4seed = false;
 
         // L1EG info
         float l1egTowerEt = 0.;
@@ -30,6 +31,12 @@ namespace TowerHelper
         // int   l1egTrkIso = 0;
         // int   l1egStandaloneSS = 0;
         // int   l1egStandaloneIso = 0;
+
+        void InitStale()
+        {
+            stale = false;
+            stale4seed = false;
+        }
     };
 
     // class for NxN trigger towers clusters (both barrel and endcap friendly)
@@ -37,10 +44,10 @@ namespace TowerHelper
         public:
         bool  barrelSeeded = false;
         int   nHits = 0;
-        int   seedIeta = 0;
-        int   seedIphi = 0;
-        float seedEta = 0;
-        float seedPhi = 0;
+        int   seedIeta = -99;
+        int   seedIphi = -99;
+        float seedEta = -99;
+        float seedPhi = -99;
         std::vector<float> towerEta;
         std::vector<float> towerPhi;
         std::vector<float> towerEm;
@@ -51,6 +58,13 @@ namespace TowerHelper
         std::vector<int>   towerIem;
         std::vector<int>   towerIhad;
         std::vector<int>   towerIet;
+
+        float totalEm = 0;
+        float totalHad = 0;
+        float totalEt = 0;
+        float totalIem = 0;
+        float totalIhad = 0;
+        float totalIet = 0;
 
         bool isBarrel = false;  // NxN TowerCluster fully contained in the barrel
         bool isOverlap = false; // NxN TowerCluster overlapping bewteen the barrel and the endcap

@@ -6,8 +6,8 @@ Ntuplizer = cms.EDAnalyzer("Ntuplizer",
     CaloClusters5x5 = cms.InputTag("CaloTowerHandler", "l1TowerClusters5x5"),
     CaloClusters5x9 = cms.InputTag("CaloTowerHandler", "l1TowerClusters5x9"),
     HGClusters = cms.InputTag("HGClusterHandler", "HGClustersCollection"),
-    genTaus = cms.InputTag("GenHandler", "GenTauCollection"),
-    genJets = cms.InputTag("GenHandler", "GenJetCollection"),
+    genTaus = cms.InputTag("GenHandler", "GenTausCollection"),
+    genJets = cms.InputTag("GenHandler", "GenJetsCollection"),
     treeName = cms.string("L1TauMinatorTree"),
-    DEBUG = cms.bool(True)
+    DEBUG = cms.bool(False)
 )

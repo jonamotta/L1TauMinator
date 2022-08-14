@@ -68,14 +68,14 @@ GenHandler::GenHandler(const edm::ParameterSet& iConfig)
       genJetsToken(consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("GenJets"))),
       DEBUG(iConfig.getParameter<bool>("DEBUG"))
 {    
-    produces<GenHelper::GenTauCollection>("GenTauCollection");
-    produces<GenHelper::GenJetCollection>("GenJetCollection");
+    produces<GenHelper::GenTausCollection>("GenTausCollection");
+    produces<GenHelper::GenJetsCollection>("GenJetsCollection");
 }
 
 void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 {
     // Create and Fill the collection of good taus and their attributes
-    std::unique_ptr<GenHelper::GenTauCollection> GenTauCollection(new GenHelper::GenTauCollection);
+    std::unique_ptr<GenHelper::GenTausCollection> GenTausCollection(new GenHelper::GenTausCollection);
 
     iEvent.getByToken(genParticlesToken, genParticlesHandle);
     for (auto& particle : *genParticlesHandle.product())
@@ -93,6 +93,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
         LorentzVector tau_p4vis(0., 0., 0., 0.);
         LorentzVector tau_p4em(0., 0., 0., 0.);
         LorentzVector tau_p4had(0., 0., 0., 0.);
+        LorentzVector tau_p4mu(0., 0., 0., 0.); // used for debugging puproses only
         int n_pi = 0;
         int n_piZero = 0;
         int n_gamma = 0;
@@ -110,7 +111,11 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
                     n_ele++; 
                     tau_p4em += (daughter->p4());
                 }
-                else if (isMuon(*daughter)) { n_mu++; }
+                else if (isMuon(*daughter))
+                { 
+                    n_mu++;
+                    tau_p4mu += (daughter->p4()); // used for debugging puproses only
+                }
                 tau_p4vis += (daughter->p4());
             }
 
@@ -136,7 +141,8 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
                 }
             }
 
-            else if (isStableNeutralHadron(*daughter)) {
+            else if (isStableNeutralHadron(*daughter))
+            {
                 tau_p4vis += (daughter->p4());
                 tau_p4had += (daughter->p4());
             }
@@ -210,17 +216,17 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
         if (DEBUG)
         {
             std::cout << "---------------------------------------------------------------------" <<std::endl;
-            std::cout << " gentau: pt " <<GenTau.visPt << " e " << GenTau.visE<< std::endl;
-            std::cout << " gentau: ptEm " << GenTau.visPtEm << " ptHad " << GenTau.visPtHad << " eEm" << GenTau.visEEm << "eHad" << GenTau.visEHad << std::endl;
+            std::cout << " gentau (DM "<< GenTau.DM <<"): pt " <<GenTau.visPt << " e " << GenTau.visE<< std::endl;
+            std::cout << " gentau (DM "<< GenTau.DM <<"): ptEm " << GenTau.visPtEm << " ptHad " << GenTau.visPtHad << " ptMu " << tau_p4mu.Pt() << " eEm " << GenTau.visEEm << " eHad " << GenTau.visEHad << " eMu" << tau_p4mu.E() << std::endl;
             std::cout << "---------------------------------------------------------------------" <<std::endl;
         }
 
-        GenTauCollection->push_back(GenTau);
+        GenTausCollection->push_back(GenTau);
 
     }
 
     // Create and Fill the collection of good jets and their attributes
-    std::unique_ptr<GenHelper::GenJetCollection> GenJetCollection(new GenHelper::GenJetCollection);
+    std::unique_ptr<GenHelper::GenJetsCollection> GenJetsCollection(new GenHelper::GenJetsCollection);
 
     iEvent.getByToken(genJetsToken, genJetsHandle);
     for (auto& jet : *genJetsHandle.product())
@@ -235,29 +241,42 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
         GenJet.eHad = jet.hadEnergy();
         GenJet.eInv = jet.invisibleEnergy();
 
-        GenJetCollection->push_back(GenJet);
+        if (DEBUG)
+        {
+            std::cout << "---------------------------------------------------------------------" <<std::endl;
+            std::cout << "pt :              in " << jet.pt()              << " out " << GenJet.pt   << std::endl;
+            std::cout << "eta :             in " << jet.eta()             << " out " << GenJet.eta  << std::endl;
+            std::cout << "phi :             in " << jet.phi()             << " out " << GenJet.phi  << std::endl;
+            std::cout << "energy :          in " << jet.energy()          << " out " << GenJet.e    << std::endl;
+            std::cout << "emEnergy :        in " << jet.emEnergy()        << " out " << GenJet.eEm  << std::endl;
+            std::cout << "hadEnergy :       in " << jet.hadEnergy()       << " out " << GenJet.eHad << std::endl;
+            std::cout << "invisibleEnergy : in " << jet.invisibleEnergy() << " out " << GenJet.eInv << std::endl;
+            std::cout << "---------------------------------------------------------------------" <<std::endl;
+        }
+
+        GenJetsCollection->push_back(GenJet);
     }
     
     // FIXME : not sure if this overlap removal is a good thing or a bad thing
     /*
     // Remove overlap between jets and taus (keep tau remove jet if dR<=0.4 with visibe tau component)
-    for (long unsigned int i = 0; i < GenTauCollection.size(); i++)
+    for (long unsigned int i = 0; i < GenTausCollection.size(); i++)
     {
         TLorentzVector tau_p4(0.,0.,0.,0.);
-        tau_p4.SetPtEtaPhiE(GenTauCollection[i].visPt, GenTauCollection[i].visEta, GenTauCollection[i].visPhi, GenTauCollection[i].visE);
+        tau_p4.SetPtEtaPhiE(GenTausCollection[i].visPt, GenTausCollection[i].visEta, GenTausCollection[i].visPhi, GenTausCollection[i].visE);
 
-        for (long unsigned int j = 0; j < GenJetCollection.size(); j++)
+        for (long unsigned int j = 0; j < GenJetsCollection.size(); j++)
         {
             TLorentzVector jet_p4(0.,0.,0.,0.);
-            jet_p4.SetPtEtaPhiE(GenJetCollection[i].pt, GenJetCollection[i].eta, GenJetCollection[i].phi, GenJetCollection[i].e);
+            jet_p4.SetPtEtaPhiE(GenJetsCollection[i].pt, GenJetsCollection[i].eta, GenJetsCollection[i].phi, GenJetsCollection[i].e);
 
-            if (jet_p4.DeltaR(tau_p4)<=0.4) { GenJetCollection.erase(GenJetCollection.begin()+j); }
+            if (jet_p4.DeltaR(tau_p4)<=0.4) { GenJetsCollection.erase(GenJetsCollection.begin()+j); }
         }
     }
     */
 
-    iEvent.put(std::move(GenTauCollection), "GenTauCollection");
-    iEvent.put(std::move(GenJetCollection), "GenJetCollection");
+    iEvent.put(std::move(GenTausCollection), "GenTausCollection");
+    iEvent.put(std::move(GenJetsCollection), "GenJetsCollection");
 }
 
 bool GenHandler::isGoodTau(const reco::GenParticle& candidate) const {

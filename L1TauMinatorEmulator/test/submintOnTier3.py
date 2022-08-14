@@ -24,14 +24,14 @@ def splitInBlocks (l, n):
 
 ##################################################################
 
-filedir=""
+filedir="/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/inputFiles/"
 
 list_filelists = []
 list_folders = []
 list_njobs = []
 
-list_filelists.append(open(filedir+""))
-list_folders.append("")
+list_filelists.append(open(filedir+"test.txt"))
+list_folders.append("/data_cms_upgrade/motta/Phase2L1T_SKIMS/test/")
 list_njobs.append(100)
 
 ##################################################################
@@ -61,8 +61,7 @@ for i in range(len(list_folders)):
         for f in block: jobfilelist.write(f+"\n")
         jobfilelist.close()
 
-        # cmsRun = "cmsRun test.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName
-        cmsRun = ""
+        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName
 
         skimjob = open (outJobName, 'w')
         skimjob.write ('#!/bin/bash\n')
@@ -76,8 +75,8 @@ for i in range(len(list_folders)):
         skimjob.close ()
 
         os.system ('chmod u+rwx ' + outJobName)
-        command = ('/home/llr/cms/motta/t3submit -long \'' + outJobName +"\'")
-        # command = ('/home/llr/cms/motta/t3submit -short \'' + outJobName +"\'")
+        # command = ('/home/llr/cms/motta/t3submit -long \'' + outJobName +"\'")
+        command = ('/home/llr/cms/motta/t3submit -short \'' + outJobName +"\'")
         print(command)
         os.system (command)
         # break

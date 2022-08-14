@@ -7,5 +7,5 @@ CaloTowerHandler = cms.EDProducer("CaloTowerHandler",
     EcalEtMinForClustering = cms.double(0.),
     HcalEtMinForClustering = cms.double(0.),
     EtMinForSeeding = cms.double(2.5),
-    DEBUG = cms.bool(True)
+    DEBUG = cms.bool(False)
 )
