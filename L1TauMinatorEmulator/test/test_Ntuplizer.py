@@ -32,19 +32,9 @@ process.load('L1TauMinator.L1TauMinatorEmulator.GenHandler_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.Ntuplizer_cff')
 
 options = VarParsing.VarParsing ('analysis')
-options.register ('skipEvents',
-                  -1, # default value
-                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
-                  VarParsing.VarParsing.varType.int,          # string, int, or float
-                  "Number of events to skip")
-options.register ('JSONfile',
-                  "", # default value
-                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
-                  VarParsing.VarParsing.varType.string,          # string, int, or float
-                  "JSON file (empty for no JSON)")
-options.outputFile = 'NTuple_ZeroBias.root'
+options.outputFile = 'NTuple_L1TauMinator.root'
 options.inputFiles = []
-options.maxEvents  = -999
+options.maxEvents  = 1
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1),
@@ -52,8 +42,6 @@ process.maxEvents = cms.untracked.PSet(
 )
 if options.maxEvents >= -1:
     process.maxEvents.input = cms.untracked.int32(options.maxEvents)
-if options.skipEvents >= 0:
-    process.source.skipEvents = cms.untracked.uint32(options.skipEvents)
 
 # Input source
 process.source = cms.Source("PoolSource",

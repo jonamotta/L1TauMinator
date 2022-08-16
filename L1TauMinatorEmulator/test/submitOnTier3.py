@@ -31,7 +31,8 @@ list_folders = []
 list_njobs = []
 
 list_filelists.append(open(filedir+"test.txt"))
-list_folders.append("/data_cms_upgrade/motta/Phase2L1T_SKIMS/test/")
+# list_folders.append("/data_cms_upgrade/motta/Phase2L1T_SKIMS/test/")
+list_folders.append("/data_CMS/cms/motta/Phase2L1T_SKIMS/test/")
 list_njobs.append(100)
 
 ##################################################################
@@ -54,23 +55,22 @@ for i in range(len(list_folders)):
     for idx, block in enumerate(fileblocks):
         outRootName = folder + '/Ntuple_' + str(idx) + '.root'
         outJobName  = folder + '/job_' + str(idx) + '.sh'
-        outListName = folder + "/filelist_" + str(idx) + ".txt"
+        inListName = folder + "/filelist_" + str(idx) + ".txt"
         outLogName  = folder + "/log_" + str(idx) + ".txt"
 
-        jobfilelist = open(outListName, 'w')
+        jobfilelist = open(inListName, 'w')
         for f in block: jobfilelist.write(f+"\n")
         jobfilelist.close()
 
-        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName
+        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
 
         skimjob = open (outJobName, 'w')
         skimjob.write ('#!/bin/bash\n')
         skimjob.write ('export X509_USER_PROXY=~/.t3/proxy.cert\n')
         skimjob.write ('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
         skimjob.write ('cd %s\n' % os.getcwd())
-        # skimjob.write ('export SCRAM_ARCH=slc6_amd64_gcc472\n')
+        skimjob.write ('export SCRAM_ARCH=slc6_amd64_gcc472\n')
         skimjob.write ('eval `scram r -sh`\n')
-        skimjob.write ('cd %s\n'%os.getcwd())
         skimjob.write (cmsRun+'\n')
         skimjob.close ()
 
