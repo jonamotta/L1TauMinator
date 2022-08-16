@@ -6,7 +6,7 @@
 
 namespace TowerHelper 
 {
-    // class for single trigger tower hits (both barrel and endcap friendly)
+    // class for single trigger tower hits (barrel, endcap, and hf friendly)
     class TowerHit {
         public:
         float towerEta = 0.;
@@ -39,7 +39,7 @@ namespace TowerHelper
         }
     };
 
-    // class for NxN trigger towers clusters (both barrel and endcap friendly)
+    // class for NxN trigger towers clusters (barrel, endcap, and hf friendly)
     class TowerCluster {
         public:
         bool  barrelSeeded = false;
@@ -68,7 +68,7 @@ namespace TowerHelper
         void InitHits() { towerHits.clear(); }
     };
 
-    // collection of NxN trigger towers clusters (both barrel and endcap friendly)
+    // collection of NxN trigger towers clusters (barrel, endcap, and hf friendly)
     typedef std::vector<TowerCluster> TowerClustersCollection;
 }
 #endif

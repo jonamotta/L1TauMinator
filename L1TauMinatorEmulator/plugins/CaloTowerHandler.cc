@@ -15,6 +15,9 @@
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/L1THGCal/interface/HGCalTower.h"
 
+#include "CalibFormats/CaloTPG/interface/CaloTPGTranscoder.h"
+#include "CalibFormats/CaloTPG/interface/CaloTPGRecord.h"
+
 #include "L1Trigger/L1TCalorimeter/interface/CaloTools.h"
 
 #include "L1TauMinator/DataFormats/interface/TowerHelper.h"
@@ -36,11 +39,15 @@ class CaloTowerHandler : public edm::stream::EDProducer<> {
         std::vector<TowerHelper::TowerHit> sortPicLike(std::vector<TowerHelper::TowerHit>) const;
 
         //----tokens and handles----
-        edm::EDGetTokenT<l1tp2::CaloTowerCollection> l1TowerToken;
+        edm::EDGetTokenT<l1tp2::CaloTowerCollection> l1TowersToken;
         edm::Handle<l1tp2::CaloTowerCollection> l1CaloTowerHandle;
 
         edm::EDGetToken hgcalTowersToken;
         edm::Handle<l1t::HGCalTowerBxCollection> hgcalTowersHandle;
+
+        edm::EDGetTokenT<HcalTrigPrimDigiCollection> hcalDigisToken;
+        edm::Handle<HcalTrigPrimDigiCollection> hcalDigisHandle;
+        edm::ESGetToken<CaloTPGTranscoder, CaloTPGRecord> decoderTag;
 
         //----private variables----
         double EcalEtMinForClustering;
@@ -60,8 +67,10 @@ class CaloTowerHandler : public edm::stream::EDProducer<> {
 
 // ----Constructor and Destructor -----
 CaloTowerHandler::CaloTowerHandler(const edm::ParameterSet& iConfig) 
-    : l1TowerToken(consumes<l1tp2::CaloTowerCollection>(iConfig.getParameter<edm::InputTag>("l1CaloTowers"))),
+    : l1TowersToken(consumes<l1tp2::CaloTowerCollection>(iConfig.getParameter<edm::InputTag>("l1CaloTowers"))),
       hgcalTowersToken(consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("hgcalTowers"))),
+      hcalDigisToken(consumes<HcalTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalDigis"))),
+      decoderTag(esConsumes<CaloTPGTranscoder, CaloTPGRecord>(edm::ESInputTag("", ""))),
       EcalEtMinForClustering(iConfig.getParameter<double>("EcalEtMinForClustering")),
       HcalEtMinForClustering(iConfig.getParameter<double>("HcalEtMinForClustering")),
       EtMinForSeeding(iConfig.getParameter<double>("EtMinForSeeding")),
@@ -80,7 +89,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     // Create and Fill collection of all calotowers and their attributes
     std::vector<TowerHelper::TowerHit> l1CaloTowers;
 
-    iEvent.getByToken(l1TowerToken, l1CaloTowerHandle);
+    iEvent.getByToken(l1TowersToken, l1CaloTowerHandle);
     for (auto &hit : *l1CaloTowerHandle.product())
     {
         TowerHelper::TowerHit l1Hit;
@@ -102,6 +111,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         l1CaloTowers.push_back(l1Hit);
     }
 
+    int maxIetaHGCal = 0;
     iEvent.getByToken(hgcalTowersToken, hgcalTowersHandle);
     for (auto &hit : *hgcalTowersHandle.product())
     {
@@ -119,6 +129,72 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         l1Hit.towerIet     = floor( (l1Hit.towerEm + l1Hit.towerHad)/0.5 );
 
         l1CaloTowers.push_back(l1Hit);
+
+        if (l1Hit.towerIeta > maxIetaHGCal) { maxIetaHGCal = l1Hit.towerIeta; } 
+    }
+
+    iEvent.getByToken(hcalDigisToken, hcalDigisHandle);
+    const auto& decoder = eSetup.getData(decoderTag);
+    for (const auto& hit : *hcalDigisHandle.product())
+    {
+        HcalTrigTowerDetId id = hit.id();
+        
+        // Only doing HF so skip outside range
+        if (abs(id.ieta()) < l1t::CaloTools::kHFBegin) { continue; }
+        if (abs(id.ieta()) > l1t::CaloTools::kHFEnd)   { continue; }    
+
+        // get the energy deposit -> divide it by 2 to account fro iphi splitting
+        float hadEt = decoder.hcaletValue(hit.id(), hit.t0()) / 2.;
+        
+        // shift HF ieta to fit the HGCAL towers
+        int ietaShift = maxIetaHGCal - l1t::CaloTools::kHFBegin;
+
+        TowerHelper::TowerHit l1Hit_A;
+        l1Hit_A.isBarrel     = false;
+        l1Hit_A.towerEta     = l1t::CaloTools::towerEta(id.ieta());
+        l1Hit_A.towerPhi     = l1t::CaloTools::towerPhi(id.ieta(), id.iphi());
+        l1Hit_A.towerEm      = 0.;
+        l1Hit_A.towerHad     = hadEt;
+        l1Hit_A.towerEt      = hadEt;
+        l1Hit_A.towerIeta    = id.ieta() + ietaShift * std::copysign(1, l1Hit_A.towerEta);
+        l1Hit_A.towerIphi    = id.iphi();
+        l1Hit_A.towerIem     = 0;
+        l1Hit_A.towerIhad    = floor( hadEt/0.5 );
+        l1Hit_A.towerIet     = floor( hadEt/0.5 );
+
+        TowerHelper::TowerHit l1Hit_B;
+        l1Hit_B.isBarrel     = false;
+        l1Hit_B.towerEta     = l1t::CaloTools::towerEta(id.ieta());
+        l1Hit_B.towerPhi     = l1t::CaloTools::towerPhi(id.ieta(), id.iphi()) + 0.0872664; // account for iphi splitting
+        l1Hit_B.towerEm      = 0.;
+        l1Hit_B.towerHad     = hadEt;
+        l1Hit_B.towerEt      = hadEt;
+        l1Hit_B.towerIeta    = id.ieta() + ietaShift * std::copysign(1, l1Hit_B.towerEta);
+        l1Hit_B.towerIphi    = id.iphi() + 1; // account for iphi splitting
+        l1Hit_B.towerIem     = 0;
+        l1Hit_B.towerIhad    = floor( hadEt/0.5 );
+        l1Hit_B.towerIet     = floor( hadEt/0.5 );
+
+        l1CaloTowers.push_back(l1Hit_A);
+        l1CaloTowers.push_back(l1Hit_B);
+
+        if (DEBUG)
+        {
+            printf("HCAL HF tower iEta %i iPhi %i eta %f phi %f ecal_et %f hcal_et_sum %f\n",
+                (int)l1Hit_A.towerIeta,
+                (int)l1Hit_A.towerIphi,
+                l1Hit_A.towerEta,
+                l1Hit_A.towerPhi,
+                l1Hit_A.towerHad,
+                l1Hit_A.towerEt);
+            printf("HCAL HF tower iEta %i iPhi %i eta %f phi %f ecal_et %f hcal_et_sum %f\n",
+                (int)l1Hit_B.towerIeta,
+                (int)l1Hit_B.towerIphi,
+                l1Hit_B.towerEta,
+                l1Hit_B.towerPhi,
+                l1Hit_B.towerHad,
+                l1Hit_B.towerEt);
+        }
     }
 
     // Sort the ECAL+HCAL+L1EGs tower sums based on total ET
@@ -153,6 +229,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
+            // skip HF towers for seeding
+            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
 
@@ -275,6 +354,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
+            // skip HF towers for seeding
+            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
 
@@ -387,6 +469,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
+            // skip HF towers for seeding
+            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
 
@@ -499,6 +584,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
+            // skip HF towers for seeding
+            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
 
