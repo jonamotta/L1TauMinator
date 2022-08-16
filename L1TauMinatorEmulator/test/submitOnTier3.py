@@ -30,10 +30,29 @@ list_filelists = []
 list_folders = []
 list_njobs = []
 
-list_filelists.append(open(filedir+"test.txt"))
-# list_folders.append("/data_cms_upgrade/motta/Phase2L1T_SKIMS/test/")
-list_folders.append("/data_CMS/cms/motta/Phase2L1T_SKIMS/test/")
-list_njobs.append(100)
+# list_filelists.append(open(filedir+"test.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T_NTuples/test2/")
+# list_njobs.append(10)
+
+# list_filelists.append(open(filedir+"VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T_NTuples/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(30)
+
+# list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T_NTuples/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(120)
+
+# list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T_NTuples/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(25)
+
+# list_filelists.append(open(filedir+"QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T_NTuples/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(60)
+
+list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T_NTuples/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
+list_njobs.append(200)
 
 ##################################################################
 
@@ -62,21 +81,21 @@ for i in range(len(list_folders)):
         for f in block: jobfilelist.write(f+"\n")
         jobfilelist.close()
 
-        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
+        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
 
         skimjob = open (outJobName, 'w')
         skimjob.write ('#!/bin/bash\n')
         skimjob.write ('export X509_USER_PROXY=~/.t3/proxy.cert\n')
         skimjob.write ('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
         skimjob.write ('cd %s\n' % os.getcwd())
-        skimjob.write ('export SCRAM_ARCH=slc6_amd64_gcc472\n')
+        skimjob.write ('export SCRAM_ARCH=slc7_amd64_gcc820\n')
         skimjob.write ('eval `scram r -sh`\n')
         skimjob.write (cmsRun+'\n')
         skimjob.close ()
 
         os.system ('chmod u+rwx ' + outJobName)
-        # command = ('/home/llr/cms/motta/t3submit -long \'' + outJobName +"\'")
-        command = ('/home/llr/cms/motta/t3submit -short \'' + outJobName +"\'")
+        command = ('/home/llr/cms/motta/t3submit -long \'' + outJobName +"\'")
+        # command = ('/home/llr/cms/motta/t3submit -short \'' + outJobName +"\'")
         print(command)
         os.system (command)
         # break

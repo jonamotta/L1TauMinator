@@ -34,7 +34,8 @@ process.load('L1TauMinator.L1TauMinatorEmulator.Ntuplizer_cff')
 options = VarParsing.VarParsing ('analysis')
 options.outputFile = 'NTuple_L1TauMinator.root'
 options.inputFiles = []
-options.maxEvents  = 1
+options.maxEvents  = -999
+options.parseArguments()
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1),
@@ -46,7 +47,7 @@ if options.maxEvents >= -1:
 # Input source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/mc/Phase2HLTTDRWinter20DIGI/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/0195AA7A-2336-0344-850B-9F3F4FBF1D6E.root',
+        '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v3/240001/1EBB160E-D79C-E44E-AA14-1046A2005911.root',
     ),
     secondaryFileNames = cms.untracked.vstring(),
     inputCommands = cms.untracked.vstring(
