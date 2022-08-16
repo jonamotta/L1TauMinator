@@ -5,7 +5,8 @@
 #include <cmath>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDAnalyzer.h"
+// #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -24,7 +25,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 
-class Ntuplizer : public edm::stream::EDAnalyzer<> {
+// class Ntuplizer : public edm::stream::EDAnalyzer<> {
+class Ntuplizer : public edm::EDAnalyzer {
     public:
         explicit Ntuplizer(const edm::ParameterSet&);
         virtual ~Ntuplizer();
@@ -1188,7 +1190,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     if (DEBUG) { std::cout << " ** finished macthing, now filling the tree for run " << _runNumber << " - event " << _evtNumber << std::endl; }
 
     // Fill tree
-    // _tree -> Fill();
+    _tree -> Fill();
 }
 
 DEFINE_FWK_MODULE(Ntuplizer);
