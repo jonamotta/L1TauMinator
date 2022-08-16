@@ -46,25 +46,15 @@ namespace TowerHelper
         int   nHits = 0;
         int   seedIeta = -99;
         int   seedIphi = -99;
-        float seedEta = -99;
-        float seedPhi = -99;
-        std::vector<float> towerEta;
-        std::vector<float> towerPhi;
-        std::vector<float> towerEm;
-        std::vector<float> towerHad;
-        std::vector<float> towerEt;
-        std::vector<int>   towerIeta;
-        std::vector<int>   towerIphi;
-        std::vector<int>   towerIem;
-        std::vector<int>   towerIhad;
-        std::vector<int>   towerIet;
+        float seedEta = -99.;
+        float seedPhi = -99.;
 
-        float totalEm = 0;
-        float totalHad = 0;
-        float totalEt = 0;
-        float totalIem = 0;
-        float totalIhad = 0;
-        float totalIet = 0;
+        float totalEm = 0.;
+        float totalHad = 0.;
+        float totalEt = 0.;
+        float totalIem = 0.;
+        float totalIhad = 0.;
+        float totalIet = 0.;
 
         bool isBarrel = false;  // NxN TowerCluster fully contained in the barrel
         bool isOverlap = false; // NxN TowerCluster overlapping bewteen the barrel and the endcap
@@ -73,19 +63,9 @@ namespace TowerHelper
         int tauMatchIdx = -99;
         int jetMatchIdx = -99;
 
-        void Init()
-        {
-            towerEta.clear();
-            towerPhi.clear();
-            towerEm.clear();
-            towerHad.clear();
-            towerEt.clear();
-            towerIeta.clear();
-            towerIphi.clear();
-            towerIem.clear();
-            towerIhad.clear();
-            towerIet.clear();
-        }
+        std::vector<TowerHit> towerHits;
+
+        void InitHits() { towerHits.clear(); }
     };
 
     // collection of NxN trigger towers clusters (both barrel and endcap friendly)

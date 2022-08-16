@@ -702,16 +702,42 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl9x9_totalIem.push_back(clu9x9.totalIem);
         _cl9x9_totalIhad.push_back(clu9x9.totalIhad);
         _cl9x9_totalIet.push_back(clu9x9.totalIet);
-        _cl9x9_towerEta.push_back(clu9x9.towerEta);
-        _cl9x9_towerPhi.push_back(clu9x9.towerPhi);
-        _cl9x9_towerEm.push_back(clu9x9.towerEm);
-        _cl9x9_towerHad.push_back(clu9x9.towerHad);
-        _cl9x9_towerEt.push_back(clu9x9.towerEt);
-        _cl9x9_towerIeta.push_back(clu9x9.towerIeta);
-        _cl9x9_towerIphi.push_back(clu9x9.towerIphi);
-        _cl9x9_towerIem.push_back(clu9x9.towerIem);
-        _cl9x9_towerIhad.push_back(clu9x9.towerIhad);
-        _cl9x9_towerIet.push_back(clu9x9.towerIet);
+        
+        std::vector<float> tmp_towerEta;
+        std::vector<float> tmp_towerPhi;
+        std::vector<float> tmp_towerEm;
+        std::vector<float> tmp_towerHad;
+        std::vector<float> tmp_towerEt;
+        std::vector<int>   tmp_towerIeta;
+        std::vector<int>   tmp_towerIphi;
+        std::vector<int>   tmp_towerIem;
+        std::vector<int>   tmp_towerIhad;
+        std::vector<int>   tmp_towerIet;
+
+        for (long unsigned int i = 0; i < clu9x9.towerHits.size(); ++i)
+        {
+            tmp_towerEta.push_back(clu9x9.towerHits[i].towerEta);
+            tmp_towerPhi.push_back(clu9x9.towerHits[i].towerPhi);
+            tmp_towerEm.push_back(clu9x9.towerHits[i].towerEm);
+            tmp_towerHad.push_back(clu9x9.towerHits[i].towerHad);
+            tmp_towerEt.push_back(clu9x9.towerHits[i].towerEt);
+            tmp_towerIeta.push_back(clu9x9.towerHits[i].towerIeta);
+            tmp_towerIphi.push_back(clu9x9.towerHits[i].towerIphi);
+            tmp_towerIem.push_back(clu9x9.towerHits[i].towerIem);
+            tmp_towerIhad.push_back(clu9x9.towerHits[i].towerIhad);
+            tmp_towerIet.push_back(clu9x9.towerHits[i].towerIet);
+        }
+
+        _cl9x9_towerEta.push_back(tmp_towerEta);
+        _cl9x9_towerPhi.push_back(tmp_towerPhi);
+        _cl9x9_towerEm.push_back(tmp_towerEm);
+        _cl9x9_towerHad.push_back(tmp_towerHad);
+        _cl9x9_towerEt.push_back(tmp_towerEt);
+        _cl9x9_towerIeta.push_back(tmp_towerIeta);
+        _cl9x9_towerIphi.push_back(tmp_towerIphi);
+        _cl9x9_towerIem.push_back(tmp_towerIem);
+        _cl9x9_towerIhad.push_back(tmp_towerIhad);
+        _cl9x9_towerIet.push_back(tmp_towerIet);
     }
 
 
@@ -789,16 +815,42 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl7x7_totalIem.push_back(clu7x7.totalIem);
         _cl7x7_totalIhad.push_back(clu7x7.totalIhad);
         _cl7x7_totalIet.push_back(clu7x7.totalIet);
-        _cl7x7_towerEta.push_back(clu7x7.towerEta);
-        _cl7x7_towerPhi.push_back(clu7x7.towerPhi);
-        _cl7x7_towerEm.push_back(clu7x7.towerEm);
-        _cl7x7_towerHad.push_back(clu7x7.towerHad);
-        _cl7x7_towerEt.push_back(clu7x7.towerEt);
-        _cl7x7_towerIeta.push_back(clu7x7.towerIeta);
-        _cl7x7_towerIphi.push_back(clu7x7.towerIphi);
-        _cl7x7_towerIem.push_back(clu7x7.towerIem);
-        _cl7x7_towerIhad.push_back(clu7x7.towerIhad);
-        _cl7x7_towerIet.push_back(clu7x7.towerIet);
+        
+        std::vector<float> tmp_towerEta;
+        std::vector<float> tmp_towerPhi;
+        std::vector<float> tmp_towerEm;
+        std::vector<float> tmp_towerHad;
+        std::vector<float> tmp_towerEt;
+        std::vector<int>   tmp_towerIeta;
+        std::vector<int>   tmp_towerIphi;
+        std::vector<int>   tmp_towerIem;
+        std::vector<int>   tmp_towerIhad;
+        std::vector<int>   tmp_towerIet;
+
+        for (long unsigned int i = 0; i < clu7x7.towerHits.size(); ++i)
+        {
+            tmp_towerEta.push_back(clu7x7.towerHits[i].towerEta);
+            tmp_towerPhi.push_back(clu7x7.towerHits[i].towerPhi);
+            tmp_towerEm.push_back(clu7x7.towerHits[i].towerEm);
+            tmp_towerHad.push_back(clu7x7.towerHits[i].towerHad);
+            tmp_towerEt.push_back(clu7x7.towerHits[i].towerEt);
+            tmp_towerIeta.push_back(clu7x7.towerHits[i].towerIeta);
+            tmp_towerIphi.push_back(clu7x7.towerHits[i].towerIphi);
+            tmp_towerIem.push_back(clu7x7.towerHits[i].towerIem);
+            tmp_towerIhad.push_back(clu7x7.towerHits[i].towerIhad);
+            tmp_towerIet.push_back(clu7x7.towerHits[i].towerIet);
+        }
+
+        _cl7x7_towerEta.push_back(tmp_towerEta);
+        _cl7x7_towerPhi.push_back(tmp_towerPhi);
+        _cl7x7_towerEm.push_back(tmp_towerEm);
+        _cl7x7_towerHad.push_back(tmp_towerHad);
+        _cl7x7_towerEt.push_back(tmp_towerEt);
+        _cl7x7_towerIeta.push_back(tmp_towerIeta);
+        _cl7x7_towerIphi.push_back(tmp_towerIphi);
+        _cl7x7_towerIem.push_back(tmp_towerIem);
+        _cl7x7_towerIhad.push_back(tmp_towerIhad);
+        _cl7x7_towerIet.push_back(tmp_towerIet);
     }
 
 
@@ -876,16 +928,42 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x5_totalIem.push_back(clu5x5.totalIem);
         _cl5x5_totalIhad.push_back(clu5x5.totalIhad);
         _cl5x5_totalIet.push_back(clu5x5.totalIet);
-        _cl5x5_towerEta.push_back(clu5x5.towerEta);
-        _cl5x5_towerPhi.push_back(clu5x5.towerPhi);
-        _cl5x5_towerEm.push_back(clu5x5.towerEm);
-        _cl5x5_towerHad.push_back(clu5x5.towerHad);
-        _cl5x5_towerEt.push_back(clu5x5.towerEt);
-        _cl5x5_towerIeta.push_back(clu5x5.towerIeta);
-        _cl5x5_towerIphi.push_back(clu5x5.towerIphi);
-        _cl5x5_towerIem.push_back(clu5x5.towerIem);
-        _cl5x5_towerIhad.push_back(clu5x5.towerIhad);
-        _cl5x5_towerIet.push_back(clu5x5.towerIet);
+        
+        std::vector<float> tmp_towerEta;
+        std::vector<float> tmp_towerPhi;
+        std::vector<float> tmp_towerEm;
+        std::vector<float> tmp_towerHad;
+        std::vector<float> tmp_towerEt;
+        std::vector<int>   tmp_towerIeta;
+        std::vector<int>   tmp_towerIphi;
+        std::vector<int>   tmp_towerIem;
+        std::vector<int>   tmp_towerIhad;
+        std::vector<int>   tmp_towerIet;
+
+        for (long unsigned int i = 0; i < clu5x5.towerHits.size(); ++i)
+        {
+            tmp_towerEta.push_back(clu5x5.towerHits[i].towerEta);
+            tmp_towerPhi.push_back(clu5x5.towerHits[i].towerPhi);
+            tmp_towerEm.push_back(clu5x5.towerHits[i].towerEm);
+            tmp_towerHad.push_back(clu5x5.towerHits[i].towerHad);
+            tmp_towerEt.push_back(clu5x5.towerHits[i].towerEt);
+            tmp_towerIeta.push_back(clu5x5.towerHits[i].towerIeta);
+            tmp_towerIphi.push_back(clu5x5.towerHits[i].towerIphi);
+            tmp_towerIem.push_back(clu5x5.towerHits[i].towerIem);
+            tmp_towerIhad.push_back(clu5x5.towerHits[i].towerIhad);
+            tmp_towerIet.push_back(clu5x5.towerHits[i].towerIet);
+        }
+
+        _cl5x5_towerEta.push_back(tmp_towerEta);
+        _cl5x5_towerPhi.push_back(tmp_towerPhi);
+        _cl5x5_towerEm.push_back(tmp_towerEm);
+        _cl5x5_towerHad.push_back(tmp_towerHad);
+        _cl5x5_towerEt.push_back(tmp_towerEt);
+        _cl5x5_towerIeta.push_back(tmp_towerIeta);
+        _cl5x5_towerIphi.push_back(tmp_towerIphi);
+        _cl5x5_towerIem.push_back(tmp_towerIem);
+        _cl5x5_towerIhad.push_back(tmp_towerIhad);
+        _cl5x5_towerIet.push_back(tmp_towerIet);
     }
 
 
@@ -963,16 +1041,42 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x9_totalIem.push_back(clu5x9.totalIem);
         _cl5x9_totalIhad.push_back(clu5x9.totalIhad);
         _cl5x9_totalIet.push_back(clu5x9.totalIet);
-        _cl5x9_towerEta.push_back(clu5x9.towerEta);
-        _cl5x9_towerPhi.push_back(clu5x9.towerPhi);
-        _cl5x9_towerEm.push_back(clu5x9.towerEm);
-        _cl5x9_towerHad.push_back(clu5x9.towerHad);
-        _cl5x9_towerEt.push_back(clu5x9.towerEt);
-        _cl5x9_towerIeta.push_back(clu5x9.towerIeta);
-        _cl5x9_towerIphi.push_back(clu5x9.towerIphi);
-        _cl5x9_towerIem.push_back(clu5x9.towerIem);
-        _cl5x9_towerIhad.push_back(clu5x9.towerIhad);
-        _cl5x9_towerIet.push_back(clu5x9.towerIet);
+        
+        std::vector<float> tmp_towerEta;
+        std::vector<float> tmp_towerPhi;
+        std::vector<float> tmp_towerEm;
+        std::vector<float> tmp_towerHad;
+        std::vector<float> tmp_towerEt;
+        std::vector<int>   tmp_towerIeta;
+        std::vector<int>   tmp_towerIphi;
+        std::vector<int>   tmp_towerIem;
+        std::vector<int>   tmp_towerIhad;
+        std::vector<int>   tmp_towerIet;
+
+        for (long unsigned int i = 0; i < clu5x9.towerHits.size(); ++i)
+        {
+            tmp_towerEta.push_back(clu5x9.towerHits[i].towerEta);
+            tmp_towerPhi.push_back(clu5x9.towerHits[i].towerPhi);
+            tmp_towerEm.push_back(clu5x9.towerHits[i].towerEm);
+            tmp_towerHad.push_back(clu5x9.towerHits[i].towerHad);
+            tmp_towerEt.push_back(clu5x9.towerHits[i].towerEt);
+            tmp_towerIeta.push_back(clu5x9.towerHits[i].towerIeta);
+            tmp_towerIphi.push_back(clu5x9.towerHits[i].towerIphi);
+            tmp_towerIem.push_back(clu5x9.towerHits[i].towerIem);
+            tmp_towerIhad.push_back(clu5x9.towerHits[i].towerIhad);
+            tmp_towerIet.push_back(clu5x9.towerHits[i].towerIet);
+        }
+
+        _cl5x9_towerEta.push_back(tmp_towerEta);
+        _cl5x9_towerPhi.push_back(tmp_towerPhi);
+        _cl5x9_towerEm.push_back(tmp_towerEm);
+        _cl5x9_towerHad.push_back(tmp_towerHad);
+        _cl5x9_towerEt.push_back(tmp_towerEt);
+        _cl5x9_towerIeta.push_back(tmp_towerIeta);
+        _cl5x9_towerIphi.push_back(tmp_towerIphi);
+        _cl5x9_towerIem.push_back(tmp_towerIem);
+        _cl5x9_towerIhad.push_back(tmp_towerIhad);
+        _cl5x9_towerIet.push_back(tmp_towerIet);
     }
 
 
@@ -1084,7 +1188,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     if (DEBUG) { std::cout << " ** finished macthing, now filling the tree for run " << _runNumber << " - event " << _evtNumber << std::endl; }
 
     // Fill tree
-    _tree -> Fill();
+    // _tree -> Fill();
 }
 
 DEFINE_FWK_MODULE(Ntuplizer);

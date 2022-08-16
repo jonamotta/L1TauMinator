@@ -33,6 +33,7 @@ class CaloTowerHandler : public edm::stream::EDProducer<> {
         int tower_diEta(int &iEta_1, int &iEta_2) const;
         int endcap_iphi(float &phi) const;
         int endcap_ieta(float &eta) const;
+        std::vector<TowerHelper::TowerHit> sortPicLike(std::vector<TowerHelper::TowerHit>) const;
 
         //----tokens and handles----
         edm::EDGetTokenT<l1tp2::CaloTowerCollection> l1TowerToken;
@@ -60,7 +61,7 @@ class CaloTowerHandler : public edm::stream::EDProducer<> {
 // ----Constructor and Destructor -----
 CaloTowerHandler::CaloTowerHandler(const edm::ParameterSet& iConfig) 
     : l1TowerToken(consumes<l1tp2::CaloTowerCollection>(iConfig.getParameter<edm::InputTag>("l1CaloTowers"))),
-      hgcalTowersToken(consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("HgcalTowers"))),
+      hgcalTowersToken(consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("hgcalTowers"))),
       EcalEtMinForClustering(iConfig.getParameter<double>("EcalEtMinForClustering")),
       HcalEtMinForClustering(iConfig.getParameter<double>("HcalEtMinForClustering")),
       EtMinForSeeding(iConfig.getParameter<double>("EtMinForSeeding")),
@@ -148,7 +149,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     bool caloJetSeedingFinished = false;
     while (!caloJetSeedingFinished)
     {
-        TowerHelper::TowerCluster clu9x9; clu9x9.Init();
+        TowerHelper::TowerCluster clu9x9; clu9x9.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
@@ -180,16 +181,17 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 else                               { clu9x9.isOverlap = true; }
 
                 // Fill the TowerCluster towers variables
-                clu9x9.towerEta.push_back(l1CaloTower.towerEta);
-                clu9x9.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu9x9.towerEm.push_back(l1CaloTower.towerEm);
-                clu9x9.towerHad.push_back(l1CaloTower.towerHad);
-                clu9x9.towerEt.push_back(l1CaloTower.towerEt);
-                clu9x9.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu9x9.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu9x9.towerIem.push_back(l1CaloTower.towerIem);
-                clu9x9.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu9x9.towerIet.push_back(l1CaloTower.towerIet);
+                clu9x9.towerHits.push_back(l1CaloTower);
+                // clu9x9.towerEta.push_back(l1CaloTower.towerEta);
+                // clu9x9.towerPhi.push_back(l1CaloTower.towerPhi);
+                // clu9x9.towerEm.push_back(l1CaloTower.towerEm);
+                // clu9x9.towerHad.push_back(l1CaloTower.towerHad);
+                // clu9x9.towerEt.push_back(l1CaloTower.towerEt);
+                // clu9x9.towerIeta.push_back(l1CaloTower.towerIeta);
+                // clu9x9.towerIphi.push_back(l1CaloTower.towerIphi);
+                // clu9x9.towerIem.push_back(l1CaloTower.towerIem);
+                // clu9x9.towerIhad.push_back(l1CaloTower.towerIhad);
+                // clu9x9.towerIet.push_back(l1CaloTower.towerIet);
                 
                 // Fill the TowerCluster overall variables
                 clu9x9.totalEm += l1CaloTower.towerEm;
@@ -233,17 +235,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             {
                 l1CaloTower.stale = true;
 
-                // Fill the TowerCluster towers variables
-                clu9x9.towerEta.push_back(l1CaloTower.towerEta);
-                clu9x9.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu9x9.towerEm.push_back(l1CaloTower.towerEm);
-                clu9x9.towerHad.push_back(l1CaloTower.towerHad);
-                clu9x9.towerEt.push_back(l1CaloTower.towerEt);
-                clu9x9.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu9x9.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu9x9.towerIem.push_back(l1CaloTower.towerIem);
-                clu9x9.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu9x9.towerIet.push_back(l1CaloTower.towerIet);
+                // Fill the TowerCluster towers
+                clu9x9.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
                 clu9x9.totalEm += l1CaloTower.towerEm;
@@ -255,6 +248,11 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 if (l1CaloTower.towerIet > 0) clu9x9.nHits++;
             }
         }// end for loop of TP clustering
+
+        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu9x9.towerHits);
+        clu9x9.InitHits(); clu9x9.towerHits = sortedHits;
+
     }// end while loop of 9x9 TowerClusters creation
 
 
@@ -273,7 +271,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     caloJetSeedingFinished = false;
     while (!caloJetSeedingFinished)
     {
-        TowerHelper::TowerCluster clu7x7; clu7x7.Init();
+        TowerHelper::TowerCluster clu7x7; clu7x7.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
@@ -304,17 +302,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 else if (abs(clu7x7.seedIeta)>=22) { clu7x7.isEndcap = true;  }
                 else                               { clu7x7.isOverlap = true; }
 
-                // Fill the TowerCluster towers variables
-                clu7x7.towerEta.push_back(l1CaloTower.towerEta);
-                clu7x7.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu7x7.towerEm.push_back(l1CaloTower.towerEm);
-                clu7x7.towerHad.push_back(l1CaloTower.towerHad);
-                clu7x7.towerEt.push_back(l1CaloTower.towerEt);
-                clu7x7.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu7x7.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu7x7.towerIem.push_back(l1CaloTower.towerIem);
-                clu7x7.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu7x7.towerIet.push_back(l1CaloTower.towerIet);
+                // Fill the TowerCluster towers
+                clu7x7.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
                 clu7x7.totalEm += l1CaloTower.towerEm;
@@ -358,18 +347,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             {
                 l1CaloTower.stale = true;
 
-                // Fill the TowerCluster towers variables
-                clu7x7.towerEta.push_back(l1CaloTower.towerEta);
-                clu7x7.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu7x7.towerEm.push_back(l1CaloTower.towerEm);
-                clu7x7.towerHad.push_back(l1CaloTower.towerHad);
-                clu7x7.towerEt.push_back(l1CaloTower.towerEt);
-                clu7x7.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu7x7.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu7x7.towerIem.push_back(l1CaloTower.towerIem);
-                clu7x7.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu7x7.towerIet.push_back(l1CaloTower.towerIet);
-
+                // Fill the TowerCluster towers
+                clu7x7.towerHits.push_back(l1CaloTower);
+                
                 // Fill the TowerCluster overall variables
                 clu7x7.totalEm += l1CaloTower.towerEm;
                 clu7x7.totalHad += l1CaloTower.towerHad;
@@ -380,6 +360,11 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 if (l1CaloTower.towerIet > 0) clu7x7.nHits++;
             }
         }// end for loop of TP clustering
+
+        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu7x7.towerHits);
+        clu7x7.InitHits(); clu7x7.towerHits = sortedHits;
+
     }// end while loop of 7x7 TowerClusters creation
 
 
@@ -398,7 +383,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     caloJetSeedingFinished = false;
     while (!caloJetSeedingFinished)
     {
-        TowerHelper::TowerCluster clu5x5; clu5x5.Init();
+        TowerHelper::TowerCluster clu5x5; clu5x5.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
@@ -429,18 +414,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 else if (abs(clu5x5.seedIeta)>=22) { clu5x5.isEndcap = true;  }
                 else                               { clu5x5.isOverlap = true; }
 
-                // Fill the TowerCluster towers variables
-                clu5x5.towerEta.push_back(l1CaloTower.towerEta);
-                clu5x5.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu5x5.towerEm.push_back(l1CaloTower.towerEm);
-                clu5x5.towerHad.push_back(l1CaloTower.towerHad);
-                clu5x5.towerEt.push_back(l1CaloTower.towerEt);
-                clu5x5.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu5x5.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu5x5.towerIem.push_back(l1CaloTower.towerIem);
-                clu5x5.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu5x5.towerIet.push_back(l1CaloTower.towerIet);
-                
+                // Fill the TowerCluster towers
+                clu5x5.towerHits.push_back(l1CaloTower);
+
                 // Fill the TowerCluster overall variables
                 clu5x5.totalEm += l1CaloTower.towerEm;
                 clu5x5.totalHad += l1CaloTower.towerHad;
@@ -483,17 +459,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             {
                 l1CaloTower.stale = true;
 
-                // Fill the TowerCluster towers variables
-                clu5x5.towerEta.push_back(l1CaloTower.towerEta);
-                clu5x5.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu5x5.towerEm.push_back(l1CaloTower.towerEm);
-                clu5x5.towerHad.push_back(l1CaloTower.towerHad);
-                clu5x5.towerEt.push_back(l1CaloTower.towerEt);
-                clu5x5.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu5x5.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu5x5.towerIem.push_back(l1CaloTower.towerIem);
-                clu5x5.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu5x5.towerIet.push_back(l1CaloTower.towerIet);
+                // Fill the TowerCluster towers
+                clu5x5.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
                 clu5x5.totalEm += l1CaloTower.towerEm;
@@ -505,6 +472,11 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 if (l1CaloTower.towerIet > 0) clu5x5.nHits++;
             }
         }// end for loop of TP clustering
+
+        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x5.towerHits);
+        clu5x5.InitHits(); clu5x5.towerHits = sortedHits;
+
     }// end while loop of 5x5 TowerClusters creation
 
 
@@ -523,7 +495,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     caloJetSeedingFinished = false;
     while (!caloJetSeedingFinished)
     {
-        TowerHelper::TowerCluster clu5x9; clu5x9.Init();
+        TowerHelper::TowerCluster clu5x9; clu5x9.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
@@ -554,17 +526,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 else if (abs(clu5x9.seedIeta)>=22) { clu5x9.isEndcap = true;  }
                 else                               { clu5x9.isOverlap = true; }
 
-                // Fill the TowerCluster towers variables
-                clu5x9.towerEta.push_back(l1CaloTower.towerEta);
-                clu5x9.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu5x9.towerEm.push_back(l1CaloTower.towerEm);
-                clu5x9.towerHad.push_back(l1CaloTower.towerHad);
-                clu5x9.towerEt.push_back(l1CaloTower.towerEt);
-                clu5x9.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu5x9.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu5x9.towerIem.push_back(l1CaloTower.towerIem);
-                clu5x9.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu5x9.towerIet.push_back(l1CaloTower.towerIet);
+                // Fill the TowerCluster towers
+                clu5x9.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
                 clu5x9.totalEm += l1CaloTower.towerEm;
@@ -608,17 +571,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             {
                 l1CaloTower.stale = true;
 
-                // Fill the TowerCluster towers variables
-                clu5x9.towerEta.push_back(l1CaloTower.towerEta);
-                clu5x9.towerPhi.push_back(l1CaloTower.towerPhi);
-                clu5x9.towerEm.push_back(l1CaloTower.towerEm);
-                clu5x9.towerHad.push_back(l1CaloTower.towerHad);
-                clu5x9.towerEt.push_back(l1CaloTower.towerEt);
-                clu5x9.towerIeta.push_back(l1CaloTower.towerIeta);
-                clu5x9.towerIphi.push_back(l1CaloTower.towerIphi);
-                clu5x9.towerIem.push_back(l1CaloTower.towerIem);
-                clu5x9.towerIhad.push_back(l1CaloTower.towerIhad);
-                clu5x9.towerIet.push_back(l1CaloTower.towerIet);
+                // Fill the TowerCluster towers
+                clu5x9.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
                 clu5x9.totalEm += l1CaloTower.towerEm;
@@ -630,6 +584,11 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 if (l1CaloTower.towerIet > 0) clu5x9.nHits++;
             }
         }// end for loop of TP clustering
+
+        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x9.towerHits);
+        clu5x9.InitHits(); clu5x9.towerHits = sortedHits;
+
     }// end while loop of 5x9 TowerClusters creation
 
 
@@ -643,20 +602,20 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
             std::cout << " -- clu 9x9 seed " << " , eta " << clu9x9.seedIeta << " phi " << clu9x9.seedIphi << std::endl;
             std::cout << " -- clu 9x9 seed " << " , isBarrel " << clu9x9.isBarrel << " isEndcap " << clu9x9.isEndcap << " isOverlap " << clu9x9.isOverlap << std::endl;
-            std::cout << " -- clu 9x9 towers etas (" << clu9x9.towerIeta.size() << ") [";
-            for (long unsigned int j = 0; j < clu9x9.towerIeta.size(); ++j) { std::cout  << ", " << clu9x9.towerIeta[j]; }
+            std::cout << " -- clu 9x9 towers etas (" << clu9x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu9x9.towerHits.size(); ++j) { std::cout  << ", " << clu9x9.towerHits[j].towerIeta; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 9x9 towers phis (" << clu9x9.towerIphi.size() << ") [";
-            for (long unsigned int j = 0; j < clu9x9.towerIphi.size(); ++j) { std::cout << ", " << clu9x9.towerIphi[j]; }
+            std::cout << " -- clu 9x9 towers phis (" << clu9x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu9x9.towerHits.size(); ++j) { std::cout << ", " << clu9x9.towerHits[j].towerIphi; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 9x9 towers ems (" << clu9x9.towerIem.size() << ") [";
-            for (long unsigned int j = 0; j < clu9x9.towerIem.size(); ++j) { std::cout << ", " << clu9x9.towerIem[j]; }
+            std::cout << " -- clu 9x9 towers ems (" << clu9x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu9x9.towerHits.size(); ++j) { std::cout << ", " << clu9x9.towerHits[j].towerIem; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 9x9 towers hads (" << clu9x9.towerIhad.size() << ") [";
-            for (long unsigned int j = 0; j < clu9x9.towerIhad.size(); ++j) { std::cout << ", " << clu9x9.towerIhad[j]; }
+            std::cout << " -- clu 9x9 towers hads (" << clu9x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu9x9.towerHits.size(); ++j) { std::cout << ", " << clu9x9.towerHits[j].towerIhad; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 9x9 towers ets (" << clu9x9.towerIet.size() << ") [";
-            for (long unsigned int j = 0; j < clu9x9.towerIet.size(); ++j) { std::cout << ", " << clu9x9.towerIet[j]; }
+            std::cout << " -- clu 9x9 towers ets (" << clu9x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu9x9.towerHits.size(); ++j) { std::cout << ", " << clu9x9.towerHits[j].towerIet; }
             std::cout << "]" << std::endl;
             std::cout << " -- clu 9x9 number of towers " << clu9x9.nHits << std::endl;
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
@@ -668,20 +627,20 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
             std::cout << " -- clu 7x7 seed " << " , eta " << clu7x7.seedIeta << " phi " << clu7x7.seedIphi << std::endl;
             std::cout << " -- clu 7x7 seed " << " , isBarrel " << clu7x7.isBarrel << " isEndcap " << clu7x7.isEndcap << " isOverlap " << clu7x7.isOverlap << std::endl;
-            std::cout << " -- clu 7x7 towers etas (" << clu7x7.towerIeta.size() << ") [";
-            for (long unsigned int j = 0; j < clu7x7.towerIeta.size(); ++j) { std::cout  << ", " << clu7x7.towerIeta[j]; }
+            std::cout << " -- clu 7x7 towers etas (" << clu7x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu7x7.towerHits.size(); ++j) { std::cout  << ", " << clu7x7.towerHits[j].towerIeta; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 7x7 towers phis (" << clu7x7.towerIphi.size() << ") [";
-            for (long unsigned int j = 0; j < clu7x7.towerIphi.size(); ++j) { std::cout << ", " << clu7x7.towerIphi[j]; }
+            std::cout << " -- clu 7x7 towers phis (" << clu7x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu7x7.towerHits.size(); ++j) { std::cout << ", " << clu7x7.towerHits[j].towerIphi; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 7x7 towers ems (" << clu7x7.towerIem.size() << ") [";
-            for (long unsigned int j = 0; j < clu7x7.towerIem.size(); ++j) { std::cout << ", " << clu7x7.towerIem[j]; }
+            std::cout << " -- clu 7x7 towers ems (" << clu7x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu7x7.towerHits.size(); ++j) { std::cout << ", " << clu7x7.towerHits[j].towerIem; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 7x7 towers hads (" << clu7x7.towerIhad.size() << ") [";
-            for (long unsigned int j = 0; j < clu7x7.towerIhad.size(); ++j) { std::cout << ", " << clu7x7.towerIhad[j]; }
+            std::cout << " -- clu 7x7 towers hads (" << clu7x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu7x7.towerHits.size(); ++j) { std::cout << ", " << clu7x7.towerHits[j].towerIhad; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 7x7 towers ets (" << clu7x7.towerIet.size() << ") [";
-            for (long unsigned int j = 0; j < clu7x7.towerIet.size(); ++j) { std::cout << ", " << clu7x7.towerIet[j]; }
+            std::cout << " -- clu 7x7 towers ets (" << clu7x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu7x7.towerHits.size(); ++j) { std::cout << ", " << clu7x7.towerHits[j].towerIet; }
             std::cout << "]" << std::endl;
             std::cout << " -- clu 7x7 number of towers " << clu7x7.nHits << std::endl;
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
@@ -693,20 +652,20 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
             std::cout << " -- clu 5x5 seed " << " , eta " << clu5x5.seedIeta << " phi " << clu5x5.seedIphi << std::endl;
             std::cout << " -- clu 5x5 seed " << " , isBarrel " << clu5x5.isBarrel << " isEndcap " << clu5x5.isEndcap << " isOverlap " << clu5x5.isOverlap << std::endl;
-            std::cout << " -- clu 5x5 towers etas (" << clu5x5.towerIeta.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x5.towerIeta.size(); ++j) { std::cout  << ", " << clu5x5.towerIeta[j]; }
+            std::cout << " -- clu 5x5 towers etas (" << clu5x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x5.towerHits.size(); ++j) { std::cout  << ", " << clu5x5.towerHits[j].towerIeta; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x5 towers phis (" << clu5x5.towerIphi.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x5.towerIphi.size(); ++j) { std::cout << ", " << clu5x5.towerIphi[j]; }
+            std::cout << " -- clu 5x5 towers phis (" << clu5x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x5.towerHits.size(); ++j) { std::cout << ", " << clu5x5.towerHits[j].towerIphi; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x5 towers ems (" << clu5x5.towerIem.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x5.towerIem.size(); ++j) { std::cout << ", " << clu5x5.towerIem[j]; }
+            std::cout << " -- clu 5x5 towers ems (" << clu5x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x5.towerHits.size(); ++j) { std::cout << ", " << clu5x5.towerHits[j].towerIem; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x5 towers hads (" << clu5x5.towerIhad.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x5.towerIhad.size(); ++j) { std::cout << ", " << clu5x5.towerIhad[j]; }
+            std::cout << " -- clu 5x5 towers hads (" << clu5x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x5.towerHits.size(); ++j) { std::cout << ", " << clu5x5.towerHits[j].towerIhad; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x5 towers ets (" << clu5x5.towerIet.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x5.towerIet.size(); ++j) { std::cout << ", " << clu5x5.towerIet[j]; }
+            std::cout << " -- clu 5x5 towers ets (" << clu5x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x5.towerHits.size(); ++j) { std::cout << ", " << clu5x5.towerHits[j].towerIet; }
             std::cout << "]" << std::endl;
             std::cout << " -- clu 5x5 number of towers " << clu5x5.nHits << std::endl;
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
@@ -718,20 +677,20 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
             std::cout << " -- clu 5x9 seed " << " , eta " << clu5x9.seedIeta << " phi " << clu5x9.seedIphi << std::endl;
             std::cout << " -- clu 5x9 seed " << " , isBarrel " << clu5x9.isBarrel << " isEndcap " << clu5x9.isEndcap << " isOverlap " << clu5x9.isOverlap << std::endl;
-            std::cout << " -- clu 5x9 towers etas (" << clu5x9.towerIeta.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x9.towerIeta.size(); ++j) { std::cout  << ", " << clu5x9.towerIeta[j]; }
+            std::cout << " -- clu 5x9 towers etas (" << clu5x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout  << ", " << clu5x9.towerHits[j].towerIeta; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x9 towers phis (" << clu5x9.towerIphi.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x9.towerIphi.size(); ++j) { std::cout << ", " << clu5x9.towerIphi[j]; }
+            std::cout << " -- clu 5x9 towers phis (" << clu5x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout << ", " << clu5x9.towerHits[j].towerIphi; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x9 towers ems (" << clu5x9.towerIem.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x9.towerIem.size(); ++j) { std::cout << ", " << clu5x9.towerIem[j]; }
+            std::cout << " -- clu 5x9 towers ems (" << clu5x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout << ", " << clu5x9.towerHits[j].towerIem; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x9 towers hads (" << clu5x9.towerIhad.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x9.towerIhad.size(); ++j) { std::cout << ", " << clu5x9.towerIhad[j]; }
+            std::cout << " -- clu 5x9 towers hads (" << clu5x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout << ", " << clu5x9.towerHits[j].towerIhad; }
             std::cout << "]" << std::endl;
-            std::cout << " -- clu 5x9 towers ets (" << clu5x9.towerIet.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x9.towerIet.size(); ++j) { std::cout << ", " << clu5x9.towerIet[j]; }
+            std::cout << " -- clu 5x9 towers ets (" << clu5x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout << ", " << clu5x9.towerHits[j].towerIet; }
             std::cout << "]" << std::endl;
             std::cout << " -- clu 5x9 number of towers " << clu5x9.nHits << std::endl;
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
@@ -775,6 +734,27 @@ int CaloTowerHandler::endcap_ieta(float &eta) const
 {
     float eta_step = 0.0845;
     return floor(abs(eta)/eta_step) * std::copysign(1,eta);
+}
+
+std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLike(std::vector<TowerHelper::TowerHit> towerHits) const
+{
+    std::sort(begin(towerHits), end(towerHits), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
+    { 
+        if (a.towerIeta == b.towerIeta)
+        {
+            // if      ((a.towerIphi>=65 && a.towerIphi<=72) && (b.towerIphi>=1 && b.towerIphi<=8)) { return a.towerIphi > b.towerIphi; }
+            // else if ((b.towerIphi>=65 && b.towerIphi<=72) && (a.towerIphi>=1 && a.towerIphi<=8)) { return a.towerIphi > b.towerIphi; }
+            // else                                                                                 { return a.towerIphi < b.towerIphi; }
+
+            if (((a.towerIphi>=65 && a.towerIphi<=72) && (b.towerIphi>=1 && b.towerIphi<=8)) ||
+                ((b.towerIphi>=65 && b.towerIphi<=72) && (a.towerIphi>=1 && a.towerIphi<=8)))   { return a.towerIphi > b.towerIphi; }
+            
+            else { return a.towerIphi < b.towerIphi; }
+        }
+        else { return a.towerIeta < b.towerIeta; }
+    });
+
+    return towerHits;
 }
 
 DEFINE_FWK_MODULE(CaloTowerHandler);
