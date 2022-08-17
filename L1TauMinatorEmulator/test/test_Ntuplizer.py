@@ -32,7 +32,7 @@ process.load('L1TauMinator.L1TauMinatorEmulator.GenHandler_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.Ntuplizer_cff')
 
 options = VarParsing.VarParsing ('analysis')
-options.outputFile = 'NTuple_L1TauMinator.root'
+options.outputFile = 'Ntuple_L1TauMinator.root'
 options.inputFiles = []
 options.maxEvents  = -999
 options.parseArguments()
@@ -47,7 +47,9 @@ if options.maxEvents >= -1:
 # Input source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v3/240001/1EBB160E-D79C-E44E-AA14-1046A2005911.root',
+        # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v1/20000/ECEF2B46-7AB8-2143-97F1-110F2868BDE0.root',
+        # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v1/20000/1F641E30-C849-694B-AC6D-86EC2930B188.root',
+        '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v1/20000/71B4BDAC-108B-FD4B-8F1C-EAD1A15C396C.root',
     ),
     secondaryFileNames = cms.untracked.vstring(),
     inputCommands = cms.untracked.vstring(
