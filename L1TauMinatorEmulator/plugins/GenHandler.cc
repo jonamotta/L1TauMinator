@@ -200,16 +200,20 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
         GenTau.visEHad = tau_p4had.E();
 
         // Leptonic tau decays
-        if (n_pi == 0 && n_piZero == 0 && n_ele == 1)     { GenTau.DM = 11; }
-        else if (n_pi == 0 && n_piZero == 0 && n_mu == 1) { GenTau.DM = 13; }
+        if (n_pi == 0 && n_piZero == 0 && n_ele == 1)     { GenTau.DM = -1; }
+        else if (n_pi == 0 && n_piZero == 0 && n_mu == 1) { GenTau.DM = -1; }
         // 1-prong tau decay
         else if (n_pi == 1 && n_piZero == 0) { GenTau.DM = 0; }
+        // 1-prong + pi0 tau decay
+        else if (n_pi == 1 && n_piZero == 1) { GenTau.DM = 1; }
         // 1-prong + pi0s tau decay
-        else if (n_pi == 1 && n_piZero >= 1) { GenTau.DM = 1; }
+        else if (n_pi == 1 && n_piZero > 1)  { GenTau.DM = 2; }
         // 3-prongs tau decay
-        else if (n_pi == 3 && n_piZero == 0) { GenTau.DM = 4; }
+        else if (n_pi == 3 && n_piZero == 0) { GenTau.DM = 10; }
+        // 3-prongs + pi0 tau decay
+        else if (n_pi == 3 && n_piZero == 1) { GenTau.DM = 11; }
         // 3-prongs + pi0s tau decay
-        else if (n_pi == 3 && n_piZero >= 1) { GenTau.DM = 5; }
+        else if (n_pi == 3 && n_piZero > 1)  { GenTau.DM = 12; }
         // other tau decays
         else { GenTau.DM = -1; }
 

@@ -89,6 +89,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _tau_visEEm;
         std::vector<float> _tau_visEHad;
         std::vector<int>   _tau_DM;
+        std::vector<int>   _tau_Idx;
 
         std::vector<float> _jet_eta;
         std::vector<float> _jet_phi;
@@ -97,6 +98,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _jet_eEm;
         std::vector<float> _jet_eHad;
         std::vector<float> _jet_eInv;
+        std::vector<int>   _jet_Idx;
 
         std::vector<float> _cl3d_pt;
         std::vector<float> _cl3d_energy;
@@ -281,6 +283,7 @@ void Ntuplizer::Initialize()
     _tau_visEEm.clear();
     _tau_visEHad.clear();
     _tau_DM.clear();
+    _tau_Idx.clear();
 
     _jet_eta.clear();
     _jet_phi.clear();
@@ -289,6 +292,7 @@ void Ntuplizer::Initialize()
     _jet_eEm.clear();
     _jet_eHad.clear();
     _jet_eInv.clear();
+    _jet_Idx.clear();
 
     _cl3d_pt.clear();
     _cl3d_energy.clear();
@@ -447,6 +451,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("tau_visEEm",   &_tau_visEEm);
     _tree -> Branch("tau_visEHad",  &_tau_visEHad);
     _tree -> Branch("tau_DM",       &_tau_DM);
+    _tree -> Branch("tau_Idx",      &_tau_Idx);
 
     _tree -> Branch("jet_eta",  &_jet_eta);
     _tree -> Branch("jet_phi",  &_jet_phi);
@@ -455,6 +460,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("jet_eEm",  &_jet_eEm);
     _tree -> Branch("jet_eHad", &_jet_eHad);
     _tree -> Branch("jet_eInv", &_jet_eInv);
+    _tree -> Branch("jet_Idx",  &_jet_Idx);
 
     _tree -> Branch("cl3d_pt",               &_cl3d_pt);
     _tree -> Branch("cl3d_energy",           &_cl3d_energy);
@@ -628,6 +634,44 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         std::cout << " ** total number of 5x9 clusters = " << CaloClusters5x9.size() << std::endl;
         std::cout << " ** total number of hgc clusters = " << HGClusters.size() << std::endl;
         std::cout << "***************************************************************************************************************************************" << std::endl;
+    }
+
+    // Fill GenTau branches
+    for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
+    {
+        GenHelper::GenTau tau = genTaus[tauIdx];
+
+        _tau_eta.push_back(tau.eta);
+        _tau_phi.push_back(tau.phi);
+        _tau_pt.push_back(tau.pt);
+        _tau_e.push_back(tau.e);
+        _tau_m.push_back(tau.m);
+        _tau_visEta.push_back(tau.visEta);
+        _tau_visPhi.push_back(tau.visPhi);
+        _tau_visPt.push_back(tau.visPt);
+        _tau_visE.push_back(tau.visE);
+        _tau_visM.push_back(tau.visM);
+        _tau_visPtEm.push_back(tau.visPtEm);
+        _tau_visPtHad.push_back(tau.visPtHad);
+        _tau_visEEm.push_back(tau.visEEm);
+        _tau_visEHad.push_back(tau.visEHad);
+        _tau_DM.push_back(tau.DM);
+        _tau_Idx.push_back(tauIdx);
+    }
+
+    // Fill GenJet branches
+    for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
+    {
+        GenHelper::GenJet jet = genJets[jetIdx];
+
+        _jet_eta.push_back(jet.eta);
+        _jet_phi.push_back(jet.phi);
+        _jet_pt.push_back(jet.pt);
+        _jet_e.push_back(jet.e);
+        _jet_eEm.push_back(jet.eEm);
+        _jet_eHad.push_back(jet.eHad);
+        _jet_eInv.push_back(jet.eInv);
+        _jet_Idx.push_back(jetIdx);
     }
 
     // Perform geometrical matching of 9x9 CaloClusters to GenTaus and GenJets then directly fill branches
@@ -1105,23 +1149,6 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 }
                 else { hgclu.tauMatchIdx = tauIdx; }
             }
-
-            // Fill GenTau branches
-            _tau_eta.push_back(tau.eta);
-            _tau_phi.push_back(tau.phi);
-            _tau_pt.push_back(tau.pt);
-            _tau_e.push_back(tau.e);
-            _tau_m.push_back(tau.m);
-            _tau_visEta.push_back(tau.visEta);
-            _tau_visPhi.push_back(tau.visPhi);
-            _tau_visPt.push_back(tau.visPt);
-            _tau_visE.push_back(tau.visE);
-            _tau_visM.push_back(tau.visM);
-            _tau_visPtEm.push_back(tau.visPtEm);
-            _tau_visPtHad.push_back(tau.visPtHad);
-            _tau_visEEm.push_back(tau.visEEm);
-            _tau_visEHad.push_back(tau.visEHad);
-            _tau_DM.push_back(tau.DM);
         }
 
         for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
@@ -1141,15 +1168,6 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 }
                 else { hgclu.jetMatchIdx = jetIdx; }
             }
-
-            // Fill GenJet branches
-            _jet_eta.push_back(jet.eta);
-            _jet_phi.push_back(jet.phi);
-            _jet_pt.push_back(jet.pt);
-            _jet_e.push_back(jet.e);
-            _jet_eEm.push_back(jet.eEm);
-            _jet_eHad.push_back(jet.eHad);
-            _jet_eInv.push_back(jet.eInv);
         }
     
         if (DEBUG)
