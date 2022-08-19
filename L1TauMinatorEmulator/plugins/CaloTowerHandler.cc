@@ -190,14 +190,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            printf("CALO TOWER iEta %i iPhi %i eta %f phi %f iem %i ihad %i iet %i\n",
+            printf("CALO TOWER iEta %i iPhi %i eta %f phi %f iem %i ihad %i iet %i nL1eg %i\n",
                 (int)l1CaloTower.towerIeta,
                 (int)l1CaloTower.towerIphi,
                 l1CaloTower.towerEta,
                 l1CaloTower.towerPhi,
                 l1CaloTower.towerIem,
                 l1CaloTower.towerIhad,
-                l1CaloTower.towerIet);
+                l1CaloTower.towerIet,
+                l1CaloTower.nL1eg);
         }
     }
 

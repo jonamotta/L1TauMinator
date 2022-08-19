@@ -123,6 +123,7 @@ class Ntuplizer : public edm::EDAnalyzer {
 
         std::vector<bool>  _cl9x9_barrelSeeded;
         std::vector<int>   _cl9x9_nHits;
+        std::vector<int>   _cl9x9_nEGs;
         std::vector<int>   _cl9x9_seedIeta;
         std::vector<int>   _cl9x9_seedIphi;
         std::vector<float> _cl9x9_seedEta;
@@ -143,14 +144,18 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector< std::vector<float> > _cl9x9_towerEm;
         std::vector< std::vector<float> > _cl9x9_towerHad;
         std::vector< std::vector<float> > _cl9x9_towerEt;
+        std::vector< std::vector<float> > _cl9x9_towerEgEt;
         std::vector< std::vector<int> >   _cl9x9_towerIeta;
         std::vector< std::vector<int> >   _cl9x9_towerIphi;
         std::vector< std::vector<int> >   _cl9x9_towerIem;
         std::vector< std::vector<int> >   _cl9x9_towerIhad;
         std::vector< std::vector<int> >   _cl9x9_towerIet;
+        std::vector< std::vector<int> >   _cl9x9_towerEgIet;
+        std::vector< std::vector<int> >   _cl9x9_towerNeg;
 
         std::vector<bool>  _cl7x7_barrelSeeded;
         std::vector<int>   _cl7x7_nHits;
+        std::vector<int>   _cl7x7_nEGs;
         std::vector<int>   _cl7x7_seedIeta;
         std::vector<int>   _cl7x7_seedIphi;
         std::vector<float> _cl7x7_seedEta;
@@ -171,14 +176,18 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector< std::vector<float> > _cl7x7_towerEm;
         std::vector< std::vector<float> > _cl7x7_towerHad;
         std::vector< std::vector<float> > _cl7x7_towerEt;
+        std::vector< std::vector<float> > _cl7x7_towerEgEt;
         std::vector< std::vector<int> >   _cl7x7_towerIeta;
         std::vector< std::vector<int> >   _cl7x7_towerIphi;
         std::vector< std::vector<int> >   _cl7x7_towerIem;
         std::vector< std::vector<int> >   _cl7x7_towerIhad;
         std::vector< std::vector<int> >   _cl7x7_towerIet;
+        std::vector< std::vector<int> >   _cl7x7_towerEgIet;
+        std::vector< std::vector<int> >   _cl7x7_towerNeg;
 
         std::vector<bool>  _cl5x5_barrelSeeded;
         std::vector<int>   _cl5x5_nHits;
+        std::vector<int>   _cl5x5_nEGs;
         std::vector<int>   _cl5x5_seedIeta;
         std::vector<int>   _cl5x5_seedIphi;
         std::vector<float> _cl5x5_seedEta;
@@ -199,14 +208,18 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector< std::vector<float> > _cl5x5_towerEm;
         std::vector< std::vector<float> > _cl5x5_towerHad;
         std::vector< std::vector<float> > _cl5x5_towerEt;
+        std::vector< std::vector<float> > _cl5x5_towerEgEt;
         std::vector< std::vector<int> >   _cl5x5_towerIeta;
         std::vector< std::vector<int> >   _cl5x5_towerIphi;
         std::vector< std::vector<int> >   _cl5x5_towerIem;
         std::vector< std::vector<int> >   _cl5x5_towerIhad;
         std::vector< std::vector<int> >   _cl5x5_towerIet;
+        std::vector< std::vector<int> >   _cl5x5_towerEgIet;
+        std::vector< std::vector<int> >   _cl5x5_towerNeg;
 
         std::vector<bool>  _cl5x9_barrelSeeded;
         std::vector<int>   _cl5x9_nHits;
+        std::vector<int>   _cl5x9_nEGs;
         std::vector<int>   _cl5x9_seedIeta;
         std::vector<int>   _cl5x9_seedIphi;
         std::vector<float> _cl5x9_seedEta;
@@ -227,12 +240,14 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector< std::vector<float> > _cl5x9_towerEm;
         std::vector< std::vector<float> > _cl5x9_towerHad;
         std::vector< std::vector<float> > _cl5x9_towerEt;
+        std::vector< std::vector<float> > _cl5x9_towerEgEt;
         std::vector< std::vector<int> >   _cl5x9_towerIeta;
         std::vector< std::vector<int> >   _cl5x9_towerIphi;
         std::vector< std::vector<int> >   _cl5x9_towerIem;
         std::vector< std::vector<int> >   _cl5x9_towerIhad;
         std::vector< std::vector<int> >   _cl5x9_towerIet;
-
+        std::vector< std::vector<int> >   _cl5x9_towerEgIet;
+        std::vector< std::vector<int> >   _cl5x9_towerNeg;
 };
 
 /*
@@ -317,6 +332,7 @@ void Ntuplizer::Initialize()
 
     _cl9x9_barrelSeeded.clear();
     _cl9x9_nHits.clear();
+    _cl9x9_nEGs.clear();
     _cl9x9_seedIeta.clear();
     _cl9x9_seedIphi.clear();
     _cl9x9_seedEta.clear();
@@ -337,14 +353,18 @@ void Ntuplizer::Initialize()
     _cl9x9_towerEm.clear();
     _cl9x9_towerHad.clear();
     _cl9x9_towerEt.clear();
+    _cl9x9_towerEgEt.clear();
     _cl9x9_towerIeta.clear();
     _cl9x9_towerIphi.clear();
     _cl9x9_towerIem.clear();
     _cl9x9_towerIhad.clear();
     _cl9x9_towerIet.clear();
+    _cl9x9_towerEgIet.clear();
+    _cl9x9_towerNeg.clear();
 
     _cl7x7_barrelSeeded.clear();
     _cl7x7_nHits.clear();
+    _cl7x7_nEGs.clear();
     _cl7x7_seedIeta.clear();
     _cl7x7_seedIphi.clear();
     _cl7x7_seedEta.clear();
@@ -365,14 +385,18 @@ void Ntuplizer::Initialize()
     _cl7x7_towerEm.clear();
     _cl7x7_towerHad.clear();
     _cl7x7_towerEt.clear();
+    _cl7x7_towerEgEt.clear();
     _cl7x7_towerIeta.clear();
     _cl7x7_towerIphi.clear();
     _cl7x7_towerIem.clear();
     _cl7x7_towerIhad.clear();
     _cl7x7_towerIet.clear();
+    _cl7x7_towerEgIet.clear();
+    _cl7x7_towerNeg.clear();
 
     _cl5x5_barrelSeeded.clear();
     _cl5x5_nHits.clear();
+    _cl5x5_nEGs.clear();
     _cl5x5_seedIeta.clear();
     _cl5x5_seedIphi.clear();
     _cl5x5_seedEta.clear();
@@ -393,14 +417,18 @@ void Ntuplizer::Initialize()
     _cl5x5_towerEm.clear();
     _cl5x5_towerHad.clear();
     _cl5x5_towerEt.clear();
+    _cl5x5_towerEgEt.clear();
     _cl5x5_towerIeta.clear();
     _cl5x5_towerIphi.clear();
     _cl5x5_towerIem.clear();
     _cl5x5_towerIhad.clear();
     _cl5x5_towerIet.clear();
+    _cl5x5_towerEgIet.clear();
+    _cl5x5_towerNeg.clear();
 
     _cl5x9_barrelSeeded.clear();
     _cl5x9_nHits.clear();
+    _cl5x9_nEGs.clear();
     _cl5x9_seedIeta.clear();
     _cl5x9_seedIphi.clear();
     _cl5x9_seedEta.clear();
@@ -421,11 +449,14 @@ void Ntuplizer::Initialize()
     _cl5x9_towerEm.clear();
     _cl5x9_towerHad.clear();
     _cl5x9_towerEt.clear();
+    _cl5x9_towerEgEt.clear();
     _cl5x9_towerIeta.clear();
     _cl5x9_towerIphi.clear();
     _cl5x9_towerIem.clear();
     _cl5x9_towerIhad.clear();
     _cl5x9_towerIet.clear();
+    _cl5x9_towerEgIet.clear();
+    _cl5x9_towerNeg.clear();
 }
 
 void Ntuplizer::beginJob()
@@ -485,6 +516,7 @@ void Ntuplizer::beginJob()
 
     _tree -> Branch("cl9x9_barrelSeeded", &_cl9x9_barrelSeeded);
     _tree -> Branch("cl9x9_nHits",        &_cl9x9_nHits);
+    _tree -> Branch("cl9x9_nEGs",         &_cl9x9_nEGs);
     _tree -> Branch("cl9x9_seedIeta",     &_cl9x9_seedIeta);
     _tree -> Branch("cl9x9_seedIphi",     &_cl9x9_seedIphi);
     _tree -> Branch("cl9x9_seedEta",      &_cl9x9_seedEta);
@@ -505,14 +537,18 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl9x9_towerEm",      &_cl9x9_towerEm);
     _tree -> Branch("cl9x9_towerHad",     &_cl9x9_towerHad);
     _tree -> Branch("cl9x9_towerEt",      &_cl9x9_towerEt);
+    _tree -> Branch("cl9x9_towerEgEt",    &_cl9x9_towerEgEt);
     _tree -> Branch("cl9x9_towerIeta",    &_cl9x9_towerIeta);
     _tree -> Branch("cl9x9_towerIphi",    &_cl9x9_towerIphi);
     _tree -> Branch("cl9x9_towerIem",     &_cl9x9_towerIem);
     _tree -> Branch("cl9x9_towerIhad",    &_cl9x9_towerIhad);
     _tree -> Branch("cl9x9_towerIet",     &_cl9x9_towerIet);
+    _tree -> Branch("cl9x9_towerEgIet",   &_cl9x9_towerEgIet);
+    _tree -> Branch("cl9x9_towerNeg",     &_cl9x9_towerNeg);
 
     _tree -> Branch("cl7x7_barrelSeeded", &_cl7x7_barrelSeeded);
     _tree -> Branch("cl7x7_nHits",        &_cl7x7_nHits);
+    _tree -> Branch("cl7x7_nEGs",         &_cl7x7_nEGs);
     _tree -> Branch("cl7x7_seedIeta",     &_cl7x7_seedIeta);
     _tree -> Branch("cl7x7_seedIphi",     &_cl7x7_seedIphi);
     _tree -> Branch("cl7x7_seedEta",      &_cl7x7_seedEta);
@@ -533,14 +569,18 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl7x7_towerEm",      &_cl7x7_towerEm);
     _tree -> Branch("cl7x7_towerHad",     &_cl7x7_towerHad);
     _tree -> Branch("cl7x7_towerEt",      &_cl7x7_towerEt);
+    _tree -> Branch("cl7x7_towerEgEt",    &_cl7x7_towerEgEt);
     _tree -> Branch("cl7x7_towerIeta",    &_cl7x7_towerIeta);
     _tree -> Branch("cl7x7_towerIphi",    &_cl7x7_towerIphi);
     _tree -> Branch("cl7x7_towerIem",     &_cl7x7_towerIem);
     _tree -> Branch("cl7x7_towerIhad",    &_cl7x7_towerIhad);
     _tree -> Branch("cl7x7_towerIet",     &_cl7x7_towerIet);
+    _tree -> Branch("cl7x7_towerEgIet",   &_cl7x7_towerEgIet);
+    _tree -> Branch("cl7x7_towerNeg",     &_cl7x7_towerNeg);
 
     _tree -> Branch("cl5x5_barrelSeeded", &_cl5x5_barrelSeeded);
     _tree -> Branch("cl5x5_nHits",        &_cl5x5_nHits);
+    _tree -> Branch("cl5x5_nEGs",         &_cl5x5_nEGs);
     _tree -> Branch("cl5x5_seedIeta",     &_cl5x5_seedIeta);
     _tree -> Branch("cl5x5_seedIphi",     &_cl5x5_seedIphi);
     _tree -> Branch("cl5x5_seedEta",      &_cl5x5_seedEta);
@@ -561,14 +601,18 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x5_towerEm",      &_cl5x5_towerEm);
     _tree -> Branch("cl5x5_towerHad",     &_cl5x5_towerHad);
     _tree -> Branch("cl5x5_towerEt",      &_cl5x5_towerEt);
+    _tree -> Branch("cl5x5_towerEgEt",    &_cl5x5_towerEgEt);
     _tree -> Branch("cl5x5_towerIeta",    &_cl5x5_towerIeta);
     _tree -> Branch("cl5x5_towerIphi",    &_cl5x5_towerIphi);
     _tree -> Branch("cl5x5_towerIem",     &_cl5x5_towerIem);
     _tree -> Branch("cl5x5_towerIhad",    &_cl5x5_towerIhad);
     _tree -> Branch("cl5x5_towerIet",     &_cl5x5_towerIet);
+    _tree -> Branch("cl5x5_towerEgIet",   &_cl5x5_towerEgIet);
+    _tree -> Branch("cl5x5_towerNeg",     &_cl5x5_towerNeg);
 
     _tree -> Branch("cl5x9_barrelSeeded", &_cl5x9_barrelSeeded);
     _tree -> Branch("cl5x9_nHits",        &_cl5x9_nHits);
+    _tree -> Branch("cl5x9_nEGs",         &_cl5x9_nEGs);
     _tree -> Branch("cl5x9_seedIeta",     &_cl5x9_seedIeta);
     _tree -> Branch("cl5x9_seedIphi",     &_cl5x9_seedIphi);
     _tree -> Branch("cl5x9_seedEta",      &_cl5x9_seedEta);
@@ -589,11 +633,14 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x9_towerEm",      &_cl5x9_towerEm);
     _tree -> Branch("cl5x9_towerHad",     &_cl5x9_towerHad);
     _tree -> Branch("cl5x9_towerEt",      &_cl5x9_towerEt);
+    _tree -> Branch("cl5x9_towerEgEt",    &_cl5x9_towerEgEt);
     _tree -> Branch("cl5x9_towerIeta",    &_cl5x9_towerIeta);
     _tree -> Branch("cl5x9_towerIphi",    &_cl5x9_towerIphi);
     _tree -> Branch("cl5x9_towerIem",     &_cl5x9_towerIem);
     _tree -> Branch("cl5x9_towerIhad",    &_cl5x9_towerIhad);
     _tree -> Branch("cl5x9_towerIet",     &_cl5x9_towerIet);
+    _tree -> Branch("cl5x9_towerEgIet",   &_cl5x9_towerEgIet);
+    _tree -> Branch("cl5x9_towerNeg",     &_cl5x9_towerNeg);
 
     return;
 }
@@ -958,11 +1005,15 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         std::vector<float> tmp_towerEm;
         std::vector<float> tmp_towerHad;
         std::vector<float> tmp_towerEt;
+        std::vector<float> tmp_towerEgEt;
         std::vector<int>   tmp_towerIeta;
         std::vector<int>   tmp_towerIphi;
         std::vector<int>   tmp_towerIem;
         std::vector<int>   tmp_towerIhad;
         std::vector<int>   tmp_towerIet;
+        std::vector<int>   tmp_towerEgIet;
+        std::vector<int>   tmp_towerNeg;
+        int nEGs = 0;
 
         for (long unsigned int i = 0; i < clu9x9.towerHits.size(); ++i)
         {
@@ -971,11 +1022,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             tmp_towerEm.push_back(clu9x9.towerHits[i].towerEm);
             tmp_towerHad.push_back(clu9x9.towerHits[i].towerHad);
             tmp_towerEt.push_back(clu9x9.towerHits[i].towerEt);
+            tmp_towerEgEt.push_back(clu9x9.towerHits[i].l1egTowerEt);
             tmp_towerIeta.push_back(clu9x9.towerHits[i].towerIeta);
             tmp_towerIphi.push_back(clu9x9.towerHits[i].towerIphi);
             tmp_towerIem.push_back(clu9x9.towerHits[i].towerIem);
             tmp_towerIhad.push_back(clu9x9.towerHits[i].towerIhad);
             tmp_towerIet.push_back(clu9x9.towerHits[i].towerIet);
+            tmp_towerEgIet.push_back(clu9x9.towerHits[i].l1egTowerIet);
+            tmp_towerNeg.push_back(clu9x9.towerHits[i].nL1eg);
+
+            nEGs += clu9x9.towerHits[i].nL1eg;
         }
 
         _cl9x9_towerEta.push_back(tmp_towerEta);
@@ -983,11 +1039,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl9x9_towerEm.push_back(tmp_towerEm);
         _cl9x9_towerHad.push_back(tmp_towerHad);
         _cl9x9_towerEt.push_back(tmp_towerEt);
+        _cl9x9_towerEgEt.push_back(tmp_towerEgEt);
         _cl9x9_towerIeta.push_back(tmp_towerIeta);
         _cl9x9_towerIphi.push_back(tmp_towerIphi);
         _cl9x9_towerIem.push_back(tmp_towerIem);
         _cl9x9_towerIhad.push_back(tmp_towerIhad);
         _cl9x9_towerIet.push_back(tmp_towerIet);
+        _cl9x9_towerEgIet.push_back(tmp_towerEgIet);
+        _cl9x9_towerNeg.push_back(tmp_towerNeg);
+
+        _cl9x9_nEGs.push_back(nEGs);
     }
 
     // Fill 7x7 CaloCluster branches
@@ -1018,11 +1079,15 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         std::vector<float> tmp_towerEm;
         std::vector<float> tmp_towerHad;
         std::vector<float> tmp_towerEt;
+        std::vector<float> tmp_towerEgEt;
         std::vector<int>   tmp_towerIeta;
         std::vector<int>   tmp_towerIphi;
         std::vector<int>   tmp_towerIem;
         std::vector<int>   tmp_towerIhad;
         std::vector<int>   tmp_towerIet;
+        std::vector<int>   tmp_towerEgIet;
+        std::vector<int>   tmp_towerNeg;
+        int nEGs = 0;
 
         for (long unsigned int i = 0; i < clu7x7.towerHits.size(); ++i)
         {
@@ -1031,11 +1096,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             tmp_towerEm.push_back(clu7x7.towerHits[i].towerEm);
             tmp_towerHad.push_back(clu7x7.towerHits[i].towerHad);
             tmp_towerEt.push_back(clu7x7.towerHits[i].towerEt);
+            tmp_towerEgEt.push_back(clu7x7.towerHits[i].l1egTowerEt);
             tmp_towerIeta.push_back(clu7x7.towerHits[i].towerIeta);
             tmp_towerIphi.push_back(clu7x7.towerHits[i].towerIphi);
             tmp_towerIem.push_back(clu7x7.towerHits[i].towerIem);
             tmp_towerIhad.push_back(clu7x7.towerHits[i].towerIhad);
             tmp_towerIet.push_back(clu7x7.towerHits[i].towerIet);
+            tmp_towerEgIet.push_back(clu7x7.towerHits[i].l1egTowerIet);
+            tmp_towerNeg.push_back(clu7x7.towerHits[i].nL1eg);
+
+            nEGs += clu7x7.towerHits[i].nL1eg;
         }
 
         _cl7x7_towerEta.push_back(tmp_towerEta);
@@ -1043,11 +1113,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl7x7_towerEm.push_back(tmp_towerEm);
         _cl7x7_towerHad.push_back(tmp_towerHad);
         _cl7x7_towerEt.push_back(tmp_towerEt);
+        _cl7x7_towerEgEt.push_back(tmp_towerEgEt);
         _cl7x7_towerIeta.push_back(tmp_towerIeta);
         _cl7x7_towerIphi.push_back(tmp_towerIphi);
         _cl7x7_towerIem.push_back(tmp_towerIem);
         _cl7x7_towerIhad.push_back(tmp_towerIhad);
         _cl7x7_towerIet.push_back(tmp_towerIet);
+        _cl7x7_towerEgIet.push_back(tmp_towerEgIet);
+        _cl7x7_towerNeg.push_back(tmp_towerNeg);
+
+        _cl7x7_nEGs.push_back(nEGs);
     }
 
     // Fill 5x5 CaloCluster branches
@@ -1078,11 +1153,15 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         std::vector<float> tmp_towerEm;
         std::vector<float> tmp_towerHad;
         std::vector<float> tmp_towerEt;
+        std::vector<float> tmp_towerEgEt;
         std::vector<int>   tmp_towerIeta;
         std::vector<int>   tmp_towerIphi;
         std::vector<int>   tmp_towerIem;
         std::vector<int>   tmp_towerIhad;
         std::vector<int>   tmp_towerIet;
+        std::vector<int>   tmp_towerEgIet;
+        std::vector<int>   tmp_towerNeg;
+        int nEGs = 0;
 
         for (long unsigned int i = 0; i < clu5x5.towerHits.size(); ++i)
         {
@@ -1091,11 +1170,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             tmp_towerEm.push_back(clu5x5.towerHits[i].towerEm);
             tmp_towerHad.push_back(clu5x5.towerHits[i].towerHad);
             tmp_towerEt.push_back(clu5x5.towerHits[i].towerEt);
+            tmp_towerEgEt.push_back(clu5x5.towerHits[i].l1egTowerEt);
             tmp_towerIeta.push_back(clu5x5.towerHits[i].towerIeta);
             tmp_towerIphi.push_back(clu5x5.towerHits[i].towerIphi);
             tmp_towerIem.push_back(clu5x5.towerHits[i].towerIem);
             tmp_towerIhad.push_back(clu5x5.towerHits[i].towerIhad);
             tmp_towerIet.push_back(clu5x5.towerHits[i].towerIet);
+            tmp_towerEgIet.push_back(clu5x5.towerHits[i].l1egTowerIet);
+            tmp_towerNeg.push_back(clu5x5.towerHits[i].nL1eg);
+
+            nEGs += clu5x5.towerHits[i].nL1eg;
         }
 
         _cl5x5_towerEta.push_back(tmp_towerEta);
@@ -1103,11 +1187,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x5_towerEm.push_back(tmp_towerEm);
         _cl5x5_towerHad.push_back(tmp_towerHad);
         _cl5x5_towerEt.push_back(tmp_towerEt);
+        _cl5x5_towerEgEt.push_back(tmp_towerEgEt);
         _cl5x5_towerIeta.push_back(tmp_towerIeta);
         _cl5x5_towerIphi.push_back(tmp_towerIphi);
         _cl5x5_towerIem.push_back(tmp_towerIem);
         _cl5x5_towerIhad.push_back(tmp_towerIhad);
         _cl5x5_towerIet.push_back(tmp_towerIet);
+        _cl5x5_towerEgIet.push_back(tmp_towerEgIet);
+        _cl5x5_towerNeg.push_back(tmp_towerNeg);
+
+        _cl5x5_nEGs.push_back(nEGs);
     }
 
     // Fill 5x9 CaloCluster branches
@@ -1138,11 +1227,15 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         std::vector<float> tmp_towerEm;
         std::vector<float> tmp_towerHad;
         std::vector<float> tmp_towerEt;
+        std::vector<float> tmp_towerEgEt;
         std::vector<int>   tmp_towerIeta;
         std::vector<int>   tmp_towerIphi;
         std::vector<int>   tmp_towerIem;
         std::vector<int>   tmp_towerIhad;
         std::vector<int>   tmp_towerIet;
+        std::vector<int>   tmp_towerEgIet;
+        std::vector<int>   tmp_towerNeg;
+        int nEGs = 0;
 
         for (long unsigned int i = 0; i < clu5x9.towerHits.size(); ++i)
         {
@@ -1151,11 +1244,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             tmp_towerEm.push_back(clu5x9.towerHits[i].towerEm);
             tmp_towerHad.push_back(clu5x9.towerHits[i].towerHad);
             tmp_towerEt.push_back(clu5x9.towerHits[i].towerEt);
+            tmp_towerEgEt.push_back(clu5x9.towerHits[i].l1egTowerEt);
             tmp_towerIeta.push_back(clu5x9.towerHits[i].towerIeta);
             tmp_towerIphi.push_back(clu5x9.towerHits[i].towerIphi);
             tmp_towerIem.push_back(clu5x9.towerHits[i].towerIem);
             tmp_towerIhad.push_back(clu5x9.towerHits[i].towerIhad);
             tmp_towerIet.push_back(clu5x9.towerHits[i].towerIet);
+            tmp_towerEgIet.push_back(clu5x9.towerHits[i].l1egTowerIet);
+            tmp_towerNeg.push_back(clu5x9.towerHits[i].nL1eg);
+
+            nEGs += clu5x9.towerHits[i].nL1eg;
         }
 
         _cl5x9_towerEta.push_back(tmp_towerEta);
@@ -1163,11 +1261,16 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x9_towerEm.push_back(tmp_towerEm);
         _cl5x9_towerHad.push_back(tmp_towerHad);
         _cl5x9_towerEt.push_back(tmp_towerEt);
+        _cl5x9_towerEgEt.push_back(tmp_towerEgEt);
         _cl5x9_towerIeta.push_back(tmp_towerIeta);
         _cl5x9_towerIphi.push_back(tmp_towerIphi);
         _cl5x9_towerIem.push_back(tmp_towerIem);
         _cl5x9_towerIhad.push_back(tmp_towerIhad);
         _cl5x9_towerIet.push_back(tmp_towerIet);
+        _cl5x9_towerEgIet.push_back(tmp_towerEgIet);
+        _cl5x9_towerNeg.push_back(tmp_towerNeg);
+
+        _cl5x9_nEGs.push_back(nEGs);
     }
 
     // Fill HGCluster branches

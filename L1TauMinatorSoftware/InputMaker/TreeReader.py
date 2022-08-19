@@ -207,6 +207,7 @@ if __name__ == "__main__" :
             'event'           : np.repeat(dfTowClus[b'EventNumber'].values, dfTowClus[b'cl'+bNxM+b'_seedIeta'].str.len()), # event IDs are copied to keep proper track of what is what
             'cl_barrelSeeded' : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_barrelSeeded'])),
             'cl_nHits'        : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nHits'])),
+            'cl_nEGs'         : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nEGs'])),
             'cl_seedIeta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedIeta'])),
             'cl_seedIphi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedIphi'])),
             'cl_seedEta'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedEta'])),
@@ -225,13 +226,16 @@ if __name__ == "__main__" :
             'cl_towerEta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEta'])),
             'cl_towerPhi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerPhi'])),
             'cl_towerEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEm'])),
+            'cl_towerEgEm'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgEm'])),
             'cl_towerHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerHad'])),
             'cl_towerEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEt'])),
             'cl_towerIeta'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIeta'])),
             'cl_towerIphi'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIphi'])),
             'cl_towerIem'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIem'])),
             'cl_towerIhad'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIhad'])),
-            'cl_towerIet'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIet']))
+            'cl_towerIet'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIet'])),
+            'cl_towerEgIet'   : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgIet'])),
+            'cl_towerNeg'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerNeg'])),
             })
 
 

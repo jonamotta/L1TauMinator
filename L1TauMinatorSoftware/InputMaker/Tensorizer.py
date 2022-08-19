@@ -54,7 +54,7 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluJet = dfGenJets.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
 
     # split dataframes between signal, qcd and pu
-    features = ['uniqueId','cl_towerIeta','cl_towerIphi','cl_towerIem','cl_towerIhad']
+    features = ['uniqueId','cl_towerIeta','cl_towerIphi','cl_towerIem','cl_towerIhad','cl_towerEgIet'] #,'cl_towerNeg']
     dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl_tauMatchIdx']][features]
     dfCluJet = dfCluJet[dfCluJet['jet_Idx'] == dfCluJet['cl_jetMatchIdx']][features]
     dfCluPU = dfCluPU[features].copy(deep=True)
@@ -94,7 +94,9 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
             xl.append(dfCluTauJetPu.cl_towerIphi.loc[idx][j])
             xl.append(dfCluTauJetPu.cl_towerIem.loc[idx][j])
             xl.append(dfCluTauJetPu.cl_towerIhad.loc[idx][j])
-        x = np.array(xl).reshape(N,M,4)
+            xl.append(dfCluTauJetPu.cl_towerEgIet.loc[idx][j])
+            # xl.append(dfCluTauJetPu.cl_towerNeg.loc[idx][j])
+        x = np.array(xl).reshape(N,M,6)
         
         # target of the NN
         yl = []
@@ -164,8 +166,6 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     # shuffle the rows so that no possible order gets learned
     dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
 
-    dfCluTau['dR2'] = (dfCluTau['cl_seedEta']-dfCluTau['tau_eta'])**2 + (dfCluTau['cl_seedPhi']-dfCluTau['tau_phi'])**2
-
     # make the input tensors for the neural network
     dfCluTau.set_index('uniqueId',inplace=True)
     XL = []
@@ -182,7 +182,9 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
             xl.append(dfCluTau.cl_towerIphi.loc[idx][j])
             xl.append(dfCluTau.cl_towerIem.loc[idx][j])
             xl.append(dfCluTau.cl_towerIhad.loc[idx][j])
-        x = np.array(xl).reshape(N,M,4)
+            xl.append(dfCluTau.cl_towerEgIet.loc[idx][j])
+            # xl.append(dfCluTau.cl_towerNeg.loc[idx][j])
+        x = np.array(xl).reshape(N,M,5)
         
         # targets of the NN
         yl = []
