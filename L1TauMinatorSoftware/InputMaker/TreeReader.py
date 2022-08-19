@@ -80,7 +80,7 @@ if __name__ == "__main__" :
     branches_genjet = ['jet_Idx', 'jet_eta', 'jet_phi', 'jet_pt', 'jet_e', 'jet_eEm', 'jet_eHad', 'jet_eInv']
     branches_cl3d   = ['cl3d_pt', 'cl3d_energy', 'cl3d_eta', 'cl3d_phi', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_seemax', 'cl3d_spptot', 'cl3d_sppmax', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmax', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz', 'cl3d_quality', 'cl3d_tauMatchIdx', 'cl3d_jetMatchIdx']
     NxM = options.caloClNxM
-    branches_clNxM  = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet']
+    branches_clNxM  = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_nEGs', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_towerEgIet', 'cl'+NxM+'_towerNeg']
 
     # create file to store tags of batches
     tagsFile = open (outdir+'/tagsFile.txt', 'w')
@@ -226,9 +226,9 @@ if __name__ == "__main__" :
             'cl_towerEta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEta'])),
             'cl_towerPhi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerPhi'])),
             'cl_towerEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEm'])),
-            'cl_towerEgEm'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgEm'])),
             'cl_towerHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerHad'])),
             'cl_towerEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEt'])),
+            'cl_towerEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgEt'])),
             'cl_towerIeta'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIeta'])),
             'cl_towerIphi'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIphi'])),
             'cl_towerIem'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIem'])),
