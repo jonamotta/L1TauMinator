@@ -130,7 +130,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         l1CaloTowers.push_back(l1Hit);
 
-        if (l1Hit.towerIeta > maxIetaHGCal) { maxIetaHGCal = l1Hit.towerIeta; } 
+        if (l1Hit.towerIeta > maxIetaHGCal) { maxIetaHGCal = l1Hit.towerIeta; }
     }
 
     iEvent.getByToken(hcalDigisToken, hcalDigisHandle);
@@ -175,25 +175,29 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         l1Hit_B.towerIhad    = floor( hadEt/0.5 );
         l1Hit_B.towerIet     = floor( hadEt/0.5 );
 
-        l1CaloTowers.push_back(l1Hit_A);
-        l1CaloTowers.push_back(l1Hit_B);
+        // the seeding happens only up to ieta 35 (endcap limit) so no need to store TT for higher than that
+        if (abs(l1Hit_A.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_A);
+        if (abs(l1Hit_B.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_B);
+    }
 
-        if (DEBUG)
+    if (DEBUG)
+    {
+        std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
         {
-            printf("HCAL HF tower iEta %i iPhi %i eta %f phi %f ecal_et %f hcal_et_sum %f\n",
-                (int)l1Hit_A.towerIeta,
-                (int)l1Hit_A.towerIphi,
-                l1Hit_A.towerEta,
-                l1Hit_A.towerPhi,
-                l1Hit_A.towerHad,
-                l1Hit_A.towerEt);
-            printf("HCAL HF tower iEta %i iPhi %i eta %f phi %f ecal_et %f hcal_et_sum %f\n",
-                (int)l1Hit_B.towerIeta,
-                (int)l1Hit_B.towerIphi,
-                l1Hit_B.towerEta,
-                l1Hit_B.towerPhi,
-                l1Hit_B.towerHad,
-                l1Hit_B.towerEt);
+            if (a.towerIeta == b.towerIeta) { return a.towerIphi < b.towerIphi; }
+            else                            { return a.towerIeta < b.towerIeta; }
+        });
+
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            printf("CALO TOWER iEta %i iPhi %i eta %f phi %f iem %i ihad %i iet %i\n",
+                (int)l1CaloTower.towerIeta,
+                (int)l1CaloTower.towerIphi,
+                l1CaloTower.towerEta,
+                l1CaloTower.towerPhi,
+                l1CaloTower.towerIem,
+                l1CaloTower.towerIhad,
+                l1CaloTower.towerIet);
         }
     }
 
@@ -229,6 +233,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
+            if (DEBUG) { std::cout << " // Ieta " << l1CaloTower.towerIeta << " - Iphi " << l1CaloTower.towerIeta; }
+
             // skip HF towers for seeding
             if (abs(l1CaloTower.towerIeta) > 35) { continue; }
 
@@ -247,6 +253,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 l1CaloTower.stale4seed = true;
                 l1CaloTower.stale = true;
 
+                if (DEBUG) { std::cout << " SEED"; }
+
                 // Set seed location
                 if (l1CaloTower.isBarrel) { clu9x9.barrelSeeded = true; }
                 
@@ -261,16 +269,6 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
                 // Fill the TowerCluster towers variables
                 clu9x9.towerHits.push_back(l1CaloTower);
-                // clu9x9.towerEta.push_back(l1CaloTower.towerEta);
-                // clu9x9.towerPhi.push_back(l1CaloTower.towerPhi);
-                // clu9x9.towerEm.push_back(l1CaloTower.towerEm);
-                // clu9x9.towerHad.push_back(l1CaloTower.towerHad);
-                // clu9x9.towerEt.push_back(l1CaloTower.towerEt);
-                // clu9x9.towerIeta.push_back(l1CaloTower.towerIeta);
-                // clu9x9.towerIphi.push_back(l1CaloTower.towerIphi);
-                // clu9x9.towerIem.push_back(l1CaloTower.towerIem);
-                // clu9x9.towerIhad.push_back(l1CaloTower.towerIhad);
-                // clu9x9.towerIet.push_back(l1CaloTower.towerIet);
                 
                 // Fill the TowerCluster overall variables
                 clu9x9.totalEm += l1CaloTower.towerEm;
@@ -295,13 +293,19 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         if (clu9x9.nHits > 0.0) { l1TowerClusters9x9->push_back(clu9x9); }
 
+        if (DEBUG) { std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl; }
+
     }  // end while loop of TowerClusters seeding
+
+    if (DEBUG) { std::cout << "***************************************************************************************************************************************" << std::endl; }
 
     // loop for 9x9 TowerClusters creation starting from the seed just found
     for (auto& clu9x9 : *l1TowerClusters9x9)
     {
         for (auto &l1CaloTower : l1CaloTowers)
         {
+            if (DEBUG) { std::cout << " // Ieta " << l1CaloTower.towerIeta << " - Iphi " << l1CaloTower.towerIphi; }
+
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale) { continue; }
 
@@ -312,6 +316,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             // cluster all towers in a 9x9 towers mask
             if (abs(d_iEta) <= 4 && abs(d_iPhi) <= 4)
             {
+                if (DEBUG) { std::cout << " CLUSTERED"; }
+
                 l1CaloTower.stale = true;
 
                 // Fill the TowerCluster towers
@@ -326,11 +332,18 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu9x9.totalIet += l1CaloTower.towerIet;
                 if (l1CaloTower.towerIet > 0) clu9x9.nHits++;
             }
+
         }// end for loop of TP clustering
+
+        if (DEBUG) { std::cout << "dimension of cluster before pic-like ordering " << clu9x9.towerHits.size() << std::endl;}
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu9x9.towerHits);
         clu9x9.InitHits(); clu9x9.towerHits = sortedHits;
+
+        if (DEBUG) { std::cout << "dimension of cluster after pic-like ordering " << clu9x9.towerHits.size() << std::endl;}
+
+        if (DEBUG) { std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl; }
 
     }// end while loop of 9x9 TowerClusters creation
 
