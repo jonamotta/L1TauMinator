@@ -636,6 +636,262 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         std::cout << "***************************************************************************************************************************************" << std::endl;
     }
 
+    //***************************************************************************************
+    //***************************************************************************************
+    // PERFORM GEOMETRICAL MATCHING TO TAUS
+
+    for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
+    {
+        GenHelper::GenTau tau = genTaus[tauIdx];
+
+        // Perform geometrical matching of 9x9 CaloClusters
+        int matchedCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters9x9.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
+
+            float dEta = clu9x9.seedEta - tau.visEta;
+            float dPhi = reco::deltaPhi(clu9x9.seedPhi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
+            writable_clu9x9.tauMatchIdx = tauIdx;
+        }
+
+        // Perform geometrical matching of 7x7 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters7x7.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
+
+            float dEta = clu7x7.seedEta - tau.visEta;
+            float dPhi = reco::deltaPhi(clu7x7.seedPhi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
+            writable_clu7x7.tauMatchIdx = tauIdx;
+        }
+
+        // Perform geometrical matching of 5x5 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x5.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
+
+            float dEta = clu5x5.seedEta - tau.visEta;
+            float dPhi = reco::deltaPhi(clu5x5.seedPhi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
+            writable_clu5x5.tauMatchIdx = tauIdx;
+        }
+
+        // Perform geometrical matching of 5x9 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x9.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
+
+            float dEta = clu5x9.seedEta - tau.visEta;
+            float dPhi = reco::deltaPhi(clu5x9.seedPhi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
+            writable_clu5x9.tauMatchIdx = tauIdx;
+        }
+        
+        // Perform geometrical matching of HGCAL clusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = hgclu.eta - tau.visEta;
+            float dPhi = reco::deltaPhi(hgclu.phi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = hgcluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            HGClusterHelper::HGCluster& writable_hgclu =  const_cast<HGClusterHelper::HGCluster&>(HGClusters[matchedCluIdx]);
+            writable_hgclu.tauMatchIdx = tauIdx;
+        }
+
+    } // end loop on GenTaus
+
+    if (DEBUG) { std::cout << " ** done with taus, start jets" << std::endl; }
+
+    //***************************************************************************************
+    //***************************************************************************************
+    // PERFORM GEOMETRICAL MATCHING TO JETS
+
+    for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
+    {
+        GenHelper::GenJet jet = genJets[jetIdx];
+
+        // Perform geometrical matching of 9x9 CaloClusters
+        int matchedCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters9x9.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
+
+            float dEta = clu9x9.seedEta - jet.eta;
+            float dPhi = reco::deltaPhi(clu9x9.seedPhi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
+            writable_clu9x9.jetMatchIdx = jetIdx;
+        }
+
+        // Perform geometrical matching of 7x7 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters7x7.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
+
+            float dEta = clu7x7.seedEta - jet.eta;
+            float dPhi = reco::deltaPhi(clu7x7.seedPhi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
+            writable_clu7x7.jetMatchIdx = jetIdx;
+        }
+
+        // Perform geometrical matching of 5x5 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x5.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
+
+            float dEta = clu5x5.seedEta - jet.eta;
+            float dPhi = reco::deltaPhi(clu5x5.seedPhi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
+            writable_clu5x5.jetMatchIdx = jetIdx;
+        }
+
+        // Perform geometrical matching of 5x9 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x9.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
+
+            float dEta = clu5x9.seedEta - jet.eta;
+            float dPhi = reco::deltaPhi(clu5x9.seedPhi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
+            writable_clu5x9.jetMatchIdx = jetIdx;
+        }
+
+        // Perform geometrical matching of HGCAL clusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = hgclu.eta - jet.eta;
+            float dPhi = reco::deltaPhi(hgclu.phi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = hgcluIdx;
+            }
+        }
+        if (matchedCluIdx != -99)
+        {
+            HGClusterHelper::HGCluster& writable_hgclu = const_cast<HGClusterHelper::HGCluster&>(HGClusters[matchedCluIdx]);
+            writable_hgclu.jetMatchIdx = jetIdx;
+        }
+
+    } // end loop on GenJets
+
+    //***************************************************************************************
+    //***************************************************************************************
+    // FILL TTREE 
+
     // Fill GenTau branches
     for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
     {
@@ -674,63 +930,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _jet_Idx.push_back(jetIdx);
     }
 
-    // Perform geometrical matching of 9x9 CaloClusters to GenTaus and GenJets then directly fill branches
+    // Fill 9x9 CaloCluster branches
     for (long unsigned int cluIdx = 0; cluIdx < CaloClusters9x9.size(); cluIdx++)
     {
         TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
 
-        for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
-        {
-            GenHelper::GenTau tau = genTaus[tauIdx];
-
-            float dEta = clu9x9.seedEta - tau.visEta;
-            float dPhi = reco::deltaPhi(clu9x9.seedPhi, tau.visPhi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu9x9.tauMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt tau
-                    // this in theory should never happen for taus, but more likely for jets
-                    if (tau.visPt > genTaus[clu9x9.tauMatchIdx].visPt) { clu9x9.tauMatchIdx = tauIdx; }
-                }
-                else { clu9x9.tauMatchIdx = tauIdx; }
-            }
-        }
-
-        for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
-        {
-            GenHelper::GenJet jet = genJets[jetIdx];
-
-            float dEta = clu9x9.seedEta - jet.eta;
-            float dPhi = reco::deltaPhi(clu9x9.seedPhi, jet.phi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu9x9.jetMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt jet
-                    if (jet.pt > genJets[clu9x9.jetMatchIdx].pt) { clu9x9.jetMatchIdx = jetIdx; }
-                }
-                else { clu9x9.jetMatchIdx = jetIdx; }
-            }
-        }
-
-        if (DEBUG)
-        {
-            if (clu9x9.tauMatchIdx != -99 || clu9x9.jetMatchIdx != -99)
-            {
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-                std::cout << "clu9x9 idx " << cluIdx << " eta " << clu9x9.seedEta << " phi " << clu9x9.seedPhi << std::endl;
-                if (clu9x9.tauMatchIdx != -99) { std::cout << "tau match idx " << clu9x9.tauMatchIdx << " eta " << genTaus[clu9x9.tauMatchIdx].visEta << " phi " << genTaus[clu9x9.tauMatchIdx].visPhi << std::endl; }
-                if (clu9x9.jetMatchIdx != -99) { std::cout << "jet match idx " << clu9x9.jetMatchIdx << " eta " << genJets[clu9x9.jetMatchIdx].eta << " phi " << genJets[clu9x9.jetMatchIdx].phi << std::endl; }
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-            }
-        }
-
-        // Fill 9x9 CaloCluster branches
         _cl9x9_barrelSeeded.push_back(clu9x9.barrelSeeded);
         _cl9x9_nHits.push_back(clu9x9.nHits);
         _cl9x9_seedIeta.push_back(clu9x9.seedIeta);
@@ -786,64 +990,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl9x9_towerIet.push_back(tmp_towerIet);
     }
 
-
-    // Perform geometrical matching of 7x7 CaloClusters to GenTaus and GenJets then directly fill branches
+    // Fill 7x7 CaloCluster branches
     for (long unsigned int cluIdx = 0; cluIdx < CaloClusters7x7.size(); cluIdx++)
     {
         TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
 
-        for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
-        {
-            GenHelper::GenTau tau = genTaus[tauIdx];
-
-            float dEta = clu7x7.seedEta - tau.visEta;
-            float dPhi = reco::deltaPhi(clu7x7.seedPhi, tau.visPhi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu7x7.tauMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt tau
-                    // this in theory should never happen for taus, but more likely for jets
-                    if (tau.visPt > genTaus[clu7x7.tauMatchIdx].visPt) { clu7x7.tauMatchIdx = tauIdx; }
-                }
-                else { clu7x7.tauMatchIdx = tauIdx; }
-            }
-        }
-
-        for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
-        {
-            GenHelper::GenJet jet = genJets[jetIdx];
-
-            float dEta = clu7x7.seedEta - jet.eta;
-            float dPhi = reco::deltaPhi(clu7x7.seedPhi, jet.phi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu7x7.jetMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt jet
-                    if (jet.pt > genJets[clu7x7.jetMatchIdx].pt) { clu7x7.jetMatchIdx = jetIdx; }
-                }
-                else { clu7x7.jetMatchIdx = jetIdx; }
-            }
-        }
-
-        if (DEBUG)
-        {
-            if (clu7x7.tauMatchIdx != -99 || clu7x7.jetMatchIdx != -99)
-            {
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-                std::cout << "clu7x7 idx " << cluIdx << " eta " << clu7x7.seedEta << " phi " << clu7x7.seedPhi << std::endl;
-                if (clu7x7.tauMatchIdx != -99) { std::cout << "tau match idx " << clu7x7.tauMatchIdx << " eta " << genTaus[clu7x7.tauMatchIdx].visEta << " phi " << genTaus[clu7x7.tauMatchIdx].visPhi << std::endl; }
-                if (clu7x7.jetMatchIdx != -99) { std::cout << "jet match idx " << clu7x7.jetMatchIdx << " eta " << genJets[clu7x7.jetMatchIdx].eta << " phi " << genJets[clu7x7.jetMatchIdx].phi << std::endl; }
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-            }
-        }
-
-        // Fill 7x7 CaloCluster branches
         _cl7x7_barrelSeeded.push_back(clu7x7.barrelSeeded);
         _cl7x7_nHits.push_back(clu7x7.nHits);
         _cl7x7_seedIeta.push_back(clu7x7.seedIeta);
@@ -899,64 +1050,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl7x7_towerIet.push_back(tmp_towerIet);
     }
 
-
-    // Perform geometrical matching of 5x5 CaloClusters to GenTaus and GenJets then directly fill branches
+    // Fill 5x5 CaloCluster branches
     for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x5.size(); cluIdx++)
     {
         TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
 
-        for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
-        {
-            GenHelper::GenTau tau = genTaus[tauIdx];
-
-            float dEta = clu5x5.seedEta - tau.visEta;
-            float dPhi = reco::deltaPhi(clu5x5.seedPhi, tau.visPhi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu5x5.tauMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt tau
-                    // this in theory should never happen for taus, but more likely for jets
-                    if (tau.visPt > genTaus[clu5x5.tauMatchIdx].visPt) { clu5x5.tauMatchIdx = tauIdx; }
-                }
-                else { clu5x5.tauMatchIdx = tauIdx; }
-            }
-        }
-
-        for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
-        {
-            GenHelper::GenJet jet = genJets[jetIdx];
-
-            float dEta = clu5x5.seedEta - jet.eta;
-            float dPhi = reco::deltaPhi(clu5x5.seedPhi, jet.phi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu5x5.jetMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt jet
-                    if (jet.pt > genJets[clu5x5.jetMatchIdx].pt) { clu5x5.jetMatchIdx = jetIdx; }
-                }
-                else { clu5x5.jetMatchIdx = jetIdx; }
-            }
-        }
-
-        if (DEBUG)
-        {
-            if (clu5x5.tauMatchIdx != -99 || clu5x5.jetMatchIdx != -99)
-            {
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-                std::cout << "clu5x5 idx " << cluIdx << " eta " << clu5x5.seedEta << " phi " << clu5x5.seedPhi << std::endl;
-                if (clu5x5.tauMatchIdx != -99) { std::cout << "tau match idx " << clu5x5.tauMatchIdx << " eta " << genTaus[clu5x5.tauMatchIdx].visEta << " phi " << genTaus[clu5x5.tauMatchIdx].visPhi << std::endl; }
-                if (clu5x5.jetMatchIdx != -99) { std::cout << "jet match idx " << clu5x5.jetMatchIdx << " eta " << genJets[clu5x5.jetMatchIdx].eta << " phi " << genJets[clu5x5.jetMatchIdx].phi << std::endl; }
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-            }
-        }
-
-        // Fill 5x5 CaloCluster branches
         _cl5x5_barrelSeeded.push_back(clu5x5.barrelSeeded);
         _cl5x5_nHits.push_back(clu5x5.nHits);
         _cl5x5_seedIeta.push_back(clu5x5.seedIeta);
@@ -1012,64 +1110,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x5_towerIet.push_back(tmp_towerIet);
     }
 
-
-    // Perform geometrical matching of 5x9 CaloClusters to GenTaus and GenJets then directly fill branches
+    // Fill 5x9 CaloCluster branches
     for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x9.size(); cluIdx++)
     {
         TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
 
-        for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
-        {
-            GenHelper::GenTau tau = genTaus[tauIdx];
-
-            float dEta = clu5x9.seedEta - tau.visEta;
-            float dPhi = reco::deltaPhi(clu5x9.seedPhi, tau.visPhi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu5x9.tauMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt tau
-                    // this in theory should never happen for taus, but more likely for jets
-                    if (tau.visPt > genTaus[clu5x9.tauMatchIdx].visPt) { clu5x9.tauMatchIdx = tauIdx; }
-                }
-                else { clu5x9.tauMatchIdx = tauIdx; }
-            }
-        }
-
-        for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
-        {
-            GenHelper::GenJet jet = genJets[jetIdx];
-
-            float dEta = clu5x9.seedEta - jet.eta;
-            float dPhi = reco::deltaPhi(clu5x9.seedPhi, jet.phi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (clu5x9.jetMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt jet
-                    if (jet.pt > genJets[clu5x9.jetMatchIdx].pt) { clu5x9.jetMatchIdx = jetIdx; }
-                }
-                else { clu5x9.jetMatchIdx = jetIdx; }
-            }
-        }
-
-        if (DEBUG)
-        {
-            if (clu5x9.tauMatchIdx != -99 || clu5x9.jetMatchIdx != -99)
-            {
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-                std::cout << "clu5x9 idx " << cluIdx << " eta " << clu5x9.seedEta << " phi " << clu5x9.seedPhi << std::endl;
-                if (clu5x9.tauMatchIdx != -99) { std::cout << "tau match idx " << clu5x9.tauMatchIdx << " eta " << genTaus[clu5x9.tauMatchIdx].visEta << " phi " << genTaus[clu5x9.tauMatchIdx].visPhi << std::endl; }
-                if (clu5x9.jetMatchIdx != -99) { std::cout << "jet match idx " << clu5x9.jetMatchIdx << " eta " << genJets[clu5x9.jetMatchIdx].eta << " phi " << genJets[clu5x9.jetMatchIdx].phi << std::endl; }
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-            }
-        }
-
-        // Fill 5x9 CaloCluster branches
         _cl5x9_barrelSeeded.push_back(clu5x9.barrelSeeded);
         _cl5x9_nHits.push_back(clu5x9.nHits);
         _cl5x9_seedIeta.push_back(clu5x9.seedIeta);
@@ -1125,64 +1170,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x9_towerIet.push_back(tmp_towerIet);
     }
 
-
-    // Perform geometrical matching of HGClusters to GenTaus and GenJets then directly fill branches
+    // Fill HGCluster branches
     for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
     {
         HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
 
-        for (long unsigned int tauIdx = 0; tauIdx < genTaus.size(); tauIdx++)
-        {
-            GenHelper::GenTau tau = genTaus[tauIdx];
-
-            float dEta = hgclu.eta - tau.visEta;
-            float dPhi = reco::deltaPhi(hgclu.phi, tau.visPhi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (hgclu.tauMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt tau
-                    // this in theory should never happen for taus, but more likely for jets
-                    if (tau.visPt > genTaus[hgclu.tauMatchIdx].visPt) { hgclu.tauMatchIdx = tauIdx; }
-                }
-                else { hgclu.tauMatchIdx = tauIdx; }
-            }
-        }
-
-        for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
-        {
-            GenHelper::GenJet jet = genJets[jetIdx];
-
-            float dEta = hgclu.eta - jet.eta;
-            float dPhi = reco::deltaPhi(hgclu.phi, jet.phi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= 0.25)
-            {
-                if (hgclu.jetMatchIdx != -99) 
-                {
-                    // if there has already been a match we keep the match with the highest pt jet
-                    if (jet.pt > genJets[hgclu.jetMatchIdx].pt) { hgclu.jetMatchIdx = jetIdx; }
-                }
-                else { hgclu.jetMatchIdx = jetIdx; }
-            }
-        }
-    
-        if (DEBUG)
-        {
-            if (hgclu.tauMatchIdx != -99 || hgclu.jetMatchIdx != -99)
-            {
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-                std::cout << "hgclu idx " << hgcluIdx << " eta " << hgclu.eta << " phi " << hgclu.phi << std::endl;
-                if (hgclu.tauMatchIdx != -99) { std::cout << "tau match idx " << hgclu.tauMatchIdx << " eta " << genTaus[hgclu.tauMatchIdx].visEta << " phi " << genTaus[hgclu.tauMatchIdx].visPhi << std::endl; }
-                if (hgclu.jetMatchIdx != -99) { std::cout << "jet match idx " << hgclu.jetMatchIdx << " eta " << genJets[hgclu.jetMatchIdx].eta << " phi " << genJets[hgclu.jetMatchIdx].phi << std::endl; }
-                std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-            }
-        }
-
-        // Fill HGCluster branches
         _cl3d_pt.push_back(hgclu.pt);
         _cl3d_energy.push_back(hgclu.energy);
         _cl3d_eta.push_back(hgclu.eta);
