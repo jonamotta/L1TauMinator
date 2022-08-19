@@ -1,3 +1,4 @@
+from optparse import OptionParser
 from itertools import chain
 import pandas as pd
 import numpy as np
@@ -7,31 +8,13 @@ import glob
 import sys
 import os
 
-class Logger(object):
-    def __init__(self, file):
-        self.terminal = sys.stdout
-        self.log = open(file, "w")
-
-    def write(self, message):
-        self.terminal.write(message)
-        self.log.write(message)  
-
-    def flush(self):
-        #this flush method is needed for python 3 compatibility.
-        #this handles the flush command by doing nothing.
-        #you might want to specify some extra behavior here.
-        pass
 
 #######################################################################
 ######################### SCRIPT BODY #################################
 #######################################################################
 
-### To run:
-### python3 alternateReader.py --v (ECAL or HCAL)
-
 if __name__ == "__main__" :
 
-    from optparse import OptionParser
     parser = OptionParser()
     parser.add_option("--v",          dest="v",          help="Version of the iteration",                                        default=None)
     parser.add_option("--date",       dest="date",       help="Date of birth of this version",                                   default=None)
@@ -79,12 +62,8 @@ if __name__ == "__main__" :
         indir  += '/test'
         outdir = outdir+'/test__batches'
 
-
     os.system('mkdir -p '+outdir+'/L1Clusters')
     os.system('mkdir -p '+outdir+'/GenObjects')
-
-    # set output to go both to terminal and to file
-    sys.stdout = Logger(outdir+'/info'+options.date+'_v'+options.v+'.log')
 
     print(options)
 
@@ -129,6 +108,7 @@ if __name__ == "__main__" :
         arr_clNxM  = TTree.arrays(branches_clNxM)
 
         # print('*******************************************************')
+        # bNxM = NxM.encode('utf-8')
         # print(len(arr_event[b'EventNumber']))
         # print(len(arr_gentau[b'tau_eta']))
         # for i in range(len(arr_gentau[b'tau_eta'])):
@@ -141,11 +121,11 @@ if __name__ == "__main__" :
         # print(len(arr_cl3d[b'cl3d_pt']))
         # for i in range(len(arr_cl3d[b'cl3d_pt'])):
         #     print('    ->', len(arr_cl3d[b'cl3d_pt'][i]))
-        # print(len(arr_clNxM[b'cl'+NxM+'_nHits']))
-        # for i in range(len(arr_clNxM[b'cl'+NxM+'_nHits'])):
-        #     print('    ->', len(arr_clNxM[b'cl'+NxM+'_nHits'][i]))
-        # for i in range(len(arr_clNxM[b'cl'+NxM+'_towerEta'][0])):
-        #     print('        ->', len(arr_clNxM[b'cl'+NxM+'_towerEta'][0][i]))
+        # print(len(arr_clNxM[b'cl'+bNxM+b'_nHits']))
+        # for i in range(len(arr_clNxM[b'cl'+bNxM+b'_nHits'])):
+        #     print('    ->', len(arr_clNxM[b'cl'+bNxM+b'_nHits'][i]))
+        # for i in range(len(arr_clNxM[b'cl'+bNxM+b'_towerEta'][0])):
+        #     print('        ->', len(arr_clNxM[b'cl'+bNxM+b'_towerEta'][0][i]))
         # print('*******************************************************')
 
         df_event  = pd.DataFrame(arr_event)
