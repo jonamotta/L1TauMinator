@@ -68,9 +68,9 @@ if __name__ == "__main__" :
 
 
     outdir = indir + '/TauCNN'
-    if options.doTens4Calib: outdir += 'Calibrator_training'
-    if options.doTens4Ident: outdir += 'Identifier_training'
-    outdir += options.outTag
+    if options.doTens4Calib: outdir += 'Calibrator'
+    if options.doTens4Ident: outdir += 'Identifier'
+    outdir += options.caloClNxM+'Training'+options.outTag
     os.system('mkdir -p '+outdir)
 
 
@@ -118,9 +118,9 @@ if __name__ == "__main__" :
     print(len(Y))
 
     if options.doTens4Calib:
-        np.savez_compressed(outdir+'/X4Calibrator.npz', X)
-        np.savez_compressed(outdir+'/Y4Calibrator.npz', Y)
+        np.savez_compressed(outdir+'/X'+options.caloClNxM+'_forCalibrator.npz', X)
+        np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forCalibrator.npz', Y)
 
     elif options.doTens4Ident:
-        np.savez_compressed(outdir+'/X4Identifier.npz', X)
-        np.savez_compressed(outdir+'/Y4Identifier.npz', Y)
+        np.savez_compressed(outdir+'/X'+options.caloClNxM+'_forIdentifier.npz', X)
+        np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forIdentifier.npz', Y)
