@@ -284,11 +284,11 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         Xticksshifter = np.linspace(0.5,N-0.5,N)
         Yticksshifter = np.linspace(0.5,M-0.5,M)
 
-        plt.figure(figsize=(10*(N+1)/9,8*M/9))
+        plt.figure(figsize=(10,8))
         im = plt.pcolormesh(EMdeposit, cmap=EMcmap, edgecolor='black', vmin=0)
         ncolors = max(2,EMmax+1)
         colorbar = plt.colorbar(im)
-        colorbar.set_label(label='iem', fontsize=20)
+        colorbar.set_label(label='iem')
         plt.clim(0., ncolors+0.5)
         if ncolors > 10:
             nticks = 10
@@ -307,18 +307,18 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         plt.xticks(Xticksshifter, etalabels)
         plt.yticks(Yticksshifter, philabels)
         plt.tick_params(which='both', width=0, length=0)
-        plt.xlabel(f'$i\eta$', fontsize=20)
-        plt.ylabel(f'$i\phi$', fontsize=20)
+        plt.xlabel(f'$i\eta$')
+        plt.ylabel(f'$i\phi$')
         plt.text(0.2, 8.8, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        mplhep.cms.label('', data=False, rlabel='', fontsize=20)
+        mplhep.cms.label('', data=False, rlabel='')
         plt.savefig(saveTo['TauDisplay']+'/'+idx+'_EMdeposit_clu'+str(N)+'x'+str(M)+'.pdf')
         plt.close()
         
-        plt.figure(figsize=(10*(N+1)/9,8*M/9))
+        plt.figure(figsize=(10,8))
         im = plt.pcolormesh(HADdeposit, cmap=HADcmap, edgecolor='black', vmin=0)
         ncolors = max(2,HADmax+1)
         colorbar = plt.colorbar(im)
-        colorbar.set_label(label='ihad', fontsize=20)
+        colorbar.set_label(label='ihad')
         plt.clim(-0.5, ncolors+0.5)
         if ncolors > 10:
             nticks = 10
@@ -337,10 +337,10 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         plt.xticks(Xticksshifter, etalabels)
         plt.yticks(Yticksshifter, philabels)
         plt.tick_params(which='both', width=0, length=0)
-        plt.xlabel(f'$i\eta$', fontsize=20)
-        plt.ylabel(f'$i\phi$', fontsize=20)
+        plt.xlabel(f'$i\eta$')
+        plt.ylabel(f'$i\phi$')
         plt.text(0.2, 8.8, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        mplhep.cms.label('', data=False, rlabel='', fontsize=20)
+        mplhep.cms.label('', data=False, rlabel='')
         plt.savefig(saveTo['TauDisplay']+'/'+idx+'_HADdeposit_clu'+str(N)+'x'+str(M)+'.pdf')
         plt.close()
 
