@@ -38,7 +38,7 @@ parser.add_option("--lTauPtCut",    dest="lTauPtCut",                         de
 parser.add_option("--etacut",       dest="etacut",                            default=False)
 parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="9x9")
 parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=None)
-parser.add_option('--doTens4Minat', dest='doTens4Minat', action='store_true', default=None)
+parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=None)
 parser.add_option('--doHH',         dest='doHH',         action='store_true', default=False)
 parser.add_option('--doQCD',        dest='doQCD',        action='store_true', default=False)
 parser.add_option('--doVBFH',       dest='doVBFH',       action='store_true', default=False)
@@ -51,7 +51,7 @@ if not options.date or not options.v:
     print('** EXITING')
     exit()
 
-if not options.doTens4Calib and not options.doTens4Minat:
+if not options.doTens4Calib and not options.doTens4Ident:
     print('** ERROR : no tensorization need specified')
     print('** EXITING')
     exit()
@@ -106,7 +106,7 @@ for idx, tag in enumerate(tags):
     if options.etacut:       cmsRun += ' --etacut '    + options.etacut
     if options.caloClNxM:    cmsRun += ' --caloClNxM ' + options.caloClNxM
     if options.doTens4Calib: cmsRun += ' --doTens4Calib'
-    if options.doTens4Minat: cmsRun += ' --doTens4Minat'
+    if options.doTens4Ident: cmsRun += ' --doTens4Ident'
 
     cmsRun += ' >& ' + outLogName
 

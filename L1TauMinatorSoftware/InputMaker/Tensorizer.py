@@ -96,7 +96,7 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
             xl.append(dfCluTauJetPu.cl_towerIhad.loc[idx][j])
             xl.append(dfCluTauJetPu.cl_towerEgIet.loc[idx][j])
             # xl.append(dfCluTauJetPu.cl_towerNeg.loc[idx][j])
-        x = np.array(xl).reshape(N,M,6)
+        x = np.array(xl).reshape(N,M,5)
         
         # target of the NN
         yl = []
@@ -112,8 +112,8 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     Y = np.array(YL)
     
     # save .npz files with tensor formatted datasets
-    np.savez_compressed(saveTo['inputsMinator'], X)
-    np.savez_compressed(saveTo['targetsMinator'], Y)
+    np.savez_compressed(saveTo['inputsIdentifier'], X)
+    np.savez_compressed(saveTo['targetsIdentifier'], Y)
 
 
 def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, NxM):
@@ -223,7 +223,7 @@ if __name__ == "__main__" :
     parser.add_option("--etacut",       dest="etacut",                            default=None)
     parser.add_option('--caloClNxM',    dest='caloClNxM',                         default=None)
     parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
-    parser.add_option('--doTens4Minat', dest='doTens4Minat', action='store_true', default=False)
+    parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
     (options, args) = parser.parse_args()
 
     readFrom = {
@@ -234,16 +234,16 @@ if __name__ == "__main__" :
 
     saveTo = {
         'inputsCalibrator'  : options.outdir+'/X_Calibrator'+options.caloClNxM+options.tag+'.npz',
-        'inputsMinator'     : options.outdir+'/X_Minator'+options.caloClNxM+options.tag+'.npz',
+        'inputsIdentifier'  : options.outdir+'/X_Identifier'+options.caloClNxM+options.tag+'.npz',
         'targetsCalibrator' : options.outdir+'/Y_Calibrator'+options.caloClNxM+options.tag+'.npz',
-        'targetsMinator'    : options.outdir+'/Y_Minator'+options.caloClNxM+options.tag+'.npz'
+        'targetsIdentifier' : options.outdir+'/Y_Identifier'+options.caloClNxM+options.tag+'.npz'
     }
 
     dfTowClus = pd.read_pickle(readFrom['TowClus'])
     dfGenTaus = pd.read_pickle(readFrom['GenTaus'])
     dfGenJets = pd.read_pickle(readFrom['GenJets'])
 
-    if not options.doTens4Calib and not options.doTens4Minat:
+    if not options.doTens4Calib and not options.doTens4Ident:
         print('** ERROR : no tensorization need specified')
         print('** EXITING')
         exit()
@@ -251,7 +251,7 @@ if __name__ == "__main__" :
     if options.doTens4Calib:
         print('** INFO : doing tensorization for calibration')
         TensorizeForCalibration(dfTowClus, dfGenTaus, options.uTauPtCut, options.lTauPtCut, options.etacut, options.caloClNxM)
-    if options.doTens4Minat:
+    if options.doTens4Ident:
         print('** INFO : doing tensorization for identification')
         TensorizeForIdentification(dfTowClus, dfGenTaus, dfGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.etacut, options.caloClNxM)
 
