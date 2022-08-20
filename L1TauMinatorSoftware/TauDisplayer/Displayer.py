@@ -110,9 +110,9 @@ def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, N
         if i == 25: break
         
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
-        HADdeposit = (np.array(dfCluJet.cl_towerIhad.loc[idx]).reshape(N,M))
-        ECALdeposit  = (np.array(dfCluJet.cl_towerIem.loc[idx]).reshape(N,M))
-        EGdeposit  = (np.array(dfCluJet.cl_towerEgIet.loc[idx]).reshape(N,M))
+        HADdeposit = np.transpose(np.array(dfCluJet.cl_towerIhad.loc[idx]).reshape(N,M))
+        ECALdeposit  = np.transpose(np.array(dfCluJet.cl_towerIem.loc[idx]).reshape(N,M))
+        EGdeposit  = np.transpose(np.array(dfCluJet.cl_towerEgIet.loc[idx]).reshape(N,M))
         EMdeposit = ECALdeposit + EGdeposit
 
         HADmax = np.max(dfCluJet.cl_towerIhad.loc[idx])
@@ -258,9 +258,9 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
             print(i/len(dfCluTau.index)*100, '%')
         
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
-        HADdeposit = (np.array(dfCluTau.cl_towerIhad.loc[idx]).reshape(N,M))
-        ECALdeposit  = (np.array(dfCluTau.cl_towerIem.loc[idx]).reshape(N,M))
-        EGdeposit  = (np.array(dfCluTau.cl_towerEgIet.loc[idx]).reshape(N,M))
+        HADdeposit = np.transpose(np.array(dfCluTau.cl_towerIhad.loc[idx]).reshape(N,M))
+        ECALdeposit  = np.transpose(np.array(dfCluTau.cl_towerIem.loc[idx]).reshape(N,M))
+        EGdeposit  = np.transpose(np.array(dfCluTau.cl_towerEgIet.loc[idx]).reshape(N,M))
         EMdeposit = ECALdeposit + EGdeposit
 
         HADmax = np.max(dfCluTau.cl_towerIhad.loc[idx])
