@@ -30,29 +30,61 @@ list_filelists = []
 list_folders = []
 list_njobs = []
 
-list_filelists.append(open(filedir+"test.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/test2/")
-list_njobs.append(10)
+# list_filelists.append(open(filedir+"test.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/test/")
+# list_njobs.append(10)
 
-list_filelists.append(open(filedir+"VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW/")
-list_njobs.append(60)
+# list_filelists.append(open(filedir+"VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(60)
 
-list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
-list_njobs.append(240)
+# list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(240)
 
-list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
+# list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(25)
+
+# list_filelists.append(open(filedir+"QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(120)
+
+# list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(350)
+
+list_filelists.append(open(filedir+"VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1__FEVT.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
 list_njobs.append(25)
 
-list_filelists.append(open(filedir+"QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
+list_filelists.append(open(filedir+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_TuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/GluGluHToTauTau_M125_14TeV_powheg_pythia8_TuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
+list_njobs.append(8)
+
+list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
+list_njobs.append(200)
+
+list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
+list_njobs.append(10)
+
+list_filelists.append(open(filedir+"ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
+list_njobs.append(10)
+
+list_filelists.append(open(filedir+"ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
+list_njobs.append(10)
+
+list_filelists.append(open(filedir+"QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
 list_njobs.append(120)
 
-list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
-list_njobs.append(350)
+list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT/")
+list_njobs.append(700)
 
 os.system('cp listAll.sh /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples')
 
@@ -90,7 +122,7 @@ for i in range(len(list_folders)):
         skimjob.write ('export X509_USER_PROXY=~/.t3/proxy.cert\n')
         skimjob.write ('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
         skimjob.write ('cd %s\n' % os.getcwd())
-        skimjob.write ('export SCRAM_ARCH=slc7_amd64_gcc820\n')
+        skimjob.write ('export SCRAM_ARCH=slc6_amd64_gcc472\n')
         skimjob.write ('eval `scram r -sh`\n')
         skimjob.write (cmsRun+'\n')
         skimjob.close ()

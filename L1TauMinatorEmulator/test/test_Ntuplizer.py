@@ -58,12 +58,12 @@ process.source = cms.Source("PoolSource",
         # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v3/240001/5AFEF7EA-A89E-8441-ACCE-732263A2657D.root',
 
         ## SUMMER 2020 - NO PU
-        # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/FEVT/NoPU_111X_mcRun4_realistic_T15_v1-v1/100000/B8DC5CD7-E233-D04F-9251-CB785B1A0C57.root',
+        '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/FEVT/NoPU_111X_mcRun4_realistic_T15_v1-v1/100000/B8DC5CD7-E233-D04F-9251-CB785B1A0C57.root',
         # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/FEVT/NoPU_111X_mcRun4_realistic_T15_v1-v1/100000/5609836F-E451-4848-BCD6-A2B37FCB059C.root',
         # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/FEVT/NoPU_111X_mcRun4_realistic_T15_v1-v1/100000/6906EEFB-8718-A542-B1BF-B116BBE65570.root',
 
         ## SUMMER 2020 - 200 PU
-        '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/280000/7771879B-1E79-E44A-897D-F27D32F0F555.root',
+        # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/280000/7771879B-1E79-E44A-897D-F27D32F0F555.root',
         # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/280000/9B7AEEB7-7033-E046-8F2A-EEF32273BA86.root',
         # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/280000/9553DB2F-5F59-074B-8CEC-3679D6A1350E.root',
     ),
