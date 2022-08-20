@@ -691,6 +691,18 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         GenHelper::GenTau tau = genTaus[tauIdx];
 
+        if (DEBUG)
+        {
+            printf(" - GEN TAU pt %f eta %f phi %f vispt %f viseta %f visphi %f DM %i\n",
+                tau.pt,
+                tau.eta,
+                tau.phi,
+                tau.visPt,
+                tau.visEta,
+                tau.visPhi,
+                tau.DM);
+        }
+
         // Perform geometrical matching of 9x9 CaloClusters
         int matchedCluIdx = -99;
         float dR2min = 0.25;
@@ -707,12 +719,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 9x9 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu9x9.totalIet,
+                    clu9x9.seedEta,
+                    clu9x9.seedPhi,
+                    clu9x9.totalIem,
+                    clu9x9.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
             writable_clu9x9.tauMatchIdx = tauIdx;
         }
+
+        if (DEBUG) { std::cout << " ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
         // Perform geometrical matching of 7x7 CaloClusters
         matchedCluIdx = -99;
@@ -730,12 +758,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 7x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu7x7.totalIet,
+                    clu7x7.seedEta,
+                    clu7x7.seedPhi,
+                    clu7x7.totalIem,
+                    clu7x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
             writable_clu7x7.tauMatchIdx = tauIdx;
         }
+
+        if (DEBUG) { std::cout << " ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
         // Perform geometrical matching of 5x5 CaloClusters
         matchedCluIdx = -99;
@@ -753,12 +797,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 5x5 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x5.totalIet,
+                    clu5x5.seedEta,
+                    clu5x5.seedPhi,
+                    clu5x5.totalIem,
+                    clu5x5.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
             writable_clu5x5.tauMatchIdx = tauIdx;
         }
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
         // Perform geometrical matching of 5x9 CaloClusters
         matchedCluIdx = -99;
@@ -776,12 +836,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 5x9 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x9.totalIet,
+                    clu5x9.seedEta,
+                    clu5x9.seedPhi,
+                    clu5x9.totalIem,
+                    clu5x9.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
             writable_clu5x9.tauMatchIdx = tauIdx;
         }
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
         
         // Perform geometrical matching of HGCAL clusters
         matchedCluIdx = -99;
@@ -799,12 +875,27 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = hgcluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - HGC CLU pt %f eta %f phi %f e %f dEta %f dPhi %f dR2 %f (%i)\n",
+                    hgclu.pt,
+                    hgclu.eta,
+                    hgclu.phi,
+                    hgclu.energy,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             HGClusterHelper::HGCluster& writable_hgclu =  const_cast<HGClusterHelper::HGCluster&>(HGClusters[matchedCluIdx]);
             writable_hgclu.tauMatchIdx = tauIdx;
         }
+
+        if (DEBUG) { std::cout << "\n       *********************************************************************************************************** \n" << std::endl; }
 
     } // end loop on GenTaus
 
@@ -817,6 +908,17 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     for (long unsigned int jetIdx = 0; jetIdx < genJets.size(); jetIdx++)
     {
         GenHelper::GenJet jet = genJets[jetIdx];
+
+        if (DEBUG)
+        {
+            printf(" - GEN JET pt %f eta %f phi %f eEM %f eHad %f eInv %f\n",
+                jet.pt,
+                jet.eta,
+                jet.phi,
+                jet.eEm,
+                jet.eHad,
+                jet.eInv);
+        }
 
         // Perform geometrical matching of 9x9 CaloClusters
         int matchedCluIdx = -99;
@@ -834,12 +936,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 9x9 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu9x9.totalIet,
+                    clu9x9.seedEta,
+                    clu9x9.seedPhi,
+                    clu9x9.totalIem,
+                    clu9x9.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
             writable_clu9x9.jetMatchIdx = jetIdx;
         }
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
         // Perform geometrical matching of 7x7 CaloClusters
         matchedCluIdx = -99;
@@ -857,12 +975,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 7x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu7x7.totalIet,
+                    clu7x7.seedEta,
+                    clu7x7.seedPhi,
+                    clu7x7.totalIem,
+                    clu7x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
             writable_clu7x7.jetMatchIdx = jetIdx;
         }
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
         // Perform geometrical matching of 5x5 CaloClusters
         matchedCluIdx = -99;
@@ -880,12 +1014,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 5x5 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x5.totalIet,
+                    clu5x5.seedEta,
+                    clu5x5.seedPhi,
+                    clu5x5.totalIem,
+                    clu5x5.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
             writable_clu5x5.jetMatchIdx = jetIdx;
         }
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
         // Perform geometrical matching of 5x9 CaloClusters
         matchedCluIdx = -99;
@@ -903,12 +1053,28 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = cluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - 5x9 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x9.totalIet,
+                    clu5x9.seedEta,
+                    clu5x9.seedPhi,
+                    clu5x9.totalIem,
+                    clu5x9.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
             writable_clu5x9.jetMatchIdx = jetIdx;
         }
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
         // Perform geometrical matching of HGCAL clusters
         matchedCluIdx = -99;
@@ -926,12 +1092,27 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                 dR2min = dR2;
                 matchedCluIdx = hgcluIdx;
             }
+
+            if (DEBUG)
+            {
+                printf("         - HGC CLU pt %f eta %f phi %f e %f dEta %f dPhi %f dR2 %f (%i)\n",
+                    hgclu.pt,
+                    hgclu.eta,
+                    hgclu.phi,
+                    hgclu.energy,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
         }
         if (matchedCluIdx != -99)
         {
             HGClusterHelper::HGCluster& writable_hgclu = const_cast<HGClusterHelper::HGCluster&>(HGClusters[matchedCluIdx]);
             writable_hgclu.jetMatchIdx = jetIdx;
         }
+
+        if (DEBUG) { std::cout << "\n       *********************************************************************************************************** \n" << std::endl; }
 
     } // end loop on GenJets
 
