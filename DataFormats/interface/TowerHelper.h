@@ -52,9 +52,9 @@ namespace TowerHelper
         float totalEm = 0.;
         float totalHad = 0.;
         float totalEt = 0.;
-        float totalIem = 0.;
-        float totalIhad = 0.;
-        float totalIet = 0.;
+        int   totalIem = 0;
+        int   totalIhad = 0;
+        int   totalIet = 0;
 
         bool isBarrel = false;  // NxN TowerCluster fully contained in the barrel
         bool isOverlap = false; // NxN TowerCluster overlapping bewteen the barrel and the endcap
