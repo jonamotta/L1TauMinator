@@ -278,7 +278,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 
                 if (DEBUG)
                 {
-                    printf("        - GEN TAU vispt %f viseta %f visphi %f DM %i - dR2 %f dPt %f\n",
+                    printf("        - GEN TAU vispt %f viseta %f visphi %f DM %i - dR2 %f\n",
                         tau.visPt,
                         tau.visEta,
                         tau.visPhi,
