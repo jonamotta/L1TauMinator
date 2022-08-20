@@ -47,13 +47,20 @@ if options.maxEvents >= -1:
 # Input source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
+        ## WINTER 2020 - NO PU - BUGGY BARREL TPs
         # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v1/20000/ECEF2B46-7AB8-2143-97F1-110F2868BDE0.root',
         # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v1/20000/1F641E30-C849-694B-AC6D-86EC2930B188.root',
         # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v1/20000/71B4BDAC-108B-FD4B-8F1C-EAD1A15C396C.root',
         
-        '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v3/240001/1EBB160E-D79C-E44E-AA14-1046A2005911.root',
+        ## WINTER 2020 - 200 PU
+        # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v3/240001/1EBB160E-D79C-E44E-AA14-1046A2005911.root',
         # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v3/240001/2056FB7A-45F3-0A48-B418-F69A337FFF90.root',
         # '/store/mc/Phase2HLTTDRWinter20DIGI/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v3/240001/5AFEF7EA-A89E-8441-ACCE-732263A2657D.root',
+
+        ## SUMMER 2020 - NO PU
+        '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/FEVT/NoPU_111X_mcRun4_realistic_T15_v1-v1/100000/B8DC5CD7-E233-D04F-9251-CB785B1A0C57.root',
+        # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/FEVT/NoPU_111X_mcRun4_realistic_T15_v1-v1/100000/5609836F-E451-4848-BCD6-A2B37FCB059C.root',
+        # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/FEVT/NoPU_111X_mcRun4_realistic_T15_v1-v1/100000/6906EEFB-8718-A542-B1BF-B116BBE65570.root',
     ),
     secondaryFileNames = cms.untracked.vstring(),
     inputCommands = cms.untracked.vstring(

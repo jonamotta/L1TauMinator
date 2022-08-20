@@ -5,21 +5,21 @@ dasgoclient --query="file dataset=/VBFHToTauTau_M125_14TeV_powheg_pythia8_correc
 dasgoclient --query="file dataset=/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5/Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2/GEN-SIM-DIGI-RAW"
 dasgoclient --query="file dataset=/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2/GEN-SIM-DIGI-RAW"
 dasgoclient --query="file dataset=/MinBias_TuneCP5_14TeV-pythia8/Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3/GEN-SIM-DIGI-RAW"
-dasgoclient --query="file dataset=/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola/Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2/GEN-SIM-DIGI-RAW"
+dasgoclient --query="file dataset=/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola/Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2/GEN-SIM-DIGI-RAW"                               # STILL REPLICATING
 
 dasgoclient --query="file dataset=/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1/FEVT"
 dasgoclient --query="file dataset=/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5/Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1/GEN-SIM-DIGI-RAW-MINIAOD"
 dasgoclient --query="file dataset=/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola/Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1/GEN-SIM-DIGI-RAW-MINIAOD"
 dasgoclient --query="file dataset=/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola/Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1/GEN-SIM-DIGI-RAW-MINIAOD"
 dasgoclient --query="file dataset=/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1/FEVT"
-dasgoclient --query="file dataset=/MinBias_TuneCP5_14TeV-pythia8/Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2/FEVT"
+dasgoclient --query="file dataset=/MinBias_TuneCP5_14TeV-pythia8/Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2/FEVT"                                   # STILL REPLICATING
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 CAN BE USED FOR VISUALIZATION
 
 dasgoclient --query="file dataset=/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1/GEN-SIM-DIGI-RAW"
 
-dasgoclient --query="file dataset=/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1/FEVT"
+dasgoclient --query="file dataset=/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8/Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1/FEVT"                             # STILL REPLICATING
 dasgoclient --query="file dataset=/GluGluHToTauTau_M125_14TeV_powheg_pythia8_TuneCP5/Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1/GEN-SIM-DIGI-RAW-MINIAOD"
 
 
