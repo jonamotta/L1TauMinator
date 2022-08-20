@@ -219,10 +219,14 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 
         if (DEBUG)
         {
-            std::cout << "---------------------------------------------------------------------" <<std::endl;
-            std::cout << " gentau (DM "<< GenTau.DM <<"): pt " <<GenTau.visPt << " e " << GenTau.visE<< std::endl;
-            std::cout << " gentau (DM "<< GenTau.DM <<"): ptEm " << GenTau.visPtEm << " ptHad " << GenTau.visPtHad << " ptMu " << tau_p4mu.Pt() << " eEm " << GenTau.visEEm << " eHad " << GenTau.visEHad << " eMu" << tau_p4mu.E() << std::endl;
-            std::cout << "---------------------------------------------------------------------" <<std::endl;
+            printf(" - GEN TAU pt %f eta %f phi %f vispt %f viseta %f visphi %f DM %i\n",
+                GenTau.pt,
+                GenTau.eta,
+                GenTau.phi,
+                GenTau.visPt,
+                GenTau.visEta,
+                GenTau.visPhi,
+                GenTau.DM);
         }
 
         if (GenTau.DM >= 0) GenTausCollection->push_back(GenTau);
@@ -247,37 +251,42 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 
         if (DEBUG)
         {
-            std::cout << "---------------------------------------------------------------------" <<std::endl;
-            std::cout << "pt :              in " << jet.pt()              << " out " << GenJet.pt   << std::endl;
-            std::cout << "eta :             in " << jet.eta()             << " out " << GenJet.eta  << std::endl;
-            std::cout << "phi :             in " << jet.phi()             << " out " << GenJet.phi  << std::endl;
-            std::cout << "energy :          in " << jet.energy()          << " out " << GenJet.e    << std::endl;
-            std::cout << "emEnergy :        in " << jet.emEnergy()        << " out " << GenJet.eEm  << std::endl;
-            std::cout << "hadEnergy :       in " << jet.hadEnergy()       << " out " << GenJet.eHad << std::endl;
-            std::cout << "invisibleEnergy : in " << jet.invisibleEnergy() << " out " << GenJet.eInv << std::endl;
-            std::cout << "---------------------------------------------------------------------" <<std::endl;
+            printf(" - GEN JET pt %f eta %f phi %f e %f eEM %f eHad %f eInv %f\n",
+                    GenJet.pt,
+                    GenJet.eta,
+                    GenJet.phi,
+                    GenJet.e,
+                    GenJet.eEm,
+                    GenJet.eHad,
+                    GenJet.eInv);
         }
 
-        GenJetsCollection->push_back(GenJet);
-    }
-    
-    // FIXME : not sure if this overlap removal is a good thing or a bad thing
-    /*
-    // Remove overlap between jets and taus (keep tau remove jet if dR<=0.4 with visibe tau component)
-    for (long unsigned int i = 0; i < GenTausCollection.size(); i++)
-    {
-        TLorentzVector tau_p4(0.,0.,0.,0.);
-        tau_p4.SetPtEtaPhiE(GenTausCollection[i].visPt, GenTausCollection[i].visEta, GenTausCollection[i].visPhi, GenTausCollection[i].visE);
-
-        for (long unsigned int j = 0; j < GenJetsCollection.size(); j++)
+        // Remove overlap between jets and taus (keep tau remove jet if dR(dR2)<=0.1(0.01) with visibe tau component)
+        bool skipTauJet = false;
+        for (auto const& tau : *GenTausCollection)
         {
-            TLorentzVector jet_p4(0.,0.,0.,0.);
-            jet_p4.SetPtEtaPhiE(GenJetsCollection[i].pt, GenJetsCollection[i].eta, GenJetsCollection[i].phi, GenJetsCollection[i].e);
+            float dEta = GenJet.eta - tau.visEta;
+            float dPhi = reco::deltaPhi(GenJet.phi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (jet_p4.DeltaR(tau_p4)<=0.4) { GenJetsCollection.erase(GenJetsCollection.begin()+j); }
+            if (dR2 < 0.01)
+            {
+                skipTauJet = true;
+
+                if (DEBUG)
+                {
+                    printf("        - GEN TAU vispt %f viseta %f visphi %f DM %i - dR2 %f dPt %f\n",
+                        tau.visPt,
+                        tau.visEta,
+                        tau.visPhi,
+                        tau.DM,
+                        dR2);
+                }
+            }
         }
+
+        if (!skipTauJet) { GenJetsCollection->push_back(GenJet); }
     }
-    */
 
     iEvent.put(std::move(GenTausCollection), "GenTausCollection");
     iEvent.put(std::move(GenJetsCollection), "GenJetsCollection");
