@@ -239,6 +239,9 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     iEvent.getByToken(genJetsToken, genJetsHandle);
     for (auto& jet : *genJetsHandle.product())
     {
+        // skip very forward jets
+        if (jet.eta() > 3.5) { continue; }
+
         GenHelper::GenJet GenJet;
 
         GenJet.pt   = jet.pt();
