@@ -7,3 +7,4 @@ __pycache__
 *.ipynb
 *.pyc
 *.root
+__init__.py
