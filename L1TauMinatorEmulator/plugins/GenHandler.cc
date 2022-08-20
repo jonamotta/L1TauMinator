@@ -225,7 +225,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             std::cout << "---------------------------------------------------------------------" <<std::endl;
         }
 
-        GenTausCollection->push_back(GenTau);
+        if (GenTau.DM >= 0) GenTausCollection->push_back(GenTau);
 
     }
 
