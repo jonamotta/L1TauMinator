@@ -927,6 +927,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
 
+            // give precedence to gen tau matching
+            if (clu9x9.tauMatchIdx != -99) { continue; }
+
             float dEta = clu9x9.seedEta - jet.eta;
             float dPhi = reco::deltaPhi(clu9x9.seedPhi, jet.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
@@ -965,6 +968,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters7x7.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
+
+            // give precedence to gen tau matching
+            if (clu7x7.tauMatchIdx != -99) { continue; }
 
             float dEta = clu7x7.seedEta - jet.eta;
             float dPhi = reco::deltaPhi(clu7x7.seedPhi, jet.phi);
@@ -1005,6 +1011,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
 
+            // give precedence to gen tau matching
+            if (clu5x5.tauMatchIdx != -99) { continue; }
+
             float dEta = clu5x5.seedEta - jet.eta;
             float dPhi = reco::deltaPhi(clu5x5.seedPhi, jet.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
@@ -1044,6 +1053,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
 
+            // give precedence to gen tau matching
+            if (clu5x9.tauMatchIdx == -99) { continue; }
+
             float dEta = clu5x9.seedEta - jet.eta;
             float dPhi = reco::deltaPhi(clu5x9.seedPhi, jet.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
@@ -1082,6 +1094,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            // give precedence to gen tau matching
+            if (hgclu.tauMatchIdx == -99) { continue; }
 
             float dEta = hgclu.eta - jet.eta;
             float dPhi = reco::deltaPhi(hgclu.phi, jet.phi);
