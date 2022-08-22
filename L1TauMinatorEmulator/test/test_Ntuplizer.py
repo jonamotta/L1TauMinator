@@ -95,11 +95,15 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '123X_mcRun4_realistic_v3', '')
 from L1Trigger.L1CaloTrigger.L1EGammaCrystalsEmulatorProducer_cfi import *
 L1TowerProducer_task = cms.Task(L1EGammaClusterEmuProducer)
 
+# from L1Trigger.L1CaloTrigger.L1TowerCalibrationProducer_cfi import *
+# L1TowerCalibrator_task = cms.Task(L1TowerCalibrationProducer)
+
 # Path and EndPath definitions
 process.raw2digi_path     = cms.Path(process.RawToDigi)
-process.calol1tpg_path    = cms.Path(L1TowerProducer_task)
-process.hgcl1tpg_path     = cms.Path(process.hgcalTriggerPrimitives)
-process.caloTower_path    = cms.Path(process.CaloTowerHandler_seq)
+process.caloTpg_path      = cms.Path(L1TowerProducer_task)
+process.hgcTpg_path       = cms.Path(process.hgcalTriggerPrimitives)
+# process.caloTpgCalib_path = cms.Path(L1TowerCalibrator_task)
+process.towerCluster_path = cms.Path(process.CaloTowerHandler_seq)
 process.hgcalCluster_path = cms.Path(process.HGClusterHandler_seq)
 process.generator_path    = cms.Path(process.GenHandler_seq)
 process.ntuplizer_path    = cms.Path(process.Ntuplizer_seq)
@@ -107,9 +111,10 @@ process.ntuplizer_path    = cms.Path(process.Ntuplizer_seq)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_path, 
-                                process.calol1tpg_path,
-                                process.hgcl1tpg_path,
-                                process.caloTower_path,
+                                process.caloTpg_path,
+                                process.hgcTpg_path,
+                                # process.caloTpgCalib_path,
+                                process.towerCluster_path,
                                 process.hgcalCluster_path,
                                 process.generator_path,
                                 process.ntuplizer_path)
