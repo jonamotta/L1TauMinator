@@ -72,7 +72,10 @@ process.source = cms.Source("PoolSource",
                           "keep *",
                           "drop l1tPFCandidates_*_*_*",
                           "drop *_*_*_RECO",
-    )
+    ),
+
+    # eventsToProcess = cms.untracked.VEventRange("1:60844"),
+    # eventsToSkip = cms.untracked.VEventRange('1:224002-1:224019', '1:224021-1:max')
 )
 if options.inputFiles:
     process.source.fileNames = cms.untracked.vstring(options.inputFiles)
