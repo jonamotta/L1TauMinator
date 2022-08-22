@@ -9,9 +9,8 @@ import sys
 import os
 
 def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, etacut, NxM):
-    if len(dfFlatTowClus) == 0 or len(dfFlatGenTaus) == 0 or len(dfFlatGenJets) == 0:
-        print('** ERROR : no tensorization need specified')
-        print('** EXITING')
+    if len(dfFlatTowClus) == 0:
+        print('** WARNING : no data to be tensorized for identification here')
         return
 
     dfGenTaus = dfFlatGenTaus.copy(deep=True)
@@ -73,8 +72,8 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluPU  = dfCluPU.sample(frac=1).copy(deep=True)
 
     # get roughly the same amount of signal ad background to have a more balanced dataset
-    dfCluJet = dfCluJet.head(dfCluTau.shape[0])
-    dfCluPU  = dfCluPU.head(dfCluTau.shape[0])
+    # dfCluJet = dfCluJet.head(dfCluTau.shape[0])
+    # dfCluPU  = dfCluPU.head(dfCluTau.shape[0])
 
     # concatenate and shuffle
     dfCluTauJetPu = pd.concat([dfCluTau, dfCluJet, dfCluPU], axis=0)
@@ -124,8 +123,7 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
 
 def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, NxM):
     if len(dfFlatTowClus) == 0 or len(dfFlatGenTaus) == 0:
-        print('** ERROR : no tensorization need specified')
-        print('** EXITING')
+        print('** WARNING : no data to be tensorized for calibration here')
         return
 
     dfGenTaus = dfFlatGenTaus.copy(deep=True)
@@ -421,6 +419,12 @@ if __name__ == "__main__" :
         'cl_towerEgIet'   : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgIet'])),
         # 'cl_towerNeg'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerNeg'])),
         })
+
+
+    print(dfFlatGenTaus.shape, len(dfFlatGenTaus))
+    print(dfFlatGenJets.shape, len(dfFlatGenJets))
+    print(dfFlatHGClus.shape, len(dfFlatHGClus))
+    print(dfFlatTowClus.shape, len(dfFlatTowClus))
 
 
     ##################### SAVE TO FILE ####################
