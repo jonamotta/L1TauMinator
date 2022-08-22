@@ -421,12 +421,6 @@ if __name__ == "__main__" :
         })
 
 
-    print(dfFlatGenTaus.shape, len(dfFlatGenTaus))
-    print(dfFlatGenJets.shape, len(dfFlatGenJets))
-    print(dfFlatHGClus.shape, len(dfFlatHGClus))
-    print(dfFlatTowClus.shape, len(dfFlatTowClus))
-
-
     ##################### SAVE TO FILE ####################
     print(' ** INFO : saving DFs')
 
