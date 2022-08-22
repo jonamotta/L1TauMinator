@@ -102,18 +102,23 @@ def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, N
 
     # make the input tensors for the neural network
     dfCluJet.set_index('uniqueId',inplace=True)
+    cnt = 0
     for i, idx in enumerate(dfCluJet.index):
         # progress
         if i%1 == 0:
             print(i/len(dfCluJet.index)*100, '%')
 
-        if i == 25: break
-        
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfCluJet.cl_towerIeta.loc[idx]) != N*M: continue
+
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
         HADdeposit = np.transpose(np.array(dfCluJet.cl_towerIhad.loc[idx]).reshape(N,M))
         ECALdeposit  = np.transpose(np.array(dfCluJet.cl_towerIem.loc[idx]).reshape(N,M))
         EGdeposit  = np.transpose(np.array(dfCluJet.cl_towerEgIet.loc[idx]).reshape(N,M))
         EMdeposit = ECALdeposit + EGdeposit
+
+        if cnt == 30: break
+        cnt += 1
 
         HADmax = np.max(dfCluJet.cl_towerIhad.loc[idx])
         EMmax  = np.max(dfCluJet.cl_towerIem.loc[idx])
@@ -252,16 +257,23 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
 
     # make the input tensors for the neural network
     dfCluTau.set_index('uniqueId',inplace=True)
+    cnt = 0
     for i, idx in enumerate(dfCluTau.index):
         # progress
         if i%1 == 0:
             print(i/len(dfCluTau.index)*100, '%')
         
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfCluTau.cl_towerIeta.loc[idx]) != N*M: continue
+
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
         HADdeposit = np.transpose(np.array(dfCluTau.cl_towerIhad.loc[idx]).reshape(N,M))
         ECALdeposit  = np.transpose(np.array(dfCluTau.cl_towerIem.loc[idx]).reshape(N,M))
         EGdeposit  = np.transpose(np.array(dfCluTau.cl_towerEgIet.loc[idx]).reshape(N,M))
         EMdeposit = ECALdeposit + EGdeposit
+
+        if cnt == 30: break
+        cnt += 1
 
         HADmax = np.max(dfCluTau.cl_towerIhad.loc[idx])
         EMmax  = np.max(dfCluTau.cl_towerIem.loc[idx])

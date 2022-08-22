@@ -43,6 +43,8 @@ parser.add_option('--doHH',         dest='doHH',         action='store_true', de
 parser.add_option('--doQCD',        dest='doQCD',        action='store_true', default=False)
 parser.add_option('--doVBFH',       dest='doVBFH',       action='store_true', default=False)
 parser.add_option('--doMinBias',    dest='doMinBias',    action='store_true', default=False)
+parser.add_option('--doZp500',      dest='doZp500',      action='store_true', default=False)
+parser.add_option('--doZp1500',     dest='doZp1500',     action='store_true', default=False)
 parser.add_option('--doTestRun',    dest='doTestRun',    action='store_true', default=False)
 (options, args) = parser.parse_args()
 
@@ -56,8 +58,8 @@ if not options.doTens4Calib and not options.doTens4Ident:
     print('** EXITING')
     exit()
 
-if not options.doHH and not options.doQCD and not options.doVBFH and not options.doMinBias and not options.doTestRun:
-    print('** ERROR : no matching dataset specified. What do you want to do (doHH, doQCD, doVBFH, doMinBias, doTestRun)?')
+if not options.doHH and not options.doQCD and not options.doVBFH and not options.doMinBias and not options.doZp500 and not options.doZp1500 and not options.doTestRun:
+    print('** ERROR : no matching dataset specified. What do you want to do (doHH, doQCD, doVBFH, doMinBias, doZp500, doZp1500, doTestRun)?')
     print('** EXITING')
     exit()
 
@@ -65,19 +67,27 @@ if not options.doHH and not options.doQCD and not options.doVBFH and not options
 indir  = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
 
 if options.doHH:
-    indir  += '/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW__batches'
+    indir  += '/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
     outdir = indir + '/TensorizedInputs_'+options.caloClNxM+options.outTag
 
 elif options.doVBFH:
-    indir  += '/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW__batches'
+    indir  += '/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT__batches'
     outdir = indir + '/TensorizedInputs_'+options.caloClNxM+options.outTag
 
 elif options.doQCD:
-    indir  += '/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW__batches'
+    indir  += '/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT__batches'
     outdir = indir + '/TensorizedInputs_'+options.caloClNxM+options.outTag
 
 elif options.doMinBias:
-    indir  += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW__batches'
+    indir  += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT__batches'
+    outdir = indir + '/TensorizedInputs_'+options.caloClNxM+options.outTag
+
+elif options.doZp500:
+    indir  += '/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
+    outdir = indir + '/TensorizedInputs_'+options.caloClNxM+options.outTag
+
+elif options.doZp1500:
+    indir  += '/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
     outdir = indir + '/TensorizedInputs_'+options.caloClNxM+options.outTag
 
 elif options.doTestRun:

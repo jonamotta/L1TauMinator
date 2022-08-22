@@ -22,6 +22,8 @@ if __name__ == "__main__" :
     parser.add_option('--doQCD',      dest='doQCD',      help='Read the QCD samples?',                      action='store_true', default=False)
     parser.add_option('--doVBFH',     dest='doVBFH',     help='Read the VBF H samples?',                    action='store_true', default=False)
     parser.add_option('--doMinBias',  dest='doMinBias',  help='Read the Minbias samples?',                  action='store_true', default=False)
+    parser.add_option('--doZp500',    dest='doZp500',    help='Read the Minbias samples?',                  action='store_true', default=False)
+    parser.add_option('--doZp1500',   dest='doZp1500',   help='Read the Minbias samples?',                  action='store_true', default=False)
     parser.add_option('--doTestRun',  dest='doTestRun',  help='Do test run with reduced number of events?', action='store_true', default=False)
     parser.add_option('--caloClNxM',  dest='caloClNxM',  help='Which shape of CaloCluster to use?',                              default="9x9")
     parser.add_option("--chunk_size", dest="chunk_size", help="Number of events per DF?",                   type=int,            default=5000)
@@ -32,8 +34,8 @@ if __name__ == "__main__" :
         print('** EXITING')
         exit()
 
-    if not options.doHH and not options.doQCD and not options.doVBFH and not options.doMinBias and not options.doTestRun:
-        print('** WARNING : no matching dataset specified. What do you want to do (doHH, doQCD, doVBFH, doMinBias, doTestRun)?')
+    if not options.doHH and not options.doQCD and not options.doVBFH and not options.doMinBias and not options.doZp500 and not options.doZp1500 and not options.doTestRun:
+        print('** WARNING : no matching dataset specified. What do you want to do (doHH, doQCD, doVBFH, doMinBias, doZp500, doZp1500, doTestRun)?')
         print('** EXITING')
         exit()
 
@@ -43,20 +45,28 @@ if __name__ == "__main__" :
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
 
     if options.doHH:
-        indir  += '/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW'
-        outdir = outdir+'/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW__batches'
+        indir  += '/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD'
+        outdir = outdir+'/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
 
     elif options.doVBFH:
-        indir  += '/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW'
-        outdir = outdir+'/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW__batches'
+        indir  += '/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT'
+        outdir = outdir+'/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT__batches'
 
     elif options.doQCD:
-        indir  += '/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW'
-        outdir = outdir+'/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_castor_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW__batches'
+        indir  += '/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT'
+        outdir = outdir+'/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT__batches'
 
     elif options.doMinBias:
-        indir  += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW'
-        outdir = outdir+'/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW__batches'
+        indir  += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT'
+        outdir = outdir+'/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT__batches'
+
+    elif options.doZp500:
+        indir  += '/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD'
+        outdir = outdir+'/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
+
+    elif options.doZp1500:
+        indir  += '/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD'
+        outdir = outdir+'/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
 
     elif options.doTestRun:
         indir  += '/test'
@@ -80,7 +90,8 @@ if __name__ == "__main__" :
     branches_genjet = ['jet_Idx', 'jet_eta', 'jet_phi', 'jet_pt', 'jet_e', 'jet_eEm', 'jet_eHad', 'jet_eInv']
     branches_cl3d   = ['cl3d_pt', 'cl3d_energy', 'cl3d_eta', 'cl3d_phi', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_seemax', 'cl3d_spptot', 'cl3d_sppmax', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmax', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz', 'cl3d_quality', 'cl3d_tauMatchIdx', 'cl3d_jetMatchIdx']
     NxM = options.caloClNxM
-    branches_clNxM  = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_nEGs', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_towerEgIet', 'cl'+NxM+'_towerNeg']
+    # branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_nEGs', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_towerEgIet', 'cl'+NxM+'_towerNeg']
+    branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_towerEgIet']
 
     # create file to store tags of batches
     tagsFile = open (outdir+'/tagsFile.txt', 'w')
@@ -109,6 +120,9 @@ if __name__ == "__main__" :
 
         # print('*******************************************************')
         # bNxM = NxM.encode('utf-8')
+        # # get clusters' shape dimensions
+        # N = int(NxM.split('x')[0])
+        # M = int(NxM.split('x')[1])
         # print(len(arr_event[b'EventNumber']))
         # print(len(arr_gentau[b'tau_eta']))
         # for i in range(len(arr_gentau[b'tau_eta'])):
@@ -126,6 +140,16 @@ if __name__ == "__main__" :
         #     print('    ->', len(arr_clNxM[b'cl'+bNxM+b'_nHits'][i]))
         # for i in range(len(arr_clNxM[b'cl'+bNxM+b'_towerEta'][0])):
         #     print('        ->', len(arr_clNxM[b'cl'+bNxM+b'_towerEta'][0][i]))
+
+        # evtN = arr_event[b'EventNumber']
+        # ietas = arr_clNxM[b'cl'+bNxM+b'_towerIeta']
+        # seedEtas = arr_clNxM[b'cl'+bNxM+b'_seedIeta']
+        # seedPhis = arr_clNxM[b'cl'+bNxM+b'_seedIphi']
+
+        # for i in range(len(evtN)):
+        #     for j in range(len(ietas[i])):
+        #         if len(ietas[i][j]) != N*M:
+        #             print('    ** WARNING - EVT', evtN[i],'**    ->', len(ietas[i][j]), '    -> seedEta ', seedEtas[i][j], 'seedPhi', seedPhis[i][j])
         # print('*******************************************************')
 
         df_event  = pd.DataFrame(arr_event)
@@ -207,35 +231,35 @@ if __name__ == "__main__" :
             'event'           : np.repeat(dfTowClus[b'EventNumber'].values, dfTowClus[b'cl'+bNxM+b'_seedIeta'].str.len()), # event IDs are copied to keep proper track of what is what
             'cl_barrelSeeded' : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_barrelSeeded'])),
             'cl_nHits'        : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nHits'])),
-            'cl_nEGs'         : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nEGs'])),
+            # 'cl_nEGs'         : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nEGs'])),
             'cl_seedIeta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedIeta'])),
             'cl_seedIphi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedIphi'])),
-            'cl_seedEta'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedEta'])),
-            'cl_seedPhi'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedPhi'])),
+            # 'cl_seedEta'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedEta'])),
+            # 'cl_seedPhi'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedPhi'])),
             'cl_isBarrel'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_isBarrel'])),
             'cl_isOverlap'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_isOverlap'])),
             'cl_isEndcap'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_isEndcap'])),
             'cl_tauMatchIdx'  : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_tauMatchIdx'])),
             'cl_jetMatchIdx'  : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_jetMatchIdx'])),
-            'cl_totalEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEm'])),
-            'cl_totalHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalHad'])),
-            'cl_totalEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEt'])),
+            # 'cl_totalEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEm'])),
+            # 'cl_totalHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalHad'])),
+            # 'cl_totalEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEt'])),
             'cl_totalIem'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIem'])),
             'cl_totalIhad'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIhad'])),
             'cl_totalIet'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIet'])),
-            'cl_towerEta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEta'])),
-            'cl_towerPhi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerPhi'])),
-            'cl_towerEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEm'])),
-            'cl_towerHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerHad'])),
-            'cl_towerEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEt'])),
-            'cl_towerEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgEt'])),
+            # 'cl_towerEta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEta'])),
+            # 'cl_towerPhi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerPhi'])),
+            # 'cl_towerEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEm'])),
+            # 'cl_towerHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerHad'])),
+            # 'cl_towerEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEt'])),
+            # 'cl_towerEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgEt'])),
             'cl_towerIeta'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIeta'])),
             'cl_towerIphi'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIphi'])),
             'cl_towerIem'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIem'])),
             'cl_towerIhad'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIhad'])),
             'cl_towerIet'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIet'])),
             'cl_towerEgIet'   : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgIet'])),
-            'cl_towerNeg'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerNeg'])),
+            # 'cl_towerNeg'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerNeg'])),
             })
 
 

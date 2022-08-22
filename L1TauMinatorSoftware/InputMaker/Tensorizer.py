@@ -87,6 +87,9 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
         if i%100 == 0:
             print(i/len(dfCluTauJetPu.index)*100, '%')
 
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfCluTauJetPu.cl_towerIeta.loc[idx]) != N*M: continue
+
         # features for the NN
         xl = []
         for j in range(N*M):
@@ -174,6 +177,9 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         # progress
         if i%100 == 0:
             print(i/len(dfCluTau.index)*100, '%')
+
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfCluTau.cl_towerIeta.loc[idx]) != N*M: continue
 
         # features for the NN
         xl = []
