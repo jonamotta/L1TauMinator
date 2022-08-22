@@ -38,8 +38,8 @@ parser.add_option('--doHH',         dest='doHH',         help='Read the HH sampl
 parser.add_option('--doQCD',        dest='doQCD',        help='Read the QCD samples?',                      action='store_true', default=False)
 parser.add_option('--doVBFH',       dest='doVBFH',       help='Read the VBF H samples?',                    action='store_true', default=False)
 parser.add_option('--doMinBias',    dest='doMinBias',    help='Read the Minbias samples?',                  action='store_true', default=False)
-parser.add_option('--doZp500',      dest='doZp500',      help='Read the Minbias samples?',                  action='store_true', default=False)
-parser.add_option('--doZp1500',     dest='doZp1500',     help='Read the Minbias samples?',                  action='store_true', default=False)
+parser.add_option('--doZp500',      dest='doZp500',      help='Read the Zp500 samples?',                    action='store_true', default=False)
+parser.add_option('--doZp1500',     dest='doZp1500',     help='Read the Zp1500 samples?',                   action='store_true', default=False)
 parser.add_option('--doTestRun',    dest='doTestRun',    help='Do test run with reduced number of events?', action='store_true', default=False)
 # TENSORIZATION OPTIONS
 parser.add_option("--outTag",       dest="outTag",                            default="")
@@ -93,7 +93,7 @@ elif options.doZp500:
 
 elif options.doZp1500:
     indir  += '/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD'
-    outdir += +'/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
+    outdir += '/ZprimeToTauTau_M-1500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches'
 
 elif options.doTestRun:
     indir  += '/test'
