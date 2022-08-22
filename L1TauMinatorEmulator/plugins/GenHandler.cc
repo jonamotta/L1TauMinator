@@ -240,7 +240,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     for (auto& jet : *genJetsHandle.product())
     {
         // skip very forward jets
-        if (jet.eta() > 3.5) { continue; }
+        if (abs(jet.eta()) > 3.5) { continue; }
 
         GenHelper::GenJet GenJet;
 
