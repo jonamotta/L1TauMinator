@@ -1089,7 +1089,6 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
             writable_clu9x9.tauMatchIdx = tauIdx;
-
         }
 
         if (DEBUG) { std::cout << " ----------------------------------------------------------------------------------------------------------- " << std::endl; }
