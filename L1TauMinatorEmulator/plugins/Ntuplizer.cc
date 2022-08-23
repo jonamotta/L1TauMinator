@@ -55,6 +55,15 @@ class Ntuplizer : public edm::EDAnalyzer {
         edm::EDGetTokenT<TowerHelper::TowerClustersCollection> CaloClusters5x9Token;
         edm::Handle<TowerHelper::TowerClustersCollection> CaloClusters5x9Handle;
 
+        edm::EDGetTokenT<TowerHelper::TowerClustersCollection> CaloClusters5x7Token;
+        edm::Handle<TowerHelper::TowerClustersCollection> CaloClusters5x7Handle;
+
+        edm::EDGetTokenT<TowerHelper::TowerClustersCollection> CaloClusters3x7Token;
+        edm::Handle<TowerHelper::TowerClustersCollection> CaloClusters3x7Handle;
+
+        edm::EDGetTokenT<TowerHelper::TowerClustersCollection> CaloClusters3x5Token;
+        edm::Handle<TowerHelper::TowerClustersCollection> CaloClusters3x5Handle;
+
         edm::EDGetTokenT<HGClusterHelper::HGClustersCollection> HGClustersToken;
         edm::Handle<HGClusterHelper::HGClustersCollection> HGClustersHandle;
 
@@ -90,6 +99,74 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _tau_visEHad;
         std::vector<int>   _tau_DM;
         std::vector<int>   _tau_Idx;
+        std::vector<float> _tau_cl9x9_dEta;
+        std::vector<float> _tau_cl9x9_dPhi;
+        std::vector<float> _tau_cl9x9_dR;
+        std::vector<float> _tau_cl9x9_dPt;
+        std::vector<float> _tau_cl9x9_dPtOPt;
+        std::vector<float> _tau_cl9x9_dPtEm;
+        std::vector<float> _tau_cl9x9_dPtEmOPtEm;
+        std::vector<float> _tau_cl9x9_dPtHad;
+        std::vector<float> _tau_cl9x9_dPtHadOPtHad;
+        std::vector<float> _tau_cl7x7_dEta;
+        std::vector<float> _tau_cl7x7_dPhi;
+        std::vector<float> _tau_cl7x7_dR;
+        std::vector<float> _tau_cl7x7_dPt;
+        std::vector<float> _tau_cl7x7_dPtOPt;
+        std::vector<float> _tau_cl7x7_dPtEm;
+        std::vector<float> _tau_cl7x7_dPtEmOPtEm;
+        std::vector<float> _tau_cl7x7_dPtHad;
+        std::vector<float> _tau_cl7x7_dPtHadOPtHad;
+        std::vector<float> _tau_cl5x5_dEta;
+        std::vector<float> _tau_cl5x5_dPhi;
+        std::vector<float> _tau_cl5x5_dR;
+        std::vector<float> _tau_cl5x5_dPt;
+        std::vector<float> _tau_cl5x5_dPtOPt;
+        std::vector<float> _tau_cl5x5_dPtEm;
+        std::vector<float> _tau_cl5x5_dPtEmOPtEm;
+        std::vector<float> _tau_cl5x5_dPtHad;
+        std::vector<float> _tau_cl5x5_dPtHadOPtHad;
+        std::vector<float> _tau_cl5x9_dEta;
+        std::vector<float> _tau_cl5x9_dPhi;
+        std::vector<float> _tau_cl5x9_dR;
+        std::vector<float> _tau_cl5x9_dPt;
+        std::vector<float> _tau_cl5x9_dPtOPt;
+        std::vector<float> _tau_cl5x9_dPtEm;
+        std::vector<float> _tau_cl5x9_dPtEmOPtEm;
+        std::vector<float> _tau_cl5x9_dPtHad;
+        std::vector<float> _tau_cl5x9_dPtHadOPtHad;
+        std::vector<float> _tau_cl5x7_dEta;
+        std::vector<float> _tau_cl5x7_dPhi;
+        std::vector<float> _tau_cl5x7_dR;
+        std::vector<float> _tau_cl5x7_dPt;
+        std::vector<float> _tau_cl5x7_dPtOPt;
+        std::vector<float> _tau_cl5x7_dPtEm;
+        std::vector<float> _tau_cl5x7_dPtEmOPtEm;
+        std::vector<float> _tau_cl5x7_dPtHad;
+        std::vector<float> _tau_cl5x7_dPtHadOPtHad;
+        std::vector<float> _tau_cl3x7_dEta;
+        std::vector<float> _tau_cl3x7_dPhi;
+        std::vector<float> _tau_cl3x7_dR;
+        std::vector<float> _tau_cl3x7_dPt;
+        std::vector<float> _tau_cl3x7_dPtOPt;
+        std::vector<float> _tau_cl3x7_dPtEm;
+        std::vector<float> _tau_cl3x7_dPtEmOPtEm;
+        std::vector<float> _tau_cl3x7_dPtHad;
+        std::vector<float> _tau_cl3x7_dPtHadOPtHad;
+        std::vector<float> _tau_cl3x5_dEta;
+        std::vector<float> _tau_cl3x5_dPhi;
+        std::vector<float> _tau_cl3x5_dR;
+        std::vector<float> _tau_cl3x5_dPt;
+        std::vector<float> _tau_cl3x5_dPtOPt;
+        std::vector<float> _tau_cl3x5_dPtEm;
+        std::vector<float> _tau_cl3x5_dPtEmOPtEm;
+        std::vector<float> _tau_cl3x5_dPtHad;
+        std::vector<float> _tau_cl3x5_dPtHadOPtHad;
+        std::vector<float> _tau_cl3d_dEta;
+        std::vector<float> _tau_cl3d_dPhi;
+        std::vector<float> _tau_cl3d_dR;
+        std::vector<float> _tau_cl3d_dPt;
+        std::vector<float> _tau_cl3d_dPtOPt;
 
         std::vector<float> _jet_eta;
         std::vector<float> _jet_phi;
@@ -99,6 +176,46 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _jet_eHad;
         std::vector<float> _jet_eInv;
         std::vector<int>   _jet_Idx;
+        std::vector<float> _jet_cl9x9_dEta;
+        std::vector<float> _jet_cl9x9_dPhi;
+        std::vector<float> _jet_cl9x9_dR;
+        std::vector<float> _jet_cl9x9_dPt;
+        std::vector<float> _jet_cl9x9_dPtOPt;
+        std::vector<float> _jet_cl7x7_dEta;
+        std::vector<float> _jet_cl7x7_dPhi;
+        std::vector<float> _jet_cl7x7_dR;
+        std::vector<float> _jet_cl7x7_dPt;
+        std::vector<float> _jet_cl7x7_dPtOPt;
+        std::vector<float> _jet_cl5x5_dEta;
+        std::vector<float> _jet_cl5x5_dPhi;
+        std::vector<float> _jet_cl5x5_dR;
+        std::vector<float> _jet_cl5x5_dPt;
+        std::vector<float> _jet_cl5x5_dPtOPt;
+        std::vector<float> _jet_cl5x9_dEta;
+        std::vector<float> _jet_cl5x9_dPhi;
+        std::vector<float> _jet_cl5x9_dR;
+        std::vector<float> _jet_cl5x9_dPt;
+        std::vector<float> _jet_cl5x9_dPtOPt;
+        std::vector<float> _jet_cl5x7_dEta;
+        std::vector<float> _jet_cl5x7_dPhi;
+        std::vector<float> _jet_cl5x7_dR;
+        std::vector<float> _jet_cl5x7_dPt;
+        std::vector<float> _jet_cl5x7_dPtOPt;
+        std::vector<float> _jet_cl3x7_dEta;
+        std::vector<float> _jet_cl3x7_dPhi;
+        std::vector<float> _jet_cl3x7_dR;
+        std::vector<float> _jet_cl3x7_dPt;
+        std::vector<float> _jet_cl3x7_dPtOPt;
+        std::vector<float> _jet_cl3x5_dEta;
+        std::vector<float> _jet_cl3x5_dPhi;
+        std::vector<float> _jet_cl3x5_dR;
+        std::vector<float> _jet_cl3x5_dPt;
+        std::vector<float> _jet_cl3x5_dPtOPt;
+        std::vector<float> _jet_cl3d_dEta;
+        std::vector<float> _jet_cl3d_dPhi;
+        std::vector<float> _jet_cl3d_dR;
+        std::vector<float> _jet_cl3d_dPt;
+        std::vector<float> _jet_cl3d_dPtOPt;
 
         std::vector<float> _cl3d_pt;
         std::vector<float> _cl3d_energy;
@@ -248,6 +365,102 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector< std::vector<int> >   _cl5x9_towerIet;
         std::vector< std::vector<int> >   _cl5x9_towerEgIet;
         std::vector< std::vector<int> >   _cl5x9_towerNeg;
+
+        std::vector<bool>  _cl5x7_barrelSeeded;
+        std::vector<int>   _cl5x7_nHits;
+        std::vector<int>   _cl5x7_nEGs;
+        std::vector<int>   _cl5x7_seedIeta;
+        std::vector<int>   _cl5x7_seedIphi;
+        std::vector<float> _cl5x7_seedEta;
+        std::vector<float> _cl5x7_seedPhi;
+        std::vector<bool>  _cl5x7_isBarrel;
+        std::vector<bool>  _cl5x7_isOverlap;
+        std::vector<bool>  _cl5x7_isEndcap;
+        std::vector<int>   _cl5x7_tauMatchIdx;
+        std::vector<int>   _cl5x7_jetMatchIdx;
+        std::vector<float> _cl5x7_totalEm;
+        std::vector<float> _cl5x7_totalHad;
+        std::vector<float> _cl5x7_totalEt;
+        std::vector<float> _cl5x7_totalIem;
+        std::vector<float> _cl5x7_totalIhad;
+        std::vector<float> _cl5x7_totalIet;
+        std::vector< std::vector<float> > _cl5x7_towerEta;
+        std::vector< std::vector<float> > _cl5x7_towerPhi;
+        std::vector< std::vector<float> > _cl5x7_towerEm;
+        std::vector< std::vector<float> > _cl5x7_towerHad;
+        std::vector< std::vector<float> > _cl5x7_towerEt;
+        std::vector< std::vector<float> > _cl5x7_towerEgEt;
+        std::vector< std::vector<int> >   _cl5x7_towerIeta;
+        std::vector< std::vector<int> >   _cl5x7_towerIphi;
+        std::vector< std::vector<int> >   _cl5x7_towerIem;
+        std::vector< std::vector<int> >   _cl5x7_towerIhad;
+        std::vector< std::vector<int> >   _cl5x7_towerIet;
+        std::vector< std::vector<int> >   _cl5x7_towerEgIet;
+        std::vector< std::vector<int> >   _cl5x7_towerNeg;
+
+        std::vector<bool>  _cl3x7_barrelSeeded;
+        std::vector<int>   _cl3x7_nHits;
+        std::vector<int>   _cl3x7_nEGs;
+        std::vector<int>   _cl3x7_seedIeta;
+        std::vector<int>   _cl3x7_seedIphi;
+        std::vector<float> _cl3x7_seedEta;
+        std::vector<float> _cl3x7_seedPhi;
+        std::vector<bool>  _cl3x7_isBarrel;
+        std::vector<bool>  _cl3x7_isOverlap;
+        std::vector<bool>  _cl3x7_isEndcap;
+        std::vector<int>   _cl3x7_tauMatchIdx;
+        std::vector<int>   _cl3x7_jetMatchIdx;
+        std::vector<float> _cl3x7_totalEm;
+        std::vector<float> _cl3x7_totalHad;
+        std::vector<float> _cl3x7_totalEt;
+        std::vector<float> _cl3x7_totalIem;
+        std::vector<float> _cl3x7_totalIhad;
+        std::vector<float> _cl3x7_totalIet;
+        std::vector< std::vector<float> > _cl3x7_towerEta;
+        std::vector< std::vector<float> > _cl3x7_towerPhi;
+        std::vector< std::vector<float> > _cl3x7_towerEm;
+        std::vector< std::vector<float> > _cl3x7_towerHad;
+        std::vector< std::vector<float> > _cl3x7_towerEt;
+        std::vector< std::vector<float> > _cl3x7_towerEgEt;
+        std::vector< std::vector<int> >   _cl3x7_towerIeta;
+        std::vector< std::vector<int> >   _cl3x7_towerIphi;
+        std::vector< std::vector<int> >   _cl3x7_towerIem;
+        std::vector< std::vector<int> >   _cl3x7_towerIhad;
+        std::vector< std::vector<int> >   _cl3x7_towerIet;
+        std::vector< std::vector<int> >   _cl3x7_towerEgIet;
+        std::vector< std::vector<int> >   _cl3x7_towerNeg;
+
+        std::vector<bool>  _cl3x5_barrelSeeded;
+        std::vector<int>   _cl3x5_nHits;
+        std::vector<int>   _cl3x5_nEGs;
+        std::vector<int>   _cl3x5_seedIeta;
+        std::vector<int>   _cl3x5_seedIphi;
+        std::vector<float> _cl3x5_seedEta;
+        std::vector<float> _cl3x5_seedPhi;
+        std::vector<bool>  _cl3x5_isBarrel;
+        std::vector<bool>  _cl3x5_isOverlap;
+        std::vector<bool>  _cl3x5_isEndcap;
+        std::vector<int>   _cl3x5_tauMatchIdx;
+        std::vector<int>   _cl3x5_jetMatchIdx;
+        std::vector<float> _cl3x5_totalEm;
+        std::vector<float> _cl3x5_totalHad;
+        std::vector<float> _cl3x5_totalEt;
+        std::vector<float> _cl3x5_totalIem;
+        std::vector<float> _cl3x5_totalIhad;
+        std::vector<float> _cl3x5_totalIet;
+        std::vector< std::vector<float> > _cl3x5_towerEta;
+        std::vector< std::vector<float> > _cl3x5_towerPhi;
+        std::vector< std::vector<float> > _cl3x5_towerEm;
+        std::vector< std::vector<float> > _cl3x5_towerHad;
+        std::vector< std::vector<float> > _cl3x5_towerEt;
+        std::vector< std::vector<float> > _cl3x5_towerEgEt;
+        std::vector< std::vector<int> >   _cl3x5_towerIeta;
+        std::vector< std::vector<int> >   _cl3x5_towerIphi;
+        std::vector< std::vector<int> >   _cl3x5_towerIem;
+        std::vector< std::vector<int> >   _cl3x5_towerIhad;
+        std::vector< std::vector<int> >   _cl3x5_towerIet;
+        std::vector< std::vector<int> >   _cl3x5_towerEgIet;
+        std::vector< std::vector<int> >   _cl3x5_towerNeg;
 };
 
 /*
@@ -264,6 +477,9 @@ Ntuplizer::Ntuplizer(const edm::ParameterSet& iConfig)
       CaloClusters7x7Token(consumes<TowerHelper::TowerClustersCollection>(iConfig.getParameter<edm::InputTag>("CaloClusters7x7"))),
       CaloClusters5x5Token(consumes<TowerHelper::TowerClustersCollection>(iConfig.getParameter<edm::InputTag>("CaloClusters5x5"))),
       CaloClusters5x9Token(consumes<TowerHelper::TowerClustersCollection>(iConfig.getParameter<edm::InputTag>("CaloClusters5x9"))),
+      CaloClusters5x7Token(consumes<TowerHelper::TowerClustersCollection>(iConfig.getParameter<edm::InputTag>("CaloClusters5x7"))),
+      CaloClusters3x7Token(consumes<TowerHelper::TowerClustersCollection>(iConfig.getParameter<edm::InputTag>("CaloClusters3x7"))),
+      CaloClusters3x5Token(consumes<TowerHelper::TowerClustersCollection>(iConfig.getParameter<edm::InputTag>("CaloClusters3x5"))),
       HGClustersToken(consumes<HGClusterHelper::HGClustersCollection>(iConfig.getParameter<edm::InputTag>("HGClusters"))),
       genTausToken(consumes<GenHelper::GenTausCollection>(iConfig.getParameter<edm::InputTag>("genTaus"))),
       genJetsToken(consumes<GenHelper::GenJetsCollection>(iConfig.getParameter<edm::InputTag>("genJets"))),
@@ -299,6 +515,74 @@ void Ntuplizer::Initialize()
     _tau_visEHad.clear();
     _tau_DM.clear();
     _tau_Idx.clear();
+    _tau_cl9x9_dEta.clear();
+    _tau_cl9x9_dPhi.clear();
+    _tau_cl9x9_dR.clear();
+    _tau_cl9x9_dPt.clear();
+    _tau_cl9x9_dPtOPt.clear();
+    _tau_cl9x9_dPtEm.clear();
+    _tau_cl9x9_dPtEmOPtEm.clear();
+    _tau_cl9x9_dPtHad.clear();
+    _tau_cl9x9_dPtHadOPtHad.clear();
+    _tau_cl7x7_dEta.clear();
+    _tau_cl7x7_dPhi.clear();
+    _tau_cl7x7_dR.clear();
+    _tau_cl7x7_dPt.clear();
+    _tau_cl7x7_dPtOPt.clear();
+    _tau_cl7x7_dPtEm.clear();
+    _tau_cl7x7_dPtEmOPtEm.clear();
+    _tau_cl7x7_dPtHad.clear();
+    _tau_cl7x7_dPtHadOPtHad.clear();
+    _tau_cl5x5_dEta.clear();
+    _tau_cl5x5_dPhi.clear();
+    _tau_cl5x5_dR.clear();
+    _tau_cl5x5_dPt.clear();
+    _tau_cl5x5_dPtOPt.clear();
+    _tau_cl5x5_dPtEm.clear();
+    _tau_cl5x5_dPtEmOPtEm.clear();
+    _tau_cl5x5_dPtHad.clear();
+    _tau_cl5x5_dPtHadOPtHad.clear();
+    _tau_cl5x9_dEta.clear();
+    _tau_cl5x9_dPhi.clear();
+    _tau_cl5x9_dR.clear();
+    _tau_cl5x9_dPt.clear();
+    _tau_cl5x9_dPtOPt.clear();
+    _tau_cl5x9_dPtEm.clear();
+    _tau_cl5x9_dPtEmOPtEm.clear();
+    _tau_cl5x9_dPtHad.clear();
+    _tau_cl5x9_dPtHadOPtHad.clear();
+    _tau_cl5x7_dEta.clear();
+    _tau_cl5x7_dPhi.clear();
+    _tau_cl5x7_dR.clear();
+    _tau_cl5x7_dPt.clear();
+    _tau_cl5x7_dPtOPt.clear();
+    _tau_cl5x7_dPtEm.clear();
+    _tau_cl5x7_dPtEmOPtEm.clear();
+    _tau_cl5x7_dPtHad.clear();
+    _tau_cl5x7_dPtHadOPtHad.clear();
+    _tau_cl3x7_dEta.clear();
+    _tau_cl3x7_dPhi.clear();
+    _tau_cl3x7_dR.clear();
+    _tau_cl3x7_dPt.clear();
+    _tau_cl3x7_dPtOPt.clear();
+    _tau_cl3x7_dPtEm.clear();
+    _tau_cl3x7_dPtEmOPtEm.clear();
+    _tau_cl3x7_dPtHad.clear();
+    _tau_cl3x7_dPtHadOPtHad.clear();
+    _tau_cl3x5_dEta.clear();
+    _tau_cl3x5_dPhi.clear();
+    _tau_cl3x5_dR.clear();
+    _tau_cl3x5_dPt.clear();
+    _tau_cl3x5_dPtOPt.clear();
+    _tau_cl3x5_dPtEm.clear();
+    _tau_cl3x5_dPtEmOPtEm.clear();
+    _tau_cl3x5_dPtHad.clear();
+    _tau_cl3x5_dPtHadOPtHad.clear();
+    _tau_cl3d_dEta.clear();
+    _tau_cl3d_dPhi.clear();
+    _tau_cl3d_dR.clear();
+    _tau_cl3d_dPt.clear();
+    _tau_cl3d_dPtOPt.clear();
 
     _jet_eta.clear();
     _jet_phi.clear();
@@ -308,6 +592,46 @@ void Ntuplizer::Initialize()
     _jet_eHad.clear();
     _jet_eInv.clear();
     _jet_Idx.clear();
+    _jet_cl9x9_dEta.clear();
+    _jet_cl9x9_dPhi.clear();
+    _jet_cl9x9_dR.clear();
+    _jet_cl9x9_dPt.clear();
+    _jet_cl9x9_dPtOPt.clear();
+    _jet_cl7x7_dEta.clear();
+    _jet_cl7x7_dPhi.clear();
+    _jet_cl7x7_dR.clear();
+    _jet_cl7x7_dPt.clear();
+    _jet_cl7x7_dPtOPt.clear();
+    _jet_cl5x5_dEta.clear();
+    _jet_cl5x5_dPhi.clear();
+    _jet_cl5x5_dR.clear();
+    _jet_cl5x5_dPt.clear();
+    _jet_cl5x5_dPtOPt.clear();
+    _jet_cl5x9_dEta.clear();
+    _jet_cl5x9_dPhi.clear();
+    _jet_cl5x9_dR.clear();
+    _jet_cl5x9_dPt.clear();
+    _jet_cl5x9_dPtOPt.clear();
+    _jet_cl5x7_dEta.clear();
+    _jet_cl5x7_dPhi.clear();
+    _jet_cl5x7_dR.clear();
+    _jet_cl5x7_dPt.clear();
+    _jet_cl5x7_dPtOPt.clear();
+    _jet_cl3x7_dEta.clear();
+    _jet_cl3x7_dPhi.clear();
+    _jet_cl3x7_dR.clear();
+    _jet_cl3x7_dPt.clear();
+    _jet_cl3x7_dPtOPt.clear();
+    _jet_cl3x5_dEta.clear();
+    _jet_cl3x5_dPhi.clear();
+    _jet_cl3x5_dR.clear();
+    _jet_cl3x5_dPt.clear();
+    _jet_cl3x5_dPtOPt.clear();
+    _jet_cl3d_dEta.clear();
+    _jet_cl3d_dPhi.clear();
+    _jet_cl3d_dR.clear();
+    _jet_cl3d_dPt.clear();
+    _jet_cl3d_dPtOPt.clear();
 
     _cl3d_pt.clear();
     _cl3d_energy.clear();
@@ -457,6 +781,102 @@ void Ntuplizer::Initialize()
     _cl5x9_towerIet.clear();
     _cl5x9_towerEgIet.clear();
     _cl5x9_towerNeg.clear();
+
+    _cl5x7_barrelSeeded.clear();
+    _cl5x7_nHits.clear();
+    _cl5x7_nEGs.clear();
+    _cl5x7_seedIeta.clear();
+    _cl5x7_seedIphi.clear();
+    _cl5x7_seedEta.clear();
+    _cl5x7_seedPhi.clear();
+    _cl5x7_isBarrel.clear();
+    _cl5x7_isOverlap.clear();
+    _cl5x7_isEndcap.clear();
+    _cl5x7_tauMatchIdx.clear();
+    _cl5x7_jetMatchIdx.clear();
+    _cl5x7_totalEm.clear();
+    _cl5x7_totalHad.clear();
+    _cl5x7_totalEt.clear();
+    _cl5x7_totalIem.clear();
+    _cl5x7_totalIhad.clear();
+    _cl5x7_totalIet.clear();
+    _cl5x7_towerEta.clear();
+    _cl5x7_towerPhi.clear();
+    _cl5x7_towerEm.clear();
+    _cl5x7_towerHad.clear();
+    _cl5x7_towerEt.clear();
+    _cl5x7_towerEgEt.clear();
+    _cl5x7_towerIeta.clear();
+    _cl5x7_towerIphi.clear();
+    _cl5x7_towerIem.clear();
+    _cl5x7_towerIhad.clear();
+    _cl5x7_towerIet.clear();
+    _cl5x7_towerEgIet.clear();
+    _cl5x7_towerNeg.clear();
+
+    _cl3x7_barrelSeeded.clear();
+    _cl3x7_nHits.clear();
+    _cl3x7_nEGs.clear();
+    _cl3x7_seedIeta.clear();
+    _cl3x7_seedIphi.clear();
+    _cl3x7_seedEta.clear();
+    _cl3x7_seedPhi.clear();
+    _cl3x7_isBarrel.clear();
+    _cl3x7_isOverlap.clear();
+    _cl3x7_isEndcap.clear();
+    _cl3x7_tauMatchIdx.clear();
+    _cl3x7_jetMatchIdx.clear();
+    _cl3x7_totalEm.clear();
+    _cl3x7_totalHad.clear();
+    _cl3x7_totalEt.clear();
+    _cl3x7_totalIem.clear();
+    _cl3x7_totalIhad.clear();
+    _cl3x7_totalIet.clear();
+    _cl3x7_towerEta.clear();
+    _cl3x7_towerPhi.clear();
+    _cl3x7_towerEm.clear();
+    _cl3x7_towerHad.clear();
+    _cl3x7_towerEt.clear();
+    _cl3x7_towerEgEt.clear();
+    _cl3x7_towerIeta.clear();
+    _cl3x7_towerIphi.clear();
+    _cl3x7_towerIem.clear();
+    _cl3x7_towerIhad.clear();
+    _cl3x7_towerIet.clear();
+    _cl3x7_towerEgIet.clear();
+    _cl3x7_towerNeg.clear();
+
+    _cl3x5_barrelSeeded.clear();
+    _cl3x5_nHits.clear();
+    _cl3x5_nEGs.clear();
+    _cl3x5_seedIeta.clear();
+    _cl3x5_seedIphi.clear();
+    _cl3x5_seedEta.clear();
+    _cl3x5_seedPhi.clear();
+    _cl3x5_isBarrel.clear();
+    _cl3x5_isOverlap.clear();
+    _cl3x5_isEndcap.clear();
+    _cl3x5_tauMatchIdx.clear();
+    _cl3x5_jetMatchIdx.clear();
+    _cl3x5_totalEm.clear();
+    _cl3x5_totalHad.clear();
+    _cl3x5_totalEt.clear();
+    _cl3x5_totalIem.clear();
+    _cl3x5_totalIhad.clear();
+    _cl3x5_totalIet.clear();
+    _cl3x5_towerEta.clear();
+    _cl3x5_towerPhi.clear();
+    _cl3x5_towerEm.clear();
+    _cl3x5_towerHad.clear();
+    _cl3x5_towerEt.clear();
+    _cl3x5_towerEgEt.clear();
+    _cl3x5_towerIeta.clear();
+    _cl3x5_towerIphi.clear();
+    _cl3x5_towerIem.clear();
+    _cl3x5_towerIhad.clear();
+    _cl3x5_towerIet.clear();
+    _cl3x5_towerEgIet.clear();
+    _cl3x5_towerNeg.clear();
 }
 
 void Ntuplizer::beginJob()
@@ -483,6 +903,74 @@ void Ntuplizer::beginJob()
     _tree -> Branch("tau_visEHad",  &_tau_visEHad);
     _tree -> Branch("tau_DM",       &_tau_DM);
     _tree -> Branch("tau_Idx",      &_tau_Idx);
+    _tree -> Branch("tau_cl9x9_dEta",         &_tau_cl9x9_dEta);
+    _tree -> Branch("tau_cl9x9_dPhi",         &_tau_cl9x9_dPhi);
+    _tree -> Branch("tau_cl9x9_dR",           &_tau_cl9x9_dR);
+    _tree -> Branch("tau_cl9x9_dPt",          &_tau_cl9x9_dPt);
+    _tree -> Branch("tau_cl9x9_dPtOPt",       &_tau_cl9x9_dPtOPt);
+    _tree -> Branch("tau_cl9x9_dPtEm",        &_tau_cl9x9_dPtEm);
+    _tree -> Branch("tau_cl9x9_dPtEmOPtEm",   &_tau_cl9x9_dPtEmOPtEm);
+    _tree -> Branch("tau_cl9x9_dPtHad",       &_tau_cl9x9_dPtHad);
+    _tree -> Branch("tau_cl9x9_dPtHadOPtHad", &_tau_cl9x9_dPtHadOPtHad);
+    _tree -> Branch("tau_cl7x7_dEta",         &_tau_cl7x7_dEta);
+    _tree -> Branch("tau_cl7x7_dPhi",         &_tau_cl7x7_dPhi);
+    _tree -> Branch("tau_cl7x7_dR",           &_tau_cl7x7_dR);
+    _tree -> Branch("tau_cl7x7_dPt",          &_tau_cl7x7_dPt);
+    _tree -> Branch("tau_cl7x7_dPtOPt",       &_tau_cl7x7_dPtOPt);
+    _tree -> Branch("tau_cl7x7_dPtEm",        &_tau_cl7x7_dPtEm);
+    _tree -> Branch("tau_cl7x7_dPtEmOPtEm",   &_tau_cl7x7_dPtEmOPtEm);
+    _tree -> Branch("tau_cl7x7_dPtHad",       &_tau_cl7x7_dPtHad);
+    _tree -> Branch("tau_cl7x7_dPtHadOPtHad", &_tau_cl7x7_dPtHadOPtHad);
+    _tree -> Branch("tau_cl5x5_dEta",         &_tau_cl5x5_dEta);
+    _tree -> Branch("tau_cl5x5_dPhi",         &_tau_cl5x5_dPhi);
+    _tree -> Branch("tau_cl5x5_dR",           &_tau_cl5x5_dR);
+    _tree -> Branch("tau_cl5x5_dPt",          &_tau_cl5x5_dPt);
+    _tree -> Branch("tau_cl5x5_dPtOPt",       &_tau_cl5x5_dPtOPt);
+    _tree -> Branch("tau_cl5x5_dPtEm",        &_tau_cl5x5_dPtEm);
+    _tree -> Branch("tau_cl5x5_dPtEmOPtEm",   &_tau_cl5x5_dPtEmOPtEm);
+    _tree -> Branch("tau_cl5x5_dPtHad",       &_tau_cl5x5_dPtHad);
+    _tree -> Branch("tau_cl5x5_dPtHadOPtHad", &_tau_cl5x5_dPtHadOPtHad);
+    _tree -> Branch("tau_cl5x9_dEta",         &_tau_cl5x9_dEta);
+    _tree -> Branch("tau_cl5x9_dPhi",         &_tau_cl5x9_dPhi);
+    _tree -> Branch("tau_cl5x9_dR",           &_tau_cl5x9_dR);
+    _tree -> Branch("tau_cl5x9_dPt",          &_tau_cl5x9_dPt);
+    _tree -> Branch("tau_cl5x9_dPtOPt",       &_tau_cl5x9_dPtOPt);
+    _tree -> Branch("tau_cl5x9_dPtEm",        &_tau_cl5x9_dPtEm);
+    _tree -> Branch("tau_cl5x9_dPtEmOPtEm",   &_tau_cl5x9_dPtEmOPtEm);
+    _tree -> Branch("tau_cl5x9_dPtHad",       &_tau_cl5x9_dPtHad);
+    _tree -> Branch("tau_cl5x9_dPtHadOPtHad", &_tau_cl5x9_dPtHadOPtHad);
+    _tree -> Branch("tau_cl5x7_dEta",         &_tau_cl5x7_dEta);
+    _tree -> Branch("tau_cl5x7_dPhi",         &_tau_cl5x7_dPhi);
+    _tree -> Branch("tau_cl5x7_dR",           &_tau_cl5x7_dR);
+    _tree -> Branch("tau_cl5x7_dPt",          &_tau_cl5x7_dPt);
+    _tree -> Branch("tau_cl5x7_dPtOPt",       &_tau_cl5x7_dPtOPt);
+    _tree -> Branch("tau_cl5x7_dPtEm",        &_tau_cl5x7_dPtEm);
+    _tree -> Branch("tau_cl5x7_dPtEmOPtEm",   &_tau_cl5x7_dPtEmOPtEm);
+    _tree -> Branch("tau_cl5x7_dPtHad",       &_tau_cl5x7_dPtHad);
+    _tree -> Branch("tau_cl5x7_dPtHadOPtHad", &_tau_cl5x7_dPtHadOPtHad);
+    _tree -> Branch("tau_cl3x7_dEta",         &_tau_cl3x7_dEta);
+    _tree -> Branch("tau_cl3x7_dPhi",         &_tau_cl3x7_dPhi);
+    _tree -> Branch("tau_cl3x7_dR",           &_tau_cl3x7_dR);
+    _tree -> Branch("tau_cl3x7_dPt",          &_tau_cl3x7_dPt);
+    _tree -> Branch("tau_cl3x7_dPtOPt",       &_tau_cl3x7_dPtOPt);
+    _tree -> Branch("tau_cl3x7_dPtEm",        &_tau_cl3x7_dPtEm);
+    _tree -> Branch("tau_cl3x7_dPtEmOPtEm",   &_tau_cl3x7_dPtEmOPtEm);
+    _tree -> Branch("tau_cl3x7_dPtHad",       &_tau_cl3x7_dPtHad);
+    _tree -> Branch("tau_cl3x7_dPtHadOPtHad", &_tau_cl3x7_dPtHadOPtHad);
+    _tree -> Branch("tau_cl3x5_dEta",         &_tau_cl3x5_dEta);
+    _tree -> Branch("tau_cl3x5_dPhi",         &_tau_cl3x5_dPhi);
+    _tree -> Branch("tau_cl3x5_dR",           &_tau_cl3x5_dR);
+    _tree -> Branch("tau_cl3x5_dPt",          &_tau_cl3x5_dPt);
+    _tree -> Branch("tau_cl3x5_dPtOPt",       &_tau_cl3x5_dPtOPt);
+    _tree -> Branch("tau_cl3x5_dPtEm",        &_tau_cl3x5_dPtEm);
+    _tree -> Branch("tau_cl3x5_dPtEmOPtEm",   &_tau_cl3x5_dPtEmOPtEm);
+    _tree -> Branch("tau_cl3x5_dPtHad",       &_tau_cl3x5_dPtHad);
+    _tree -> Branch("tau_cl3x5_dPtHadOPtHad", &_tau_cl3x5_dPtHadOPtHad);
+    _tree -> Branch("tau_cl3d_dEta",          &_tau_cl3d_dEta);
+    _tree -> Branch("tau_cl3d_dPhi",          &_tau_cl3d_dPhi);
+    _tree -> Branch("tau_cl3d_dR",            &_tau_cl3d_dR);
+    _tree -> Branch("tau_cl3d_dPt",           &_tau_cl3d_dPt);
+    _tree -> Branch("tau_cl3d_dPtOPt",        &_tau_cl3d_dPtOPt);
 
     _tree -> Branch("jet_eta",  &_jet_eta);
     _tree -> Branch("jet_phi",  &_jet_phi);
@@ -492,6 +980,46 @@ void Ntuplizer::beginJob()
     _tree -> Branch("jet_eHad", &_jet_eHad);
     _tree -> Branch("jet_eInv", &_jet_eInv);
     _tree -> Branch("jet_Idx",  &_jet_Idx);
+    _tree -> Branch("jet_cl9x9_dEta",   &_jet_cl9x9_dEta);
+    _tree -> Branch("jet_cl9x9_dPhi",   &_jet_cl9x9_dPhi);
+    _tree -> Branch("jet_cl9x9_dR",     &_jet_cl9x9_dR);
+    _tree -> Branch("jet_cl9x9_dPt",    &_jet_cl9x9_dPt);
+    _tree -> Branch("jet_cl9x9_dPtOPt", &_jet_cl9x9_dPtOPt);
+    _tree -> Branch("jet_cl7x7_dEta",   &_jet_cl7x7_dEta);
+    _tree -> Branch("jet_cl7x7_dPhi",   &_jet_cl7x7_dPhi);
+    _tree -> Branch("jet_cl7x7_dR",     &_jet_cl7x7_dR);
+    _tree -> Branch("jet_cl7x7_dPt",    &_jet_cl7x7_dPt);
+    _tree -> Branch("jet_cl7x7_dPtOPt", &_jet_cl7x7_dPtOPt);
+    _tree -> Branch("jet_cl5x5_dEta",   &_jet_cl5x5_dEta);
+    _tree -> Branch("jet_cl5x5_dPhi",   &_jet_cl5x5_dPhi);
+    _tree -> Branch("jet_cl5x5_dR",     &_jet_cl5x5_dR);
+    _tree -> Branch("jet_cl5x5_dPt",    &_jet_cl5x5_dPt);
+    _tree -> Branch("jet_cl5x5_dPtOPt", &_jet_cl5x5_dPtOPt);
+    _tree -> Branch("jet_cl5x9_dEta",   &_jet_cl5x9_dEta);
+    _tree -> Branch("jet_cl5x9_dPhi",   &_jet_cl5x9_dPhi);
+    _tree -> Branch("jet_cl5x9_dR",     &_jet_cl5x9_dR);
+    _tree -> Branch("jet_cl5x9_dPt",    &_jet_cl5x9_dPt);
+    _tree -> Branch("jet_cl5x9_dPtOPt", &_jet_cl5x9_dPtOPt);
+    _tree -> Branch("jet_cl5x7_dEta",   &_jet_cl5x7_dEta);
+    _tree -> Branch("jet_cl5x7_dPhi",   &_jet_cl5x7_dPhi);
+    _tree -> Branch("jet_cl5x7_dR",     &_jet_cl5x7_dR);
+    _tree -> Branch("jet_cl5x7_dPt",    &_jet_cl5x7_dPt);
+    _tree -> Branch("jet_cl5x7_dPtOPt", &_jet_cl5x7_dPtOPt);
+    _tree -> Branch("jet_cl3x7_dEta",   &_jet_cl3x7_dEta);
+    _tree -> Branch("jet_cl3x7_dPhi",   &_jet_cl3x7_dPhi);
+    _tree -> Branch("jet_cl3x7_dR",     &_jet_cl3x7_dR);
+    _tree -> Branch("jet_cl3x7_dPt",    &_jet_cl3x7_dPt);
+    _tree -> Branch("jet_cl3x7_dPtOPt", &_jet_cl3x7_dPtOPt);
+    _tree -> Branch("jet_cl3x5_dEta",   &_jet_cl3x5_dEta);
+    _tree -> Branch("jet_cl3x5_dPhi",   &_jet_cl3x5_dPhi);
+    _tree -> Branch("jet_cl3x5_dR",     &_jet_cl3x5_dR);
+    _tree -> Branch("jet_cl3x5_dPt",    &_jet_cl3x5_dPt);
+    _tree -> Branch("jet_cl3x5_dPtOPt", &_jet_cl3x5_dPtOPt);
+    _tree -> Branch("jet_cl3d_dEta",    &_jet_cl3d_dEta);
+    _tree -> Branch("jet_cl3d_dPhi",    &_jet_cl3d_dPhi);
+    _tree -> Branch("jet_cl3d_dR",      &_jet_cl3d_dR);
+    _tree -> Branch("jet_cl3d_dPt",     &_jet_cl3d_dPt);
+    _tree -> Branch("jet_cl3d_dPtOPt",  &_jet_cl3d_dPtOPt);
 
     _tree -> Branch("cl3d_pt",               &_cl3d_pt);
     _tree -> Branch("cl3d_energy",           &_cl3d_energy);
@@ -642,6 +1170,102 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x9_towerEgIet",   &_cl5x9_towerEgIet);
     _tree -> Branch("cl5x9_towerNeg",     &_cl5x9_towerNeg);
 
+    _tree -> Branch("cl5x7_barrelSeeded", &_cl5x7_barrelSeeded);
+    _tree -> Branch("cl5x7_nHits",        &_cl5x7_nHits);
+    _tree -> Branch("cl5x7_nEGs",         &_cl5x7_nEGs);
+    _tree -> Branch("cl5x7_seedIeta",     &_cl5x7_seedIeta);
+    _tree -> Branch("cl5x7_seedIphi",     &_cl5x7_seedIphi);
+    _tree -> Branch("cl5x7_seedEta",      &_cl5x7_seedEta);
+    _tree -> Branch("cl5x7_seedPhi",      &_cl5x7_seedPhi);
+    _tree -> Branch("cl5x7_isBarrel",     &_cl5x7_isBarrel);
+    _tree -> Branch("cl5x7_isOverlap",    &_cl5x7_isOverlap);
+    _tree -> Branch("cl5x7_isEndcap",     &_cl5x7_isEndcap);
+    _tree -> Branch("cl5x7_tauMatchIdx",  &_cl5x7_tauMatchIdx);
+    _tree -> Branch("cl5x7_jetMatchIdx",  &_cl5x7_jetMatchIdx);
+    _tree -> Branch("cl5x7_totalEm",      &_cl5x7_totalEm);
+    _tree -> Branch("cl5x7_totalHad",     &_cl5x7_totalHad);
+    _tree -> Branch("cl5x7_totalEt",      &_cl5x7_totalEt);
+    _tree -> Branch("cl5x7_totalIem",     &_cl5x7_totalIem);
+    _tree -> Branch("cl5x7_totalIhad",    &_cl5x7_totalIhad);
+    _tree -> Branch("cl5x7_totalIet",     &_cl5x7_totalIet);
+    _tree -> Branch("cl5x7_towerEta",     &_cl5x7_towerEta);
+    _tree -> Branch("cl5x7_towerPhi",     &_cl5x7_towerPhi);
+    _tree -> Branch("cl5x7_towerEm",      &_cl5x7_towerEm);
+    _tree -> Branch("cl5x7_towerHad",     &_cl5x7_towerHad);
+    _tree -> Branch("cl5x7_towerEt",      &_cl5x7_towerEt);
+    _tree -> Branch("cl5x7_towerEgEt",    &_cl5x7_towerEgEt);
+    _tree -> Branch("cl5x7_towerIeta",    &_cl5x7_towerIeta);
+    _tree -> Branch("cl5x7_towerIphi",    &_cl5x7_towerIphi);
+    _tree -> Branch("cl5x7_towerIem",     &_cl5x7_towerIem);
+    _tree -> Branch("cl5x7_towerIhad",    &_cl5x7_towerIhad);
+    _tree -> Branch("cl5x7_towerIet",     &_cl5x7_towerIet);
+    _tree -> Branch("cl5x7_towerEgIet",   &_cl5x7_towerEgIet);
+    _tree -> Branch("cl5x7_towerNeg",     &_cl5x7_towerNeg);
+
+    _tree -> Branch("cl3x7_barrelSeeded", &_cl3x7_barrelSeeded);
+    _tree -> Branch("cl3x7_nHits",        &_cl3x7_nHits);
+    _tree -> Branch("cl3x7_nEGs",         &_cl3x7_nEGs);
+    _tree -> Branch("cl3x7_seedIeta",     &_cl3x7_seedIeta);
+    _tree -> Branch("cl3x7_seedIphi",     &_cl3x7_seedIphi);
+    _tree -> Branch("cl3x7_seedEta",      &_cl3x7_seedEta);
+    _tree -> Branch("cl3x7_seedPhi",      &_cl3x7_seedPhi);
+    _tree -> Branch("cl3x7_isBarrel",     &_cl3x7_isBarrel);
+    _tree -> Branch("cl3x7_isOverlap",    &_cl3x7_isOverlap);
+    _tree -> Branch("cl3x7_isEndcap",     &_cl3x7_isEndcap);
+    _tree -> Branch("cl3x7_tauMatchIdx",  &_cl3x7_tauMatchIdx);
+    _tree -> Branch("cl3x7_jetMatchIdx",  &_cl3x7_jetMatchIdx);
+    _tree -> Branch("cl3x7_totalEm",      &_cl3x7_totalEm);
+    _tree -> Branch("cl3x7_totalHad",     &_cl3x7_totalHad);
+    _tree -> Branch("cl3x7_totalEt",      &_cl3x7_totalEt);
+    _tree -> Branch("cl3x7_totalIem",     &_cl3x7_totalIem);
+    _tree -> Branch("cl3x7_totalIhad",    &_cl3x7_totalIhad);
+    _tree -> Branch("cl3x7_totalIet",     &_cl3x7_totalIet);
+    _tree -> Branch("cl3x7_towerEta",     &_cl3x7_towerEta);
+    _tree -> Branch("cl3x7_towerPhi",     &_cl3x7_towerPhi);
+    _tree -> Branch("cl3x7_towerEm",      &_cl3x7_towerEm);
+    _tree -> Branch("cl3x7_towerHad",     &_cl3x7_towerHad);
+    _tree -> Branch("cl3x7_towerEt",      &_cl3x7_towerEt);
+    _tree -> Branch("cl3x7_towerEgEt",    &_cl3x7_towerEgEt);
+    _tree -> Branch("cl3x7_towerIeta",    &_cl3x7_towerIeta);
+    _tree -> Branch("cl3x7_towerIphi",    &_cl3x7_towerIphi);
+    _tree -> Branch("cl3x7_towerIem",     &_cl3x7_towerIem);
+    _tree -> Branch("cl3x7_towerIhad",    &_cl3x7_towerIhad);
+    _tree -> Branch("cl3x7_towerIet",     &_cl3x7_towerIet);
+    _tree -> Branch("cl3x7_towerEgIet",   &_cl3x7_towerEgIet);
+    _tree -> Branch("cl3x7_towerNeg",     &_cl3x7_towerNeg);
+
+    _tree -> Branch("cl3x5_barrelSeeded", &_cl3x5_barrelSeeded);
+    _tree -> Branch("cl3x5_nHits",        &_cl3x5_nHits);
+    _tree -> Branch("cl3x5_nEGs",         &_cl3x5_nEGs);
+    _tree -> Branch("cl3x5_seedIeta",     &_cl3x5_seedIeta);
+    _tree -> Branch("cl3x5_seedIphi",     &_cl3x5_seedIphi);
+    _tree -> Branch("cl3x5_seedEta",      &_cl3x5_seedEta);
+    _tree -> Branch("cl3x5_seedPhi",      &_cl3x5_seedPhi);
+    _tree -> Branch("cl3x5_isBarrel",     &_cl3x5_isBarrel);
+    _tree -> Branch("cl3x5_isOverlap",    &_cl3x5_isOverlap);
+    _tree -> Branch("cl3x5_isEndcap",     &_cl3x5_isEndcap);
+    _tree -> Branch("cl3x5_tauMatchIdx",  &_cl3x5_tauMatchIdx);
+    _tree -> Branch("cl3x5_jetMatchIdx",  &_cl3x5_jetMatchIdx);
+    _tree -> Branch("cl3x5_totalEm",      &_cl3x5_totalEm);
+    _tree -> Branch("cl3x5_totalHad",     &_cl3x5_totalHad);
+    _tree -> Branch("cl3x5_totalEt",      &_cl3x5_totalEt);
+    _tree -> Branch("cl3x5_totalIem",     &_cl3x5_totalIem);
+    _tree -> Branch("cl3x5_totalIhad",    &_cl3x5_totalIhad);
+    _tree -> Branch("cl3x5_totalIet",     &_cl3x5_totalIet);
+    _tree -> Branch("cl3x5_towerEta",     &_cl3x5_towerEta);
+    _tree -> Branch("cl3x5_towerPhi",     &_cl3x5_towerPhi);
+    _tree -> Branch("cl3x5_towerEm",      &_cl3x5_towerEm);
+    _tree -> Branch("cl3x5_towerHad",     &_cl3x5_towerHad);
+    _tree -> Branch("cl3x5_towerEt",      &_cl3x5_towerEt);
+    _tree -> Branch("cl3x5_towerEgEt",    &_cl3x5_towerEgEt);
+    _tree -> Branch("cl3x5_towerIeta",    &_cl3x5_towerIeta);
+    _tree -> Branch("cl3x5_towerIphi",    &_cl3x5_towerIphi);
+    _tree -> Branch("cl3x5_towerIem",     &_cl3x5_towerIem);
+    _tree -> Branch("cl3x5_towerIhad",    &_cl3x5_towerIhad);
+    _tree -> Branch("cl3x5_towerIet",     &_cl3x5_towerIet);
+    _tree -> Branch("cl3x5_towerEgIet",   &_cl3x5_towerEgIet);
+    _tree -> Branch("cl3x5_towerNeg",     &_cl3x5_towerNeg);
+
     return;
 }
 
@@ -660,6 +1284,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     iEvent.getByToken(CaloClusters7x7Token, CaloClusters7x7Handle);
     iEvent.getByToken(CaloClusters5x5Token, CaloClusters5x5Handle);
     iEvent.getByToken(CaloClusters5x9Token, CaloClusters5x9Handle);
+    iEvent.getByToken(CaloClusters5x7Token, CaloClusters5x7Handle);
+    iEvent.getByToken(CaloClusters3x7Token, CaloClusters3x7Handle);
+    iEvent.getByToken(CaloClusters3x5Token, CaloClusters3x5Handle);
     iEvent.getByToken(HGClustersToken, HGClustersHandle);
     iEvent.getByToken(genTausToken, genTausHandle);
     iEvent.getByToken(genJetsToken, genJetsHandle);
@@ -668,6 +1295,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     const TowerHelper::TowerClustersCollection& CaloClusters7x7 = *CaloClusters7x7Handle;
     const TowerHelper::TowerClustersCollection& CaloClusters5x5 = *CaloClusters5x5Handle;
     const TowerHelper::TowerClustersCollection& CaloClusters5x9 = *CaloClusters5x9Handle;
+    const TowerHelper::TowerClustersCollection& CaloClusters5x7 = *CaloClusters5x7Handle;
+    const TowerHelper::TowerClustersCollection& CaloClusters3x7 = *CaloClusters3x7Handle;
+    const TowerHelper::TowerClustersCollection& CaloClusters3x5 = *CaloClusters3x5Handle;
     const HGClusterHelper::HGClustersCollection& HGClusters = *HGClustersHandle;
     const GenHelper::GenTausCollection& genTaus = *genTausHandle;
     const GenHelper::GenJetsCollection& genJets = *genJetsHandle;
@@ -679,6 +1309,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         std::cout << " ** total number of 7x7 clusters = " << CaloClusters7x7.size() << std::endl;
         std::cout << " ** total number of 5x5 clusters = " << CaloClusters5x5.size() << std::endl;
         std::cout << " ** total number of 5x9 clusters = " << CaloClusters5x9.size() << std::endl;
+        std::cout << " ** total number of 5x7 clusters = " << CaloClusters5x7.size() << std::endl;
+        std::cout << " ** total number of 3x7 clusters = " << CaloClusters3x7.size() << std::endl;
+        std::cout << " ** total number of 3x5 clusters = " << CaloClusters3x5.size() << std::endl;
         std::cout << " ** total number of hgc clusters = " << HGClusters.size() << std::endl;
         std::cout << "***************************************************************************************************************************************" << std::endl;
     }
@@ -734,11 +1367,40 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        float dEta = -99;
+        float dPhi = -99;
+        float dR = -99;
+        float dPt = -99;
+        float dPtOPt = -99;
+        float dPtEm = -99;
+        float dPtEmOPtEm = -99;
+        float dPtHad = -99;
+        float dPtHadOPtHad = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
             writable_clu9x9.tauMatchIdx = tauIdx;
+
+            dEta         = writable_clu9x9.seedEta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_clu9x9.seedPhi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_clu9x9.totalIet - tau.visPt*2;
+            dPtOPt       = (writable_clu9x9.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtEm        = writable_clu9x9.totalIem - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu9x9.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtHad       = writable_clu9x9.totalIhad - tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu9x9.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+
         }
+        _tau_cl9x9_dEta.push_back(dEta);
+        _tau_cl9x9_dPhi.push_back(dPhi);
+        _tau_cl9x9_dR.push_back(dR);
+        _tau_cl9x9_dPt.push_back(dPt);
+        _tau_cl9x9_dPtOPt.push_back(dPtOPt);
+        _tau_cl9x9_dPtEm.push_back(dPtEm);
+        _tau_cl9x9_dPtEmOPtEm.push_back(dPtEmOPtEm);
+        _tau_cl9x9_dPtHad.push_back(dPtHad);
+        _tau_cl9x9_dPtHadOPtHad.push_back(dPtHadOPtHad);
 
         if (DEBUG) { std::cout << " ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
@@ -773,11 +1435,39 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        dPtEm = -99;
+        dPtEmOPtEm = -99;
+        dPtHad = -99;
+        dPtHadOPtHad = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
             writable_clu7x7.tauMatchIdx = tauIdx;
+
+            dEta         = writable_clu7x7.seedEta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_clu7x7.seedPhi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_clu7x7.totalIet - tau.visPt*2;
+            dPtOPt       = (writable_clu7x7.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtEm        = writable_clu7x7.totalIem - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu7x7.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtHad       = writable_clu7x7.totalIhad - tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu7x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
+        _tau_cl7x7_dEta.push_back(dEta);
+        _tau_cl7x7_dPhi.push_back(dPhi);
+        _tau_cl7x7_dR.push_back(dR);
+        _tau_cl7x7_dPt.push_back(dPt);
+        _tau_cl7x7_dPtOPt.push_back(dPtOPt);
+        _tau_cl7x7_dPtEm.push_back(dPtEm);
+        _tau_cl7x7_dPtEmOPtEm.push_back(dPtEmOPtEm);
+        _tau_cl7x7_dPtHad.push_back(dPtHad);
+        _tau_cl7x7_dPtHadOPtHad.push_back(dPtHadOPtHad);
 
         if (DEBUG) { std::cout << " ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
@@ -812,11 +1502,39 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        dPtEm = -99;
+        dPtEmOPtEm = -99;
+        dPtHad = -99;
+        dPtHadOPtHad = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
             writable_clu5x5.tauMatchIdx = tauIdx;
+
+            dEta         = writable_clu5x5.seedEta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_clu5x5.seedPhi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_clu5x5.totalIet - tau.visPt*2;
+            dPtOPt       = (writable_clu5x5.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtEm        = writable_clu5x5.totalIem - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x5.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtHad       = writable_clu5x5.totalIhad - tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu5x5.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
+        _tau_cl5x5_dEta.push_back(dEta);
+        _tau_cl5x5_dPhi.push_back(dPhi);
+        _tau_cl5x5_dR.push_back(dR);
+        _tau_cl5x5_dPt.push_back(dPt);
+        _tau_cl5x5_dPtOPt.push_back(dPtOPt);
+        _tau_cl5x5_dPtEm.push_back(dPtEm);
+        _tau_cl5x5_dPtEmOPtEm.push_back(dPtEmOPtEm);
+        _tau_cl5x5_dPtHad.push_back(dPtHad);
+        _tau_cl5x5_dPtHadOPtHad.push_back(dPtHadOPtHad);
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
@@ -851,11 +1569,240 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        dPtEm = -99;
+        dPtEmOPtEm = -99;
+        dPtHad = -99;
+        dPtHadOPtHad = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
             writable_clu5x9.tauMatchIdx = tauIdx;
+
+            dEta         = writable_clu5x9.seedEta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_clu5x9.seedPhi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_clu5x9.totalIet - tau.visPt*2;
+            dPtOPt       = (writable_clu5x9.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtEm        = writable_clu5x9.totalIem - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x9.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtHad       = writable_clu5x9.totalIhad - tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu5x9.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
+        _tau_cl5x9_dEta.push_back(dEta);
+        _tau_cl5x9_dPhi.push_back(dPhi);
+        _tau_cl5x9_dR.push_back(dR);
+        _tau_cl5x9_dPt.push_back(dPt);
+        _tau_cl5x9_dPtOPt.push_back(dPtOPt);
+        _tau_cl5x9_dPtEm.push_back(dPtEm);
+        _tau_cl5x9_dPtEmOPtEm.push_back(dPtEmOPtEm);
+        _tau_cl5x9_dPtHad.push_back(dPtHad);
+        _tau_cl5x9_dPtHadOPtHad.push_back(dPtHadOPtHad);
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
+
+        // Perform geometrical matching of 5x7 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x7.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu5x7 = CaloClusters5x7[cluIdx];
+
+            float dEta = clu5x7.seedEta - tau.visEta;
+            float dPhi = reco::deltaPhi(clu5x7.seedPhi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 5x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x7.totalIet,
+                    clu5x7.seedEta,
+                    clu5x7.seedPhi,
+                    clu5x7.totalIem,
+                    clu5x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
+        }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        dPtEm = -99;
+        dPtEmOPtEm = -99;
+        dPtHad = -99;
+        dPtHadOPtHad = -99;
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[matchedCluIdx]);
+            writable_clu5x7.tauMatchIdx = tauIdx;
+
+            dEta         = writable_clu5x7.seedEta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_clu5x7.seedPhi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_clu5x7.totalIet - tau.visPt*2;
+            dPtOPt       = (writable_clu5x7.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtEm        = writable_clu5x7.totalIem - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x7.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtHad       = writable_clu5x7.totalIhad - tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu5x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+        }
+        _tau_cl5x7_dEta.push_back(dEta);
+        _tau_cl5x7_dPhi.push_back(dPhi);
+        _tau_cl5x7_dR.push_back(dR);
+        _tau_cl5x7_dPt.push_back(dPt);
+        _tau_cl5x7_dPtOPt.push_back(dPtOPt);
+        _tau_cl5x7_dPtEm.push_back(dPtEm);
+        _tau_cl5x7_dPtEmOPtEm.push_back(dPtEmOPtEm);
+        _tau_cl5x7_dPtHad.push_back(dPtHad);
+        _tau_cl5x7_dPtHadOPtHad.push_back(dPtHadOPtHad);
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
+
+        // Perform geometrical matching of 3x7 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x7.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu3x7 = CaloClusters3x7[cluIdx];
+
+            float dEta = clu3x7.seedEta - tau.visEta;
+            float dPhi = reco::deltaPhi(clu3x7.seedPhi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 3x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu3x7.totalIet,
+                    clu3x7.seedEta,
+                    clu3x7.seedPhi,
+                    clu3x7.totalIem,
+                    clu3x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
+        }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        dPtEm = -99;
+        dPtEmOPtEm = -99;
+        dPtHad = -99;
+        dPtHadOPtHad = -99;
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu3x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[matchedCluIdx]);
+            writable_clu3x7.tauMatchIdx = tauIdx;
+
+            dEta         = writable_clu3x7.seedEta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_clu3x7.seedPhi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_clu3x7.totalIet - tau.visPt*2;
+            dPtOPt       = (writable_clu3x7.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtEm        = writable_clu3x7.totalIem - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu3x7.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtHad       = writable_clu3x7.totalIhad - tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu3x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+        }
+        _tau_cl3x7_dEta.push_back(dEta);
+        _tau_cl3x7_dPhi.push_back(dPhi);
+        _tau_cl3x7_dR.push_back(dR);
+        _tau_cl3x7_dPt.push_back(dPt);
+        _tau_cl3x7_dPtOPt.push_back(dPtOPt);
+        _tau_cl3x7_dPtEm.push_back(dPtEm);
+        _tau_cl3x7_dPtEmOPtEm.push_back(dPtEmOPtEm);
+        _tau_cl3x7_dPtHad.push_back(dPtHad);
+        _tau_cl3x7_dPtHadOPtHad.push_back(dPtHadOPtHad);
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
+
+        // Perform geometrical matching of 3x5 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x5.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu3x5 = CaloClusters3x5[cluIdx];
+
+            float dEta = clu3x5.seedEta - tau.visEta;
+            float dPhi = reco::deltaPhi(clu3x5.seedPhi, tau.visPhi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 3x5 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu3x5.totalIet,
+                    clu3x5.seedEta,
+                    clu3x5.seedPhi,
+                    clu3x5.totalIem,
+                    clu3x5.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
+        }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        dPtEm = -99;
+        dPtEmOPtEm = -99;
+        dPtHad = -99;
+        dPtHadOPtHad = -99;
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu3x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[matchedCluIdx]);
+            writable_clu3x5.tauMatchIdx = tauIdx;
+
+            dEta         = writable_clu3x5.seedEta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_clu3x5.seedPhi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_clu3x5.totalIet - tau.visPt*2;
+            dPtOPt       = (writable_clu3x5.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtEm        = writable_clu3x5.totalIem - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu3x5.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtHad       = writable_clu3x5.totalIhad - tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu3x5.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+        }
+        _tau_cl3x5_dEta.push_back(dEta);
+        _tau_cl3x5_dPhi.push_back(dPhi);
+        _tau_cl3x5_dR.push_back(dR);
+        _tau_cl3x5_dPt.push_back(dPt);
+        _tau_cl3x5_dPtOPt.push_back(dPtOPt);
+        _tau_cl3x5_dPtEm.push_back(dPtEm);
+        _tau_cl3x5_dPtEmOPtEm.push_back(dPtEmOPtEm);
+        _tau_cl3x5_dPtHad.push_back(dPtHad);
+        _tau_cl3x5_dPtHadOPtHad.push_back(dPtHadOPtHad);
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
         
@@ -889,11 +1836,33 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
         if (matchedCluIdx != -99)
         {
             HGClusterHelper::HGCluster& writable_hgclu =  const_cast<HGClusterHelper::HGCluster&>(HGClusters[matchedCluIdx]);
             writable_hgclu.tauMatchIdx = tauIdx;
+
+            dEta   = writable_hgclu.eta - tau.visEta;
+            dPhi   = reco::deltaPhi(writable_hgclu.phi, tau.visPhi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_hgclu.pt - tau.visPt;
+            dPtOPt = (writable_hgclu.pt - tau.visPt) / tau.visPt;
+
+            dEta         = writable_hgclu.eta - tau.visEta;
+            dPhi         = reco::deltaPhi(writable_hgclu.phi, tau.visPhi);
+            dR           = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt          = writable_hgclu.pt - tau.visPt*2;
+            dPtOPt       = (writable_hgclu.pt - tau.visPt*2) / tau.visPt*2;
         }
+        _tau_cl3d_dEta.push_back(dEta);
+        _tau_cl3d_dPhi.push_back(dPhi);
+        _tau_cl3d_dR.push_back(dR);
+        _tau_cl3d_dPt.push_back(dPt);
+        _tau_cl3d_dPtOPt.push_back(dPtOPt);
 
         if (DEBUG) { std::cout << "\n       *********************************************************************************************************** \n" << std::endl; }
 
@@ -954,11 +1923,27 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        float dEta = -99;
+        float dPhi = -99;
+        float dR = -99;
+        float dPt = -99;
+        float dPtOPt = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
             writable_clu9x9.jetMatchIdx = jetIdx;
+
+            dEta   = writable_clu9x9.seedEta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_clu9x9.seedPhi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_clu9x9.totalEt - jet.pt;
+            dPtOPt = (writable_clu9x9.totalEt - jet.pt) / jet.pt;
         }
+        _jet_cl9x9_dEta.push_back(dEta);
+        _jet_cl9x9_dPhi.push_back(dPhi);
+        _jet_cl9x9_dR.push_back(dR);
+        _jet_cl9x9_dPt.push_back(dPt);
+        _jet_cl9x9_dPtOPt.push_back(dPtOPt);
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
@@ -996,11 +1981,27 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
             writable_clu7x7.jetMatchIdx = jetIdx;
+
+            dEta   = writable_clu7x7.seedEta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_clu7x7.seedPhi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_clu7x7.totalEt - jet.pt;
+            dPtOPt = (writable_clu7x7.totalEt - jet.pt) / jet.pt;
         }
+        _jet_cl7x7_dEta.push_back(dEta);
+        _jet_cl7x7_dPhi.push_back(dPhi);
+        _jet_cl7x7_dR.push_back(dR);
+        _jet_cl7x7_dPt.push_back(dPt);
+        _jet_cl7x7_dPtOPt.push_back(dPtOPt);
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
@@ -1038,11 +2039,27 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
             writable_clu5x5.jetMatchIdx = jetIdx;
+
+            dEta   = writable_clu5x5.seedEta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_clu5x5.seedPhi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_clu5x5.totalEt - jet.pt;
+            dPtOPt = (writable_clu5x5.totalEt - jet.pt) / jet.pt;
         }
+        _jet_cl5x5_dEta.push_back(dEta);
+        _jet_cl5x5_dPhi.push_back(dPhi);
+        _jet_cl5x5_dR.push_back(dR);
+        _jet_cl5x5_dPt.push_back(dPt);
+        _jet_cl5x5_dPtOPt.push_back(dPtOPt);
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
@@ -1080,11 +2097,190 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
         if (matchedCluIdx != -99)
         {
             TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
             writable_clu5x9.jetMatchIdx = jetIdx;
+
+            dEta   = writable_clu5x9.seedEta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_clu5x9.seedPhi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_clu5x9.totalEt - jet.pt;
+            dPtOPt = (writable_clu5x9.totalEt - jet.pt) / jet.pt;
         }
+        _jet_cl5x9_dEta.push_back(dEta);
+        _jet_cl5x9_dPhi.push_back(dPhi);
+        _jet_cl5x9_dR.push_back(dR);
+        _jet_cl5x9_dPt.push_back(dPt);
+        _jet_cl5x9_dPtOPt.push_back(dPtOPt);
+
+        // Perform geometrical matching of 5x7 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x7.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu5x7 = CaloClusters5x7[cluIdx];
+
+            float dEta = clu5x7.seedEta - jet.eta;
+            float dPhi = reco::deltaPhi(clu5x7.seedPhi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 5x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x7.totalIet,
+                    clu5x7.seedEta,
+                    clu5x7.seedPhi,
+                    clu5x7.totalIem,
+                    clu5x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
+        }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[matchedCluIdx]);
+            writable_clu5x7.jetMatchIdx = jetIdx;
+
+            dEta   = writable_clu5x7.seedEta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_clu5x7.seedPhi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_clu5x7.totalEt - jet.pt;
+            dPtOPt = (writable_clu5x7.totalEt - jet.pt) / jet.pt;
+        }
+        _jet_cl5x7_dEta.push_back(dEta);
+        _jet_cl5x7_dPhi.push_back(dPhi);
+        _jet_cl5x7_dR.push_back(dR);
+        _jet_cl5x7_dPt.push_back(dPt);
+        _jet_cl5x7_dPtOPt.push_back(dPtOPt);
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
+
+        // Perform geometrical matching of 3x7 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x7.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu3x7 = CaloClusters3x7[cluIdx];
+
+            float dEta = clu3x7.seedEta - jet.eta;
+            float dPhi = reco::deltaPhi(clu3x7.seedPhi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 3x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu3x7.totalIet,
+                    clu3x7.seedEta,
+                    clu3x7.seedPhi,
+                    clu3x7.totalIem,
+                    clu3x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
+        }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu3x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[matchedCluIdx]);
+            writable_clu3x7.jetMatchIdx = jetIdx;
+
+            dEta   = writable_clu3x7.seedEta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_clu3x7.seedPhi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_clu3x7.totalEt - jet.pt;
+            dPtOPt = (writable_clu3x7.totalEt - jet.pt) / jet.pt;
+        }
+        _jet_cl3x7_dEta.push_back(dEta);
+        _jet_cl3x7_dPhi.push_back(dPhi);
+        _jet_cl3x7_dR.push_back(dR);
+        _jet_cl3x7_dPt.push_back(dPt);
+        _jet_cl3x7_dPtOPt.push_back(dPtOPt);
+
+        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
+
+        // Perform geometrical matching of 3x5 CaloClusters
+        matchedCluIdx = -99;
+        dR2min = 0.25;
+        for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x5.size(); cluIdx++)
+        {
+            TowerHelper::TowerCluster clu3x5 = CaloClusters3x5[cluIdx];
+
+            float dEta = clu3x5.seedEta - jet.eta;
+            float dPhi = reco::deltaPhi(clu3x5.seedPhi, jet.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedCluIdx = cluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 3x5 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu3x5.totalIet,
+                    clu3x5.seedEta,
+                    clu3x5.seedPhi,
+                    clu3x5.totalIem,
+                    clu3x5.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedCluIdx);
+            }
+        }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
+        if (matchedCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu3x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[matchedCluIdx]);
+            writable_clu3x5.jetMatchIdx = jetIdx;
+
+            dEta   = writable_clu3x5.seedEta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_clu3x5.seedPhi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_clu3x5.totalEt - jet.pt;
+            dPtOPt = (writable_clu3x5.totalEt - jet.pt) / jet.pt;
+        }
+        _jet_cl3x5_dEta.push_back(dEta);
+        _jet_cl3x5_dPhi.push_back(dPhi);
+        _jet_cl3x5_dR.push_back(dR);
+        _jet_cl3x5_dPt.push_back(dPt);
+        _jet_cl3x5_dPtOPt.push_back(dPtOPt);
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
 
@@ -1121,11 +2317,27 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
                     matchedCluIdx);
             }
         }
+        dEta = -99;
+        dPhi = -99;
+        dR = -99;
+        dPt = -99;
+        dPtOPt = -99;
         if (matchedCluIdx != -99)
         {
             HGClusterHelper::HGCluster& writable_hgclu = const_cast<HGClusterHelper::HGCluster&>(HGClusters[matchedCluIdx]);
             writable_hgclu.jetMatchIdx = jetIdx;
+
+            dEta   = writable_hgclu.eta - jet.eta;
+            dPhi   = reco::deltaPhi(writable_hgclu.phi, jet.phi);
+            dR     = sqrt(dEta * dEta + dPhi * dPhi);
+            dPt    = writable_hgclu.pt - jet.pt;
+            dPtOPt = (writable_hgclu.pt - jet.pt) / jet.pt;
         }
+        _jet_cl3d_dEta.push_back(dEta);
+        _jet_cl3d_dPhi.push_back(dPhi);
+        _jet_cl3d_dR.push_back(dR);
+        _jet_cl3d_dPt.push_back(dPt);
+        _jet_cl3d_dPtOPt.push_back(dPtOPt);
 
         if (DEBUG) { std::cout << "\n       *********************************************************************************************************** \n" << std::endl; }
 
@@ -1467,6 +2679,228 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x9_towerNeg.push_back(tmp_towerNeg);
 
         _cl5x9_nEGs.push_back(nEGs);
+    }
+
+    // Fill 5x7 CaloCluster branches
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x7.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu5x7 = CaloClusters5x7[cluIdx];
+
+        _cl5x7_barrelSeeded.push_back(clu5x7.barrelSeeded);
+        _cl5x7_nHits.push_back(clu5x7.nHits);
+        _cl5x7_seedIeta.push_back(clu5x7.seedIeta);
+        _cl5x7_seedIphi.push_back(clu5x7.seedIphi);
+        _cl5x7_seedEta.push_back(clu5x7.seedEta);
+        _cl5x7_seedPhi.push_back(clu5x7.seedPhi);
+        _cl5x7_isBarrel.push_back(clu5x7.isBarrel);
+        _cl5x7_isOverlap.push_back(clu5x7.isOverlap);
+        _cl5x7_isEndcap.push_back(clu5x7.isEndcap);
+        _cl5x7_tauMatchIdx.push_back(clu5x7.tauMatchIdx);
+        _cl5x7_jetMatchIdx.push_back(clu5x7.jetMatchIdx);
+        _cl5x7_totalEm.push_back(clu5x7.totalEm);
+        _cl5x7_totalHad.push_back(clu5x7.totalHad);
+        _cl5x7_totalEt.push_back(clu5x7.totalEt);
+        _cl5x7_totalIem.push_back(clu5x7.totalIem);
+        _cl5x7_totalIhad.push_back(clu5x7.totalIhad);
+        _cl5x7_totalIet.push_back(clu5x7.totalIet);
+        
+        std::vector<float> tmp_towerEta;
+        std::vector<float> tmp_towerPhi;
+        std::vector<float> tmp_towerEm;
+        std::vector<float> tmp_towerHad;
+        std::vector<float> tmp_towerEt;
+        std::vector<float> tmp_towerEgEt;
+        std::vector<int>   tmp_towerIeta;
+        std::vector<int>   tmp_towerIphi;
+        std::vector<int>   tmp_towerIem;
+        std::vector<int>   tmp_towerIhad;
+        std::vector<int>   tmp_towerIet;
+        std::vector<int>   tmp_towerEgIet;
+        std::vector<int>   tmp_towerNeg;
+        int nEGs = 0;
+
+        for (long unsigned int i = 0; i < clu5x7.towerHits.size(); ++i)
+        {
+            tmp_towerEta.push_back(clu5x7.towerHits[i].towerEta);
+            tmp_towerPhi.push_back(clu5x7.towerHits[i].towerPhi);
+            tmp_towerEm.push_back(clu5x7.towerHits[i].towerEm);
+            tmp_towerHad.push_back(clu5x7.towerHits[i].towerHad);
+            tmp_towerEt.push_back(clu5x7.towerHits[i].towerEt);
+            tmp_towerEgEt.push_back(clu5x7.towerHits[i].l1egTowerEt);
+            tmp_towerIeta.push_back(clu5x7.towerHits[i].towerIeta);
+            tmp_towerIphi.push_back(clu5x7.towerHits[i].towerIphi);
+            tmp_towerIem.push_back(clu5x7.towerHits[i].towerIem);
+            tmp_towerIhad.push_back(clu5x7.towerHits[i].towerIhad);
+            tmp_towerIet.push_back(clu5x7.towerHits[i].towerIet);
+            tmp_towerEgIet.push_back(clu5x7.towerHits[i].l1egTowerIet);
+            tmp_towerNeg.push_back(clu5x7.towerHits[i].nL1eg);
+
+            nEGs += clu5x7.towerHits[i].nL1eg;
+        }
+
+        _cl5x7_towerEta.push_back(tmp_towerEta);
+        _cl5x7_towerPhi.push_back(tmp_towerPhi);
+        _cl5x7_towerEm.push_back(tmp_towerEm);
+        _cl5x7_towerHad.push_back(tmp_towerHad);
+        _cl5x7_towerEt.push_back(tmp_towerEt);
+        _cl5x7_towerEgEt.push_back(tmp_towerEgEt);
+        _cl5x7_towerIeta.push_back(tmp_towerIeta);
+        _cl5x7_towerIphi.push_back(tmp_towerIphi);
+        _cl5x7_towerIem.push_back(tmp_towerIem);
+        _cl5x7_towerIhad.push_back(tmp_towerIhad);
+        _cl5x7_towerIet.push_back(tmp_towerIet);
+        _cl5x7_towerEgIet.push_back(tmp_towerEgIet);
+        _cl5x7_towerNeg.push_back(tmp_towerNeg);
+
+        _cl5x7_nEGs.push_back(nEGs);
+    }
+
+    // Fill 3x7 CaloCluster branches
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x7.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu3x7 = CaloClusters3x7[cluIdx];
+
+        _cl3x7_barrelSeeded.push_back(clu3x7.barrelSeeded);
+        _cl3x7_nHits.push_back(clu3x7.nHits);
+        _cl3x7_seedIeta.push_back(clu3x7.seedIeta);
+        _cl3x7_seedIphi.push_back(clu3x7.seedIphi);
+        _cl3x7_seedEta.push_back(clu3x7.seedEta);
+        _cl3x7_seedPhi.push_back(clu3x7.seedPhi);
+        _cl3x7_isBarrel.push_back(clu3x7.isBarrel);
+        _cl3x7_isOverlap.push_back(clu3x7.isOverlap);
+        _cl3x7_isEndcap.push_back(clu3x7.isEndcap);
+        _cl3x7_tauMatchIdx.push_back(clu3x7.tauMatchIdx);
+        _cl3x7_jetMatchIdx.push_back(clu3x7.jetMatchIdx);
+        _cl3x7_totalEm.push_back(clu3x7.totalEm);
+        _cl3x7_totalHad.push_back(clu3x7.totalHad);
+        _cl3x7_totalEt.push_back(clu3x7.totalEt);
+        _cl3x7_totalIem.push_back(clu3x7.totalIem);
+        _cl3x7_totalIhad.push_back(clu3x7.totalIhad);
+        _cl3x7_totalIet.push_back(clu3x7.totalIet);
+        
+        std::vector<float> tmp_towerEta;
+        std::vector<float> tmp_towerPhi;
+        std::vector<float> tmp_towerEm;
+        std::vector<float> tmp_towerHad;
+        std::vector<float> tmp_towerEt;
+        std::vector<float> tmp_towerEgEt;
+        std::vector<int>   tmp_towerIeta;
+        std::vector<int>   tmp_towerIphi;
+        std::vector<int>   tmp_towerIem;
+        std::vector<int>   tmp_towerIhad;
+        std::vector<int>   tmp_towerIet;
+        std::vector<int>   tmp_towerEgIet;
+        std::vector<int>   tmp_towerNeg;
+        int nEGs = 0;
+
+        for (long unsigned int i = 0; i < clu3x7.towerHits.size(); ++i)
+        {
+            tmp_towerEta.push_back(clu3x7.towerHits[i].towerEta);
+            tmp_towerPhi.push_back(clu3x7.towerHits[i].towerPhi);
+            tmp_towerEm.push_back(clu3x7.towerHits[i].towerEm);
+            tmp_towerHad.push_back(clu3x7.towerHits[i].towerHad);
+            tmp_towerEt.push_back(clu3x7.towerHits[i].towerEt);
+            tmp_towerEgEt.push_back(clu3x7.towerHits[i].l1egTowerEt);
+            tmp_towerIeta.push_back(clu3x7.towerHits[i].towerIeta);
+            tmp_towerIphi.push_back(clu3x7.towerHits[i].towerIphi);
+            tmp_towerIem.push_back(clu3x7.towerHits[i].towerIem);
+            tmp_towerIhad.push_back(clu3x7.towerHits[i].towerIhad);
+            tmp_towerIet.push_back(clu3x7.towerHits[i].towerIet);
+            tmp_towerEgIet.push_back(clu3x7.towerHits[i].l1egTowerIet);
+            tmp_towerNeg.push_back(clu3x7.towerHits[i].nL1eg);
+
+            nEGs += clu3x7.towerHits[i].nL1eg;
+        }
+
+        _cl3x7_towerEta.push_back(tmp_towerEta);
+        _cl3x7_towerPhi.push_back(tmp_towerPhi);
+        _cl3x7_towerEm.push_back(tmp_towerEm);
+        _cl3x7_towerHad.push_back(tmp_towerHad);
+        _cl3x7_towerEt.push_back(tmp_towerEt);
+        _cl3x7_towerEgEt.push_back(tmp_towerEgEt);
+        _cl3x7_towerIeta.push_back(tmp_towerIeta);
+        _cl3x7_towerIphi.push_back(tmp_towerIphi);
+        _cl3x7_towerIem.push_back(tmp_towerIem);
+        _cl3x7_towerIhad.push_back(tmp_towerIhad);
+        _cl3x7_towerIet.push_back(tmp_towerIet);
+        _cl3x7_towerEgIet.push_back(tmp_towerEgIet);
+        _cl3x7_towerNeg.push_back(tmp_towerNeg);
+
+        _cl3x7_nEGs.push_back(nEGs);
+    }
+
+    // Fill 3x5 CaloCluster branches
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x5.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu3x5 = CaloClusters3x5[cluIdx];
+
+        _cl3x5_barrelSeeded.push_back(clu3x5.barrelSeeded);
+        _cl3x5_nHits.push_back(clu3x5.nHits);
+        _cl3x5_seedIeta.push_back(clu3x5.seedIeta);
+        _cl3x5_seedIphi.push_back(clu3x5.seedIphi);
+        _cl3x5_seedEta.push_back(clu3x5.seedEta);
+        _cl3x5_seedPhi.push_back(clu3x5.seedPhi);
+        _cl3x5_isBarrel.push_back(clu3x5.isBarrel);
+        _cl3x5_isOverlap.push_back(clu3x5.isOverlap);
+        _cl3x5_isEndcap.push_back(clu3x5.isEndcap);
+        _cl3x5_tauMatchIdx.push_back(clu3x5.tauMatchIdx);
+        _cl3x5_jetMatchIdx.push_back(clu3x5.jetMatchIdx);
+        _cl3x5_totalEm.push_back(clu3x5.totalEm);
+        _cl3x5_totalHad.push_back(clu3x5.totalHad);
+        _cl3x5_totalEt.push_back(clu3x5.totalEt);
+        _cl3x5_totalIem.push_back(clu3x5.totalIem);
+        _cl3x5_totalIhad.push_back(clu3x5.totalIhad);
+        _cl3x5_totalIet.push_back(clu3x5.totalIet);
+        
+        std::vector<float> tmp_towerEta;
+        std::vector<float> tmp_towerPhi;
+        std::vector<float> tmp_towerEm;
+        std::vector<float> tmp_towerHad;
+        std::vector<float> tmp_towerEt;
+        std::vector<float> tmp_towerEgEt;
+        std::vector<int>   tmp_towerIeta;
+        std::vector<int>   tmp_towerIphi;
+        std::vector<int>   tmp_towerIem;
+        std::vector<int>   tmp_towerIhad;
+        std::vector<int>   tmp_towerIet;
+        std::vector<int>   tmp_towerEgIet;
+        std::vector<int>   tmp_towerNeg;
+        int nEGs = 0;
+
+        for (long unsigned int i = 0; i < clu3x5.towerHits.size(); ++i)
+        {
+            tmp_towerEta.push_back(clu3x5.towerHits[i].towerEta);
+            tmp_towerPhi.push_back(clu3x5.towerHits[i].towerPhi);
+            tmp_towerEm.push_back(clu3x5.towerHits[i].towerEm);
+            tmp_towerHad.push_back(clu3x5.towerHits[i].towerHad);
+            tmp_towerEt.push_back(clu3x5.towerHits[i].towerEt);
+            tmp_towerEgEt.push_back(clu3x5.towerHits[i].l1egTowerEt);
+            tmp_towerIeta.push_back(clu3x5.towerHits[i].towerIeta);
+            tmp_towerIphi.push_back(clu3x5.towerHits[i].towerIphi);
+            tmp_towerIem.push_back(clu3x5.towerHits[i].towerIem);
+            tmp_towerIhad.push_back(clu3x5.towerHits[i].towerIhad);
+            tmp_towerIet.push_back(clu3x5.towerHits[i].towerIet);
+            tmp_towerEgIet.push_back(clu3x5.towerHits[i].l1egTowerIet);
+            tmp_towerNeg.push_back(clu3x5.towerHits[i].nL1eg);
+
+            nEGs += clu3x5.towerHits[i].nL1eg;
+        }
+
+        _cl3x5_towerEta.push_back(tmp_towerEta);
+        _cl3x5_towerPhi.push_back(tmp_towerPhi);
+        _cl3x5_towerEm.push_back(tmp_towerEm);
+        _cl3x5_towerHad.push_back(tmp_towerHad);
+        _cl3x5_towerEt.push_back(tmp_towerEt);
+        _cl3x5_towerEgEt.push_back(tmp_towerEgEt);
+        _cl3x5_towerIeta.push_back(tmp_towerIeta);
+        _cl3x5_towerIphi.push_back(tmp_towerIphi);
+        _cl3x5_towerIem.push_back(tmp_towerIem);
+        _cl3x5_towerIhad.push_back(tmp_towerIhad);
+        _cl3x5_towerIet.push_back(tmp_towerIet);
+        _cl3x5_towerEgIet.push_back(tmp_towerEgIet);
+        _cl3x5_towerNeg.push_back(tmp_towerNeg);
+
+        _cl3x5_nEGs.push_back(nEGs);
     }
 
     // Fill HGCluster branches

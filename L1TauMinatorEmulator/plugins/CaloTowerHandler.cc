@@ -80,6 +80,9 @@ CaloTowerHandler::CaloTowerHandler(const edm::ParameterSet& iConfig)
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters7x7");
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters5x5");
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters5x9");
+    produces<TowerHelper::TowerClustersCollection>("l1TowerClusters5x7");
+    produces<TowerHelper::TowerClustersCollection>("l1TowerClusters3x7");
+    produces<TowerHelper::TowerClustersCollection>("l1TowerClusters3x5");
 
     if (DEBUG) { std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , HcalTpEtMin = " << HcalEtMinForClustering << " , EcalTpEtMin = " << EcalEtMinForClustering << std::endl; }
 }
@@ -694,6 +697,350 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     }// end while loop of 5x9 TowerClusters creation
 
 
+    /********************************************************************************************
+    * Begin with making TowerClusters in 5x7 grid based on all energy not included in L1EG Objs.
+    * For reference, Run-I used 12x12 grid and Stage-2/Phase-I used 9x9 grid.
+    * 9 trigger towers contains all of an ak-0.4 jets, but overshoots on the corners.
+    *********************************************************************************************/
+
+    std::unique_ptr<TowerHelper::TowerClustersCollection> l1TowerClusters5x7(new TowerHelper::TowerClustersCollection);
+
+    // re-initialize the stale flags
+    for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
+
+    // loop for 5x7 TowerClusters seeds finding
+    caloJetSeedingFinished = false;
+    while (!caloJetSeedingFinished)
+    {
+        TowerHelper::TowerCluster clu5x7; clu5x7.InitHits();
+
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip HF towers for seeding
+            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+
+            // skip l1CaloTowers which are already used by this clusters' mask
+            if (l1CaloTower.stale4seed) { continue; }
+
+            // find highest ET tower and use to seed the TowerCluster
+            if (clu5x7.nHits == 0.0)
+            {
+                // the leading unused tower has ET < min, stop jet clustering
+                if (l1CaloTower.towerEt < EtMinForSeeding)
+                {
+                    caloJetSeedingFinished = true;
+                    break;
+                }
+                l1CaloTower.stale4seed = true;
+                l1CaloTower.stale = true;
+
+                // Set seed location
+                if (l1CaloTower.isBarrel) { clu5x7.barrelSeeded = true; }
+                
+                // Fill the seed tower variables
+                clu5x7.seedIeta = l1CaloTower.towerIeta;
+                clu5x7.seedIphi = l1CaloTower.towerIphi;
+                clu5x7.seedEta  = l1CaloTower.towerEta;
+                clu5x7.seedPhi  = l1CaloTower.towerPhi;
+                if      (abs(clu5x7.seedIeta)<=13) { clu5x7.isBarrel = true;  }
+                else if (abs(clu5x7.seedIeta)>=22) { clu5x7.isEndcap = true;  }
+                else                               { clu5x7.isOverlap = true; }
+
+                // Fill the TowerCluster towers
+                clu5x7.towerHits.push_back(l1CaloTower);
+                
+                // Fill the TowerCluster overall variables
+                clu5x7.totalEm += l1CaloTower.towerEm;
+                clu5x7.totalHad += l1CaloTower.towerHad;
+                clu5x7.totalEt += l1CaloTower.towerEt;
+                clu5x7.totalIem += l1CaloTower.towerIem;
+                clu5x7.totalIhad += l1CaloTower.towerIhad;
+                clu5x7.totalIet += l1CaloTower.towerIet;
+                clu5x7.nHits++;
+
+                continue;
+            }
+
+            // go on with unused l1CaloTowers which are not the initial seed
+            int d_iEta = tower_diEta(clu5x7.seedIeta, l1CaloTower.towerIeta);
+            int d_iPhi = tower_diPhi(clu5x7.seedIphi, l1CaloTower.towerIphi);
+
+            // stale tower for seeding if it would lead to overalp between clusters
+            if (abs(d_iEta) <= 4 && abs(d_iPhi) <= 6) { l1CaloTower.stale4seed = true; }
+    
+        } // end for loop over TPs
+
+        if (clu5x7.nHits > 0.0) { l1TowerClusters5x7->push_back(clu5x7); }
+
+    }  // end while loop of TowerClusters seeding
+
+    // loop for 5x7 TowerClusters creation starting from the seed just found
+    for (auto& clu5x7 : *l1TowerClusters5x7)
+    {
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip l1CaloTowers which are already used by this clusters' mask
+            if (l1CaloTower.stale) { continue; }
+
+            // go on with unused l1CaloTowers which are not the initial seed
+            int d_iEta = tower_diEta(clu5x7.seedIeta, l1CaloTower.towerIeta);
+            int d_iPhi = tower_diPhi(clu5x7.seedIphi, l1CaloTower.towerIphi);
+
+            // cluster all towers in a 5x7 towers mask
+            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 3)
+            {
+                l1CaloTower.stale = true;
+
+                // Fill the TowerCluster towers
+                clu5x7.towerHits.push_back(l1CaloTower);
+
+                // Fill the TowerCluster overall variables
+                clu5x7.totalEm += l1CaloTower.towerEm;
+                clu5x7.totalHad += l1CaloTower.towerHad;
+                clu5x7.totalEt += l1CaloTower.towerEt;
+                clu5x7.totalIem += l1CaloTower.towerIem;
+                clu5x7.totalIhad += l1CaloTower.towerIhad;
+                clu5x7.totalIet += l1CaloTower.towerIet;
+                if (l1CaloTower.towerIet > 0) clu5x7.nHits++;
+            }
+        }// end for loop of TP clustering
+
+        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x7.towerHits);
+        clu5x7.InitHits(); clu5x7.towerHits = sortedHits;
+
+    }// end while loop of 5x7 TowerClusters creation
+
+
+    /********************************************************************************************
+    * Begin with making TowerClusters in 3x7 grid based on all energy not included in L1EG Objs.
+    * For reference, Run-I used 12x12 grid and Stage-2/Phase-I used 9x9 grid.
+    * 9 trigger towers contains all of an ak-0.4 jets, but overshoots on the corners.
+    *********************************************************************************************/
+
+    std::unique_ptr<TowerHelper::TowerClustersCollection> l1TowerClusters3x7(new TowerHelper::TowerClustersCollection);
+
+    // re-initialize the stale flags
+    for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
+
+    // loop for 3x7 TowerClusters seeds finding
+    caloJetSeedingFinished = false;
+    while (!caloJetSeedingFinished)
+    {
+        TowerHelper::TowerCluster clu3x7; clu3x7.InitHits();
+
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip HF towers for seeding
+            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+
+            // skip l1CaloTowers which are already used by this clusters' mask
+            if (l1CaloTower.stale4seed) { continue; }
+
+            // find highest ET tower and use to seed the TowerCluster
+            if (clu3x7.nHits == 0.0)
+            {
+                // the leading unused tower has ET < min, stop jet clustering
+                if (l1CaloTower.towerEt < EtMinForSeeding)
+                {
+                    caloJetSeedingFinished = true;
+                    break;
+                }
+                l1CaloTower.stale4seed = true;
+                l1CaloTower.stale = true;
+
+                // Set seed location
+                if (l1CaloTower.isBarrel) { clu3x7.barrelSeeded = true; }
+                
+                // Fill the seed tower variables
+                clu3x7.seedIeta = l1CaloTower.towerIeta;
+                clu3x7.seedIphi = l1CaloTower.towerIphi;
+                clu3x7.seedEta  = l1CaloTower.towerEta;
+                clu3x7.seedPhi  = l1CaloTower.towerPhi;
+                if      (abs(clu3x7.seedIeta)<=13) { clu3x7.isBarrel = true;  }
+                else if (abs(clu3x7.seedIeta)>=22) { clu3x7.isEndcap = true;  }
+                else                               { clu3x7.isOverlap = true; }
+
+                // Fill the TowerCluster towers
+                clu3x7.towerHits.push_back(l1CaloTower);
+                
+                // Fill the TowerCluster overall variables
+                clu3x7.totalEm += l1CaloTower.towerEm;
+                clu3x7.totalHad += l1CaloTower.towerHad;
+                clu3x7.totalEt += l1CaloTower.towerEt;
+                clu3x7.totalIem += l1CaloTower.towerIem;
+                clu3x7.totalIhad += l1CaloTower.towerIhad;
+                clu3x7.totalIet += l1CaloTower.towerIet;
+                clu3x7.nHits++;
+
+                continue;
+            }
+
+            // go on with unused l1CaloTowers which are not the initial seed
+            int d_iEta = tower_diEta(clu3x7.seedIeta, l1CaloTower.towerIeta);
+            int d_iPhi = tower_diPhi(clu3x7.seedIphi, l1CaloTower.towerIphi);
+
+            // stale tower for seeding if it would lead to overalp between clusters
+            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 6) { l1CaloTower.stale4seed = true; }
+    
+        } // end for loop over TPs
+
+        if (clu3x7.nHits > 0.0) { l1TowerClusters3x7->push_back(clu3x7); }
+
+    }  // end while loop of TowerClusters seeding
+
+    // loop for 3x7 TowerClusters creation starting from the seed just found
+    for (auto& clu3x7 : *l1TowerClusters3x7)
+    {
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip l1CaloTowers which are already used by this clusters' mask
+            if (l1CaloTower.stale) { continue; }
+
+            // go on with unused l1CaloTowers which are not the initial seed
+            int d_iEta = tower_diEta(clu3x7.seedIeta, l1CaloTower.towerIeta);
+            int d_iPhi = tower_diPhi(clu3x7.seedIphi, l1CaloTower.towerIphi);
+
+            // cluster all towers in a 3x7 towers mask
+            if (abs(d_iEta) <= 1 && abs(d_iPhi) <= 3)
+            {
+                l1CaloTower.stale = true;
+
+                // Fill the TowerCluster towers
+                clu3x7.towerHits.push_back(l1CaloTower);
+
+                // Fill the TowerCluster overall variables
+                clu3x7.totalEm += l1CaloTower.towerEm;
+                clu3x7.totalHad += l1CaloTower.towerHad;
+                clu3x7.totalEt += l1CaloTower.towerEt;
+                clu3x7.totalIem += l1CaloTower.towerIem;
+                clu3x7.totalIhad += l1CaloTower.towerIhad;
+                clu3x7.totalIet += l1CaloTower.towerIet;
+                if (l1CaloTower.towerIet > 0) clu3x7.nHits++;
+            }
+        }// end for loop of TP clustering
+
+        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu3x7.towerHits);
+        clu3x7.InitHits(); clu3x7.towerHits = sortedHits;
+
+    }// end while loop of 3x7 TowerClusters creation
+
+
+    /********************************************************************************************
+    * Begin with making TowerClusters in 3x5 grid based on all energy not included in L1EG Objs.
+    * For reference, Run-I used 12x12 grid and Stage-2/Phase-I used 9x9 grid.
+    * 9 trigger towers contains all of an ak-0.4 jets, but overshoots on the corners.
+    *********************************************************************************************/
+
+    std::unique_ptr<TowerHelper::TowerClustersCollection> l1TowerClusters3x5(new TowerHelper::TowerClustersCollection);
+
+    // re-initialize the stale flags
+    for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
+
+    // loop for 3x5 TowerClusters seeds finding
+    caloJetSeedingFinished = false;
+    while (!caloJetSeedingFinished)
+    {
+        TowerHelper::TowerCluster clu3x5; clu3x5.InitHits();
+
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip HF towers for seeding
+            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+
+            // skip l1CaloTowers which are already used by this clusters' mask
+            if (l1CaloTower.stale4seed) { continue; }
+
+            // find highest ET tower and use to seed the TowerCluster
+            if (clu3x5.nHits == 0.0)
+            {
+                // the leading unused tower has ET < min, stop jet clustering
+                if (l1CaloTower.towerEt < EtMinForSeeding)
+                {
+                    caloJetSeedingFinished = true;
+                    break;
+                }
+                l1CaloTower.stale4seed = true;
+                l1CaloTower.stale = true;
+
+                // Set seed location
+                if (l1CaloTower.isBarrel) { clu3x5.barrelSeeded = true; }
+                
+                // Fill the seed tower variables
+                clu3x5.seedIeta = l1CaloTower.towerIeta;
+                clu3x5.seedIphi = l1CaloTower.towerIphi;
+                clu3x5.seedEta  = l1CaloTower.towerEta;
+                clu3x5.seedPhi  = l1CaloTower.towerPhi;
+                if      (abs(clu3x5.seedIeta)<=13) { clu3x5.isBarrel = true;  }
+                else if (abs(clu3x5.seedIeta)>=22) { clu3x5.isEndcap = true;  }
+                else                               { clu3x5.isOverlap = true; }
+
+                // Fill the TowerCluster towers
+                clu3x5.towerHits.push_back(l1CaloTower);
+                
+                // Fill the TowerCluster overall variables
+                clu3x5.totalEm += l1CaloTower.towerEm;
+                clu3x5.totalHad += l1CaloTower.towerHad;
+                clu3x5.totalEt += l1CaloTower.towerEt;
+                clu3x5.totalIem += l1CaloTower.towerIem;
+                clu3x5.totalIhad += l1CaloTower.towerIhad;
+                clu3x5.totalIet += l1CaloTower.towerIet;
+                clu3x5.nHits++;
+
+                continue;
+            }
+
+            // go on with unused l1CaloTowers which are not the initial seed
+            int d_iEta = tower_diEta(clu3x5.seedIeta, l1CaloTower.towerIeta);
+            int d_iPhi = tower_diPhi(clu3x5.seedIphi, l1CaloTower.towerIphi);
+
+            // stale tower for seeding if it would lead to overalp between clusters
+            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 4) { l1CaloTower.stale4seed = true; }
+    
+        } // end for loop over TPs
+
+        if (clu3x5.nHits > 0.0) { l1TowerClusters3x5->push_back(clu3x5); }
+
+    }  // end while loop of TowerClusters seeding
+
+    // loop for 3x5 TowerClusters creation starting from the seed just found
+    for (auto& clu3x5 : *l1TowerClusters3x5)
+    {
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip l1CaloTowers which are already used by this clusters' mask
+            if (l1CaloTower.stale) { continue; }
+
+            // go on with unused l1CaloTowers which are not the initial seed
+            int d_iEta = tower_diEta(clu3x5.seedIeta, l1CaloTower.towerIeta);
+            int d_iPhi = tower_diPhi(clu3x5.seedIphi, l1CaloTower.towerIphi);
+
+            // cluster all towers in a 3x5 towers mask
+            if (abs(d_iEta) <= 1 && abs(d_iPhi) <= 2)
+            {
+                l1CaloTower.stale = true;
+
+                // Fill the TowerCluster towers
+                clu3x5.towerHits.push_back(l1CaloTower);
+
+                // Fill the TowerCluster overall variables
+                clu3x5.totalEm += l1CaloTower.towerEm;
+                clu3x5.totalHad += l1CaloTower.towerHad;
+                clu3x5.totalEt += l1CaloTower.towerEt;
+                clu3x5.totalIem += l1CaloTower.towerIem;
+                clu3x5.totalIhad += l1CaloTower.towerIhad;
+                clu3x5.totalIet += l1CaloTower.towerIet;
+                if (l1CaloTower.towerIet > 0) clu3x5.nHits++;
+            }
+        }// end for loop of TP clustering
+
+        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu3x5.towerHits);
+        clu3x5.InitHits(); clu3x5.towerHits = sortedHits;
+
+    }// end while loop of 3x5 TowerClusters creation
+
     if (DEBUG) 
     {
         std::cout << "\n***************************************************************************************************************************************" << std::endl;
@@ -798,12 +1145,90 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
         }
         std::cout << "*****************************************************************************************************************************************" << std::endl;
+
+        for (auto& clu5x7 : *l1TowerClusters5x7)
+        {
+            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+            std::cout << " -- clu 5x7 seed " << " , eta " << clu5x7.seedIeta << " phi " << clu5x7.seedIphi << std::endl;
+            std::cout << " -- clu 5x7 seed " << " , isBarrel " << clu5x7.isBarrel << " isEndcap " << clu5x7.isEndcap << " isOverlap " << clu5x7.isOverlap << std::endl;
+            std::cout << " -- clu 5x7 towers etas (" << clu5x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x7.towerHits.size(); ++j) { std::cout  << ", " << clu5x7.towerHits[j].towerIeta; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 5x7 towers phis (" << clu5x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x7.towerHits.size(); ++j) { std::cout << ", " << clu5x7.towerHits[j].towerIphi; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 5x7 towers ems (" << clu5x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x7.towerHits.size(); ++j) { std::cout << ", " << clu5x7.towerHits[j].towerIem; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 5x7 towers hads (" << clu5x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x7.towerHits.size(); ++j) { std::cout << ", " << clu5x7.towerHits[j].towerIhad; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 5x7 towers ets (" << clu5x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x7.towerHits.size(); ++j) { std::cout << ", " << clu5x7.towerHits[j].towerIet; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 5x7 number of towers " << clu5x7.nHits << std::endl;
+            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+        }
+        std::cout << "*****************************************************************************************************************************************" << std::endl;
+
+        for (auto& clu3x7 : *l1TowerClusters3x7)
+        {
+            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+            std::cout << " -- clu 3x7 seed " << " , eta " << clu3x7.seedIeta << " phi " << clu3x7.seedIphi << std::endl;
+            std::cout << " -- clu 3x7 seed " << " , isBarrel " << clu3x7.isBarrel << " isEndcap " << clu3x7.isEndcap << " isOverlap " << clu3x7.isOverlap << std::endl;
+            std::cout << " -- clu 3x7 towers etas (" << clu3x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x7.towerHits.size(); ++j) { std::cout  << ", " << clu3x7.towerHits[j].towerIeta; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x7 towers phis (" << clu3x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x7.towerHits.size(); ++j) { std::cout << ", " << clu3x7.towerHits[j].towerIphi; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x7 towers ems (" << clu3x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x7.towerHits.size(); ++j) { std::cout << ", " << clu3x7.towerHits[j].towerIem; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x7 towers hads (" << clu3x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x7.towerHits.size(); ++j) { std::cout << ", " << clu3x7.towerHits[j].towerIhad; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x7 towers ets (" << clu3x7.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x7.towerHits.size(); ++j) { std::cout << ", " << clu3x7.towerHits[j].towerIet; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x7 number of towers " << clu3x7.nHits << std::endl;
+            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+        }
+        std::cout << "*****************************************************************************************************************************************" << std::endl;
+
+        for (auto& clu3x5 : *l1TowerClusters3x5)
+        {
+            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+            std::cout << " -- clu 3x5 seed " << " , eta " << clu3x5.seedIeta << " phi " << clu3x5.seedIphi << std::endl;
+            std::cout << " -- clu 3x5 seed " << " , isBarrel " << clu3x5.isBarrel << " isEndcap " << clu3x5.isEndcap << " isOverlap " << clu3x5.isOverlap << std::endl;
+            std::cout << " -- clu 3x5 towers etas (" << clu3x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x5.towerHits.size(); ++j) { std::cout  << ", " << clu3x5.towerHits[j].towerIeta; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x5 towers phis (" << clu3x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x5.towerHits.size(); ++j) { std::cout << ", " << clu3x5.towerHits[j].towerIphi; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x5 towers ems (" << clu3x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x5.towerHits.size(); ++j) { std::cout << ", " << clu3x5.towerHits[j].towerIem; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x5 towers hads (" << clu3x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x5.towerHits.size(); ++j) { std::cout << ", " << clu3x5.towerHits[j].towerIhad; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x5 towers ets (" << clu3x5.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu3x5.towerHits.size(); ++j) { std::cout << ", " << clu3x5.towerHits[j].towerIet; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 3x5 number of towers " << clu3x5.nHits << std::endl;
+            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+        }
+        std::cout << "*****************************************************************************************************************************************" << std::endl;
     }
 
     iEvent.put(std::move(l1TowerClusters9x9), "l1TowerClusters9x9");
     iEvent.put(std::move(l1TowerClusters7x7), "l1TowerClusters7x7");
     iEvent.put(std::move(l1TowerClusters5x5), "l1TowerClusters5x5");
     iEvent.put(std::move(l1TowerClusters5x9), "l1TowerClusters5x9");
+    iEvent.put(std::move(l1TowerClusters5x7), "l1TowerClusters5x7");
+    iEvent.put(std::move(l1TowerClusters3x7), "l1TowerClusters3x7");
+    iEvent.put(std::move(l1TowerClusters3x5), "l1TowerClusters3x5");
 }
 
 int CaloTowerHandler::tower_diPhi(int &iPhi_1, int &iPhi_2) const
