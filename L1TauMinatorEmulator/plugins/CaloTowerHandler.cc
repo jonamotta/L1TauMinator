@@ -275,12 +275,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu9x9.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
-                clu9x9.totalEm += l1CaloTower.towerEm;
-                clu9x9.totalHad += l1CaloTower.towerHad;
-                clu9x9.totalEt += l1CaloTower.towerEt;
-                clu9x9.totalIem += l1CaloTower.towerIem;
-                clu9x9.totalIhad += l1CaloTower.towerIhad;
-                clu9x9.totalIet += l1CaloTower.towerIet;
+                clu9x9.totalEm      += l1CaloTower.towerEm;
+                clu9x9.totalHad     += l1CaloTower.towerHad;
+                clu9x9.totalEt      += l1CaloTower.towerEt;
+                clu9x9.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu9x9.totalIem     += l1CaloTower.towerIem;
+                clu9x9.totalIhad    += l1CaloTower.towerIhad;
+                clu9x9.totalIet     += l1CaloTower.towerIet;
+                clu9x9.totalEgIet   += l1CaloTower.l1egTowerIet;
                 clu9x9.nHits++;
 
                 continue;
@@ -328,12 +330,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu9x9.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
-                clu9x9.totalEm += l1CaloTower.towerEm;
-                clu9x9.totalHad += l1CaloTower.towerHad;
-                clu9x9.totalEt += l1CaloTower.towerEt;
-                clu9x9.totalIem += l1CaloTower.towerIem;
-                clu9x9.totalIhad += l1CaloTower.towerIhad;
-                clu9x9.totalIet += l1CaloTower.towerIet;
+                clu9x9.totalEm      += l1CaloTower.towerEm;
+                clu9x9.totalHad     += l1CaloTower.towerHad;
+                clu9x9.totalEt      += l1CaloTower.towerEt;
+                clu9x9.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu9x9.totalIem     += l1CaloTower.towerIem;
+                clu9x9.totalIhad    += l1CaloTower.towerIhad;
+                clu9x9.totalIet     += l1CaloTower.towerIet;
+                clu9x9.totalEgIet   += l1CaloTower.l1egTowerIet;
                 if (l1CaloTower.towerIet > 0) clu9x9.nHits++;
             }
 
@@ -405,12 +409,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu7x7.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
-                clu7x7.totalEm += l1CaloTower.towerEm;
-                clu7x7.totalHad += l1CaloTower.towerHad;
-                clu7x7.totalEt += l1CaloTower.towerEt;
-                clu7x7.totalIem += l1CaloTower.towerIem;
-                clu7x7.totalIhad += l1CaloTower.towerIhad;
-                clu7x7.totalIet += l1CaloTower.towerIet;
+                clu7x7.totalEm      += l1CaloTower.towerEm;
+                clu7x7.totalHad     += l1CaloTower.towerHad;
+                clu7x7.totalEt      += l1CaloTower.towerEt;
+                clu7x7.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu7x7.totalIem     += l1CaloTower.towerIem;
+                clu7x7.totalIhad    += l1CaloTower.towerIhad;
+                clu7x7.totalIet     += l1CaloTower.towerIet;
+                clu7x7.totalEgIet   += l1CaloTower.l1egTowerIet;
                 clu7x7.nHits++;
 
                 continue;
@@ -450,12 +456,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu7x7.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
-                clu7x7.totalEm += l1CaloTower.towerEm;
-                clu7x7.totalHad += l1CaloTower.towerHad;
-                clu7x7.totalEt += l1CaloTower.towerEt;
-                clu7x7.totalIem += l1CaloTower.towerIem;
-                clu7x7.totalIhad += l1CaloTower.towerIhad;
-                clu7x7.totalIet += l1CaloTower.towerIet;
+                clu7x7.totalEm      += l1CaloTower.towerEm;
+                clu7x7.totalHad     += l1CaloTower.towerHad;
+                clu7x7.totalEt      += l1CaloTower.towerEt;
+                clu7x7.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu7x7.totalIem     += l1CaloTower.towerIem;
+                clu7x7.totalIhad    += l1CaloTower.towerIhad;
+                clu7x7.totalIet     += l1CaloTower.towerIet;
+                clu7x7.totalEgIet   += l1CaloTower.l1egTowerIet;
                 if (l1CaloTower.towerIet > 0) clu7x7.nHits++;
             }
         }// end for loop of TP clustering
@@ -520,12 +528,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu5x5.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
-                clu5x5.totalEm += l1CaloTower.towerEm;
-                clu5x5.totalHad += l1CaloTower.towerHad;
-                clu5x5.totalEt += l1CaloTower.towerEt;
-                clu5x5.totalIem += l1CaloTower.towerIem;
-                clu5x5.totalIhad += l1CaloTower.towerIhad;
-                clu5x5.totalIet += l1CaloTower.towerIet;
+                clu5x5.totalEm      += l1CaloTower.towerEm;
+                clu5x5.totalHad     += l1CaloTower.towerHad;
+                clu5x5.totalEt      += l1CaloTower.towerEt;
+                clu5x5.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu5x5.totalIem     += l1CaloTower.towerIem;
+                clu5x5.totalIhad    += l1CaloTower.towerIhad;
+                clu5x5.totalIet     += l1CaloTower.towerIet;
+                clu5x5.totalEgIet   += l1CaloTower.l1egTowerIet;
                 clu5x5.nHits++;
 
                 continue;
@@ -565,12 +575,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu5x5.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
-                clu5x5.totalEm += l1CaloTower.towerEm;
-                clu5x5.totalHad += l1CaloTower.towerHad;
-                clu5x5.totalEt += l1CaloTower.towerEt;
-                clu5x5.totalIem += l1CaloTower.towerIem;
-                clu5x5.totalIhad += l1CaloTower.towerIhad;
-                clu5x5.totalIet += l1CaloTower.towerIet;
+                clu5x5.totalEm      += l1CaloTower.towerEm;
+                clu5x5.totalHad     += l1CaloTower.towerHad;
+                clu5x5.totalEt      += l1CaloTower.towerEt;
+                clu5x5.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu5x5.totalIem     += l1CaloTower.towerIem;
+                clu5x5.totalIhad    += l1CaloTower.towerIhad;
+                clu5x5.totalIet     += l1CaloTower.towerIet;
+                clu5x5.totalEgIet   += l1CaloTower.l1egTowerIet;
                 if (l1CaloTower.towerIet > 0) clu5x5.nHits++;
             }
         }// end for loop of TP clustering
@@ -635,12 +647,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu5x9.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
-                clu5x9.totalEm += l1CaloTower.towerEm;
-                clu5x9.totalHad += l1CaloTower.towerHad;
-                clu5x9.totalEt += l1CaloTower.towerEt;
-                clu5x9.totalIem += l1CaloTower.towerIem;
-                clu5x9.totalIhad += l1CaloTower.towerIhad;
-                clu5x9.totalIet += l1CaloTower.towerIet;
+                clu5x9.totalEm      += l1CaloTower.towerEm;
+                clu5x9.totalHad     += l1CaloTower.towerHad;
+                clu5x9.totalEt      += l1CaloTower.towerEt;
+                clu5x9.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu5x9.totalIem     += l1CaloTower.towerIem;
+                clu5x9.totalIhad    += l1CaloTower.towerIhad;
+                clu5x9.totalIet     += l1CaloTower.towerIet;
+                clu5x9.totalEgIet   += l1CaloTower.l1egTowerIet;
                 clu5x9.nHits++;
 
                 continue;
@@ -680,12 +694,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu5x9.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
-                clu5x9.totalEm += l1CaloTower.towerEm;
-                clu5x9.totalHad += l1CaloTower.towerHad;
-                clu5x9.totalEt += l1CaloTower.towerEt;
-                clu5x9.totalIem += l1CaloTower.towerIem;
-                clu5x9.totalIhad += l1CaloTower.towerIhad;
-                clu5x9.totalIet += l1CaloTower.towerIet;
+                clu5x9.totalEm      += l1CaloTower.towerEm;
+                clu5x9.totalHad     += l1CaloTower.towerHad;
+                clu5x9.totalEt      += l1CaloTower.towerEt;
+                clu5x9.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu5x9.totalIem     += l1CaloTower.towerIem;
+                clu5x9.totalIhad    += l1CaloTower.towerIhad;
+                clu5x9.totalIet     += l1CaloTower.towerIet;
+                clu5x9.totalEgIet   += l1CaloTower.l1egTowerIet;
                 if (l1CaloTower.towerIet > 0) clu5x9.nHits++;
             }
         }// end for loop of TP clustering
@@ -750,12 +766,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu5x7.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
-                clu5x7.totalEm += l1CaloTower.towerEm;
-                clu5x7.totalHad += l1CaloTower.towerHad;
-                clu5x7.totalEt += l1CaloTower.towerEt;
-                clu5x7.totalIem += l1CaloTower.towerIem;
-                clu5x7.totalIhad += l1CaloTower.towerIhad;
-                clu5x7.totalIet += l1CaloTower.towerIet;
+                clu5x7.totalEm      += l1CaloTower.towerEm;
+                clu5x7.totalHad     += l1CaloTower.towerHad;
+                clu5x7.totalEt      += l1CaloTower.towerEt;
+                clu5x7.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu5x7.totalIem     += l1CaloTower.towerIem;
+                clu5x7.totalIhad    += l1CaloTower.towerIhad;
+                clu5x7.totalIet     += l1CaloTower.towerIet;
+                clu5x7.totalEgIet   += l1CaloTower.l1egTowerIet;
                 clu5x7.nHits++;
 
                 continue;
@@ -795,12 +813,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu5x7.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
-                clu5x7.totalEm += l1CaloTower.towerEm;
-                clu5x7.totalHad += l1CaloTower.towerHad;
-                clu5x7.totalEt += l1CaloTower.towerEt;
-                clu5x7.totalIem += l1CaloTower.towerIem;
-                clu5x7.totalIhad += l1CaloTower.towerIhad;
-                clu5x7.totalIet += l1CaloTower.towerIet;
+                clu5x7.totalEm      += l1CaloTower.towerEm;
+                clu5x7.totalHad     += l1CaloTower.towerHad;
+                clu5x7.totalEt      += l1CaloTower.towerEt;
+                clu5x7.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu5x7.totalIem     += l1CaloTower.towerIem;
+                clu5x7.totalIhad    += l1CaloTower.towerIhad;
+                clu5x7.totalIet     += l1CaloTower.towerIet;
+                clu5x7.totalEgIet   += l1CaloTower.l1egTowerIet;
                 if (l1CaloTower.towerIet > 0) clu5x7.nHits++;
             }
         }// end for loop of TP clustering
@@ -865,12 +885,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu3x7.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
-                clu3x7.totalEm += l1CaloTower.towerEm;
-                clu3x7.totalHad += l1CaloTower.towerHad;
-                clu3x7.totalEt += l1CaloTower.towerEt;
-                clu3x7.totalIem += l1CaloTower.towerIem;
-                clu3x7.totalIhad += l1CaloTower.towerIhad;
-                clu3x7.totalIet += l1CaloTower.towerIet;
+                clu3x7.totalEm      += l1CaloTower.towerEm;
+                clu3x7.totalHad     += l1CaloTower.towerHad;
+                clu3x7.totalEt      += l1CaloTower.towerEt;
+                clu3x7.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu3x7.totalIem     += l1CaloTower.towerIem;
+                clu3x7.totalIhad    += l1CaloTower.towerIhad;
+                clu3x7.totalIet     += l1CaloTower.towerIet;
+                clu3x7.totalEgIet   += l1CaloTower.l1egTowerIet;
                 clu3x7.nHits++;
 
                 continue;
@@ -910,12 +932,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu3x7.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
-                clu3x7.totalEm += l1CaloTower.towerEm;
-                clu3x7.totalHad += l1CaloTower.towerHad;
-                clu3x7.totalEt += l1CaloTower.towerEt;
-                clu3x7.totalIem += l1CaloTower.towerIem;
-                clu3x7.totalIhad += l1CaloTower.towerIhad;
-                clu3x7.totalIet += l1CaloTower.towerIet;
+                clu3x7.totalEm      += l1CaloTower.towerEm;
+                clu3x7.totalHad     += l1CaloTower.towerHad;
+                clu3x7.totalEt      += l1CaloTower.towerEt;
+                clu3x7.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu3x7.totalIem     += l1CaloTower.towerIem;
+                clu3x7.totalIhad    += l1CaloTower.towerIhad;
+                clu3x7.totalIet     += l1CaloTower.towerIet;
+                clu3x7.totalEgIet   += l1CaloTower.l1egTowerIet;
                 if (l1CaloTower.towerIet > 0) clu3x7.nHits++;
             }
         }// end for loop of TP clustering
@@ -980,12 +1004,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu3x5.towerHits.push_back(l1CaloTower);
                 
                 // Fill the TowerCluster overall variables
-                clu3x5.totalEm += l1CaloTower.towerEm;
-                clu3x5.totalHad += l1CaloTower.towerHad;
-                clu3x5.totalEt += l1CaloTower.towerEt;
-                clu3x5.totalIem += l1CaloTower.towerIem;
-                clu3x5.totalIhad += l1CaloTower.towerIhad;
-                clu3x5.totalIet += l1CaloTower.towerIet;
+                clu3x5.totalEm      += l1CaloTower.towerEm;
+                clu3x5.totalHad     += l1CaloTower.towerHad;
+                clu3x5.totalEt      += l1CaloTower.towerEt;
+                clu3x5.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu3x5.totalIem     += l1CaloTower.towerIem;
+                clu3x5.totalIhad    += l1CaloTower.towerIhad;
+                clu3x5.totalIet     += l1CaloTower.towerIet;
+                clu3x5.totalEgIet   += l1CaloTower.l1egTowerIet;
                 clu3x5.nHits++;
 
                 continue;
@@ -1025,12 +1051,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 clu3x5.towerHits.push_back(l1CaloTower);
 
                 // Fill the TowerCluster overall variables
-                clu3x5.totalEm += l1CaloTower.towerEm;
-                clu3x5.totalHad += l1CaloTower.towerHad;
-                clu3x5.totalEt += l1CaloTower.towerEt;
-                clu3x5.totalIem += l1CaloTower.towerIem;
-                clu3x5.totalIhad += l1CaloTower.towerIhad;
-                clu3x5.totalIet += l1CaloTower.towerIet;
+                clu3x5.totalEm      += l1CaloTower.towerEm;
+                clu3x5.totalHad     += l1CaloTower.towerHad;
+                clu3x5.totalEt      += l1CaloTower.towerEt;
+                clu3x5.totalEgEt    += l1CaloTower.l1egTowerEt;
+                clu3x5.totalIem     += l1CaloTower.towerIem;
+                clu3x5.totalIhad    += l1CaloTower.towerIhad;
+                clu3x5.totalIet     += l1CaloTower.towerIet;
+                clu3x5.totalEgIet   += l1CaloTower.l1egTowerIet;
                 if (l1CaloTower.towerIet > 0) clu3x5.nHits++;
             }
         }// end for loop of TP clustering

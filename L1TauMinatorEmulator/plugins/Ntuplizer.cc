@@ -253,9 +253,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl9x9_totalEm;
         std::vector<float> _cl9x9_totalHad;
         std::vector<float> _cl9x9_totalEt;
-        std::vector<float> _cl9x9_totalIem;
-        std::vector<float> _cl9x9_totalIhad;
-        std::vector<float> _cl9x9_totalIet;
+        std::vector<float> _cl9x9_totalEgEt;
+        std::vector<int> _cl9x9_totalIem;
+        std::vector<int> _cl9x9_totalIhad;
+        std::vector<int> _cl9x9_totalIet;
+        std::vector<int> _cl9x9_totalEgIet;
         std::vector< std::vector<float> > _cl9x9_towerEta;
         std::vector< std::vector<float> > _cl9x9_towerPhi;
         std::vector< std::vector<float> > _cl9x9_towerEm;
@@ -285,9 +287,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl7x7_totalEm;
         std::vector<float> _cl7x7_totalHad;
         std::vector<float> _cl7x7_totalEt;
-        std::vector<float> _cl7x7_totalIem;
-        std::vector<float> _cl7x7_totalIhad;
-        std::vector<float> _cl7x7_totalIet;
+        std::vector<float> _cl7x7_totalEgEt;
+        std::vector<int> _cl7x7_totalIem;
+        std::vector<int> _cl7x7_totalIhad;
+        std::vector<int> _cl7x7_totalIet;
+        std::vector<int> _cl7x7_totalEgIet;
         std::vector< std::vector<float> > _cl7x7_towerEta;
         std::vector< std::vector<float> > _cl7x7_towerPhi;
         std::vector< std::vector<float> > _cl7x7_towerEm;
@@ -317,9 +321,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl5x5_totalEm;
         std::vector<float> _cl5x5_totalHad;
         std::vector<float> _cl5x5_totalEt;
-        std::vector<float> _cl5x5_totalIem;
-        std::vector<float> _cl5x5_totalIhad;
-        std::vector<float> _cl5x5_totalIet;
+        std::vector<float> _cl5x5_totalEgEt;
+        std::vector<int> _cl5x5_totalIem;
+        std::vector<int> _cl5x5_totalIhad;
+        std::vector<int> _cl5x5_totalIet;
+        std::vector<int> _cl5x5_totalEgIet;
         std::vector< std::vector<float> > _cl5x5_towerEta;
         std::vector< std::vector<float> > _cl5x5_towerPhi;
         std::vector< std::vector<float> > _cl5x5_towerEm;
@@ -349,9 +355,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl5x9_totalEm;
         std::vector<float> _cl5x9_totalHad;
         std::vector<float> _cl5x9_totalEt;
-        std::vector<float> _cl5x9_totalIem;
-        std::vector<float> _cl5x9_totalIhad;
-        std::vector<float> _cl5x9_totalIet;
+        std::vector<float> _cl5x9_totalEgEt;
+        std::vector<int> _cl5x9_totalIem;
+        std::vector<int> _cl5x9_totalIhad;
+        std::vector<int> _cl5x9_totalIet;
+        std::vector<int> _cl5x9_totalEgIet;
         std::vector< std::vector<float> > _cl5x9_towerEta;
         std::vector< std::vector<float> > _cl5x9_towerPhi;
         std::vector< std::vector<float> > _cl5x9_towerEm;
@@ -381,9 +389,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl5x7_totalEm;
         std::vector<float> _cl5x7_totalHad;
         std::vector<float> _cl5x7_totalEt;
-        std::vector<float> _cl5x7_totalIem;
-        std::vector<float> _cl5x7_totalIhad;
-        std::vector<float> _cl5x7_totalIet;
+        std::vector<float> _cl5x7_totalEgEt;
+        std::vector<int> _cl5x7_totalIem;
+        std::vector<int> _cl5x7_totalIhad;
+        std::vector<int> _cl5x7_totalIet;
+        std::vector<int> _cl5x7_totalEgIet;
         std::vector< std::vector<float> > _cl5x7_towerEta;
         std::vector< std::vector<float> > _cl5x7_towerPhi;
         std::vector< std::vector<float> > _cl5x7_towerEm;
@@ -413,9 +423,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl3x7_totalEm;
         std::vector<float> _cl3x7_totalHad;
         std::vector<float> _cl3x7_totalEt;
-        std::vector<float> _cl3x7_totalIem;
-        std::vector<float> _cl3x7_totalIhad;
-        std::vector<float> _cl3x7_totalIet;
+        std::vector<float> _cl3x7_totalEgEt;
+        std::vector<int> _cl3x7_totalIem;
+        std::vector<int> _cl3x7_totalIhad;
+        std::vector<int> _cl3x7_totalIet;
+        std::vector<int> _cl3x7_totalEgIet;
         std::vector< std::vector<float> > _cl3x7_towerEta;
         std::vector< std::vector<float> > _cl3x7_towerPhi;
         std::vector< std::vector<float> > _cl3x7_towerEm;
@@ -445,9 +457,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl3x5_totalEm;
         std::vector<float> _cl3x5_totalHad;
         std::vector<float> _cl3x5_totalEt;
-        std::vector<float> _cl3x5_totalIem;
-        std::vector<float> _cl3x5_totalIhad;
-        std::vector<float> _cl3x5_totalIet;
+        std::vector<float> _cl3x5_totalEgEt;
+        std::vector<int>   _cl3x5_totalIem;
+        std::vector<int>   _cl3x5_totalIhad;
+        std::vector<int>   _cl3x5_totalIet;
+        std::vector<int>   _cl3x5_totalEgIet;
         std::vector< std::vector<float> > _cl3x5_towerEta;
         std::vector< std::vector<float> > _cl3x5_towerPhi;
         std::vector< std::vector<float> > _cl3x5_towerEm;
@@ -669,9 +683,11 @@ void Ntuplizer::Initialize()
     _cl9x9_totalEm.clear();
     _cl9x9_totalHad.clear();
     _cl9x9_totalEt.clear();
+    _cl9x9_totalEgEt.clear();
     _cl9x9_totalIem.clear();
     _cl9x9_totalIhad.clear();
     _cl9x9_totalIet.clear();
+    _cl9x9_totalEgIet.clear();
     _cl9x9_towerEta.clear();
     _cl9x9_towerPhi.clear();
     _cl9x9_towerEm.clear();
@@ -701,9 +717,11 @@ void Ntuplizer::Initialize()
     _cl7x7_totalEm.clear();
     _cl7x7_totalHad.clear();
     _cl7x7_totalEt.clear();
+    _cl7x7_totalEgEt.clear();
     _cl7x7_totalIem.clear();
     _cl7x7_totalIhad.clear();
     _cl7x7_totalIet.clear();
+    _cl7x7_totalEgIet.clear();
     _cl7x7_towerEta.clear();
     _cl7x7_towerPhi.clear();
     _cl7x7_towerEm.clear();
@@ -733,9 +751,11 @@ void Ntuplizer::Initialize()
     _cl5x5_totalEm.clear();
     _cl5x5_totalHad.clear();
     _cl5x5_totalEt.clear();
+    _cl5x5_totalEgEt.clear();
     _cl5x5_totalIem.clear();
     _cl5x5_totalIhad.clear();
     _cl5x5_totalIet.clear();
+    _cl5x5_totalEgIet.clear();
     _cl5x5_towerEta.clear();
     _cl5x5_towerPhi.clear();
     _cl5x5_towerEm.clear();
@@ -765,9 +785,11 @@ void Ntuplizer::Initialize()
     _cl5x9_totalEm.clear();
     _cl5x9_totalHad.clear();
     _cl5x9_totalEt.clear();
+    _cl5x9_totalEgEt.clear();
     _cl5x9_totalIem.clear();
     _cl5x9_totalIhad.clear();
     _cl5x9_totalIet.clear();
+    _cl5x9_totalEgIet.clear();
     _cl5x9_towerEta.clear();
     _cl5x9_towerPhi.clear();
     _cl5x9_towerEm.clear();
@@ -797,9 +819,11 @@ void Ntuplizer::Initialize()
     _cl5x7_totalEm.clear();
     _cl5x7_totalHad.clear();
     _cl5x7_totalEt.clear();
+    _cl5x7_totalEgEt.clear();
     _cl5x7_totalIem.clear();
     _cl5x7_totalIhad.clear();
     _cl5x7_totalIet.clear();
+    _cl5x7_totalEgIet.clear();
     _cl5x7_towerEta.clear();
     _cl5x7_towerPhi.clear();
     _cl5x7_towerEm.clear();
@@ -829,9 +853,11 @@ void Ntuplizer::Initialize()
     _cl3x7_totalEm.clear();
     _cl3x7_totalHad.clear();
     _cl3x7_totalEt.clear();
+    _cl3x7_totalEgEt.clear();
     _cl3x7_totalIem.clear();
     _cl3x7_totalIhad.clear();
     _cl3x7_totalIet.clear();
+    _cl3x7_totalEgIet.clear();
     _cl3x7_towerEta.clear();
     _cl3x7_towerPhi.clear();
     _cl3x7_towerEm.clear();
@@ -861,9 +887,11 @@ void Ntuplizer::Initialize()
     _cl3x5_totalEm.clear();
     _cl3x5_totalHad.clear();
     _cl3x5_totalEt.clear();
+    _cl3x5_totalEgEt.clear();
     _cl3x5_totalIem.clear();
     _cl3x5_totalIhad.clear();
     _cl3x5_totalIet.clear();
+    _cl3x5_totalEgIet.clear();
     _cl3x5_towerEta.clear();
     _cl3x5_towerPhi.clear();
     _cl3x5_towerEm.clear();
@@ -1057,9 +1085,11 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl9x9_totalEm",      &_cl9x9_totalEm);
     _tree -> Branch("cl9x9_totalHad",     &_cl9x9_totalHad);
     _tree -> Branch("cl9x9_totalEt",      &_cl9x9_totalEt);
+    _tree -> Branch("cl9x9_totalEgEt",      &_cl9x9_totalEgEt);
     _tree -> Branch("cl9x9_totalIem",     &_cl9x9_totalIem);
     _tree -> Branch("cl9x9_totalIhad",    &_cl9x9_totalIhad);
     _tree -> Branch("cl9x9_totalIet",     &_cl9x9_totalIet);
+    _tree -> Branch("cl9x9_totalEgIet",     &_cl9x9_totalEgIet);
     _tree -> Branch("cl9x9_towerEta",     &_cl9x9_towerEta);
     _tree -> Branch("cl9x9_towerPhi",     &_cl9x9_towerPhi);
     _tree -> Branch("cl9x9_towerEm",      &_cl9x9_towerEm);
@@ -1089,9 +1119,11 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl7x7_totalEm",      &_cl7x7_totalEm);
     _tree -> Branch("cl7x7_totalHad",     &_cl7x7_totalHad);
     _tree -> Branch("cl7x7_totalEt",      &_cl7x7_totalEt);
+    _tree -> Branch("cl7x7_totalEgEt",    &_cl7x7_totalEgEt);
     _tree -> Branch("cl7x7_totalIem",     &_cl7x7_totalIem);
     _tree -> Branch("cl7x7_totalIhad",    &_cl7x7_totalIhad);
     _tree -> Branch("cl7x7_totalIet",     &_cl7x7_totalIet);
+    _tree -> Branch("cl7x7_totalEgIet",   &_cl7x7_totalEgIet);
     _tree -> Branch("cl7x7_towerEta",     &_cl7x7_towerEta);
     _tree -> Branch("cl7x7_towerPhi",     &_cl7x7_towerPhi);
     _tree -> Branch("cl7x7_towerEm",      &_cl7x7_towerEm);
@@ -1121,9 +1153,11 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x5_totalEm",      &_cl5x5_totalEm);
     _tree -> Branch("cl5x5_totalHad",     &_cl5x5_totalHad);
     _tree -> Branch("cl5x5_totalEt",      &_cl5x5_totalEt);
+    _tree -> Branch("cl5x5_totalEgEt",    &_cl5x5_totalEgEt);
     _tree -> Branch("cl5x5_totalIem",     &_cl5x5_totalIem);
     _tree -> Branch("cl5x5_totalIhad",    &_cl5x5_totalIhad);
     _tree -> Branch("cl5x5_totalIet",     &_cl5x5_totalIet);
+    _tree -> Branch("cl5x5_totalEgIet",   &_cl5x5_totalEgIet);
     _tree -> Branch("cl5x5_towerEta",     &_cl5x5_towerEta);
     _tree -> Branch("cl5x5_towerPhi",     &_cl5x5_towerPhi);
     _tree -> Branch("cl5x5_towerEm",      &_cl5x5_towerEm);
@@ -1153,9 +1187,11 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x9_totalEm",      &_cl5x9_totalEm);
     _tree -> Branch("cl5x9_totalHad",     &_cl5x9_totalHad);
     _tree -> Branch("cl5x9_totalEt",      &_cl5x9_totalEt);
+    _tree -> Branch("cl5x9_totalEgEt",    &_cl5x9_totalEgEt);
     _tree -> Branch("cl5x9_totalIem",     &_cl5x9_totalIem);
     _tree -> Branch("cl5x9_totalIhad",    &_cl5x9_totalIhad);
     _tree -> Branch("cl5x9_totalIet",     &_cl5x9_totalIet);
+    _tree -> Branch("cl5x9_totalEgIet",   &_cl5x9_totalEgIet);
     _tree -> Branch("cl5x9_towerEta",     &_cl5x9_towerEta);
     _tree -> Branch("cl5x9_towerPhi",     &_cl5x9_towerPhi);
     _tree -> Branch("cl5x9_towerEm",      &_cl5x9_towerEm);
@@ -1185,9 +1221,11 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x7_totalEm",      &_cl5x7_totalEm);
     _tree -> Branch("cl5x7_totalHad",     &_cl5x7_totalHad);
     _tree -> Branch("cl5x7_totalEt",      &_cl5x7_totalEt);
+    _tree -> Branch("cl5x7_totalEgEt",    &_cl5x7_totalEgEt);
     _tree -> Branch("cl5x7_totalIem",     &_cl5x7_totalIem);
     _tree -> Branch("cl5x7_totalIhad",    &_cl5x7_totalIhad);
     _tree -> Branch("cl5x7_totalIet",     &_cl5x7_totalIet);
+    _tree -> Branch("cl5x7_totalEgIet",   &_cl5x7_totalEgIet);
     _tree -> Branch("cl5x7_towerEta",     &_cl5x7_towerEta);
     _tree -> Branch("cl5x7_towerPhi",     &_cl5x7_towerPhi);
     _tree -> Branch("cl5x7_towerEm",      &_cl5x7_towerEm);
@@ -1217,9 +1255,11 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl3x7_totalEm",      &_cl3x7_totalEm);
     _tree -> Branch("cl3x7_totalHad",     &_cl3x7_totalHad);
     _tree -> Branch("cl3x7_totalEt",      &_cl3x7_totalEt);
+    _tree -> Branch("cl3x7_totalEgEt",    &_cl3x7_totalEgEt);
     _tree -> Branch("cl3x7_totalIem",     &_cl3x7_totalIem);
     _tree -> Branch("cl3x7_totalIhad",    &_cl3x7_totalIhad);
     _tree -> Branch("cl3x7_totalIet",     &_cl3x7_totalIet);
+    _tree -> Branch("cl3x7_totalEgIet",   &_cl3x7_totalEgIet);
     _tree -> Branch("cl3x7_towerEta",     &_cl3x7_towerEta);
     _tree -> Branch("cl3x7_towerPhi",     &_cl3x7_towerPhi);
     _tree -> Branch("cl3x7_towerEm",      &_cl3x7_towerEm);
@@ -1249,9 +1289,11 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl3x5_totalEm",      &_cl3x5_totalEm);
     _tree -> Branch("cl3x5_totalHad",     &_cl3x5_totalHad);
     _tree -> Branch("cl3x5_totalEt",      &_cl3x5_totalEt);
+    _tree -> Branch("cl3x5_totalEgEt",    &_cl3x5_totalEgEt);
     _tree -> Branch("cl3x5_totalIem",     &_cl3x5_totalIem);
     _tree -> Branch("cl3x5_totalIhad",    &_cl3x5_totalIhad);
     _tree -> Branch("cl3x5_totalIet",     &_cl3x5_totalIet);
+    _tree -> Branch("cl3x5_totalEgIet",   &_cl3x5_totalEgIet);
     _tree -> Branch("cl3x5_towerEta",     &_cl3x5_towerEta);
     _tree -> Branch("cl3x5_towerPhi",     &_cl3x5_towerPhi);
     _tree -> Branch("cl3x5_towerEm",      &_cl3x5_towerEm);
@@ -1386,8 +1428,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu9x9.totalIet - tau.visPt*2;
             dPtOPt       = (writable_clu9x9.totalIet - tau.visPt*2) / tau.visPt*2;
-            dPtEm        = writable_clu9x9.totalIem - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu9x9.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEm        = writable_clu9x9.totalIem + writable_clu9x9.totalEgIet - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu9x9.totalIem + writable_clu9x9.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
             dPtHad       = writable_clu9x9.totalIhad - tau.visPtHad*2;
             dPtHadOPtHad = (writable_clu9x9.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
 
@@ -1454,8 +1496,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu7x7.totalIet - tau.visPt*2;
             dPtOPt       = (writable_clu7x7.totalIet - tau.visPt*2) / tau.visPt*2;
-            dPtEm        = writable_clu7x7.totalIem - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu7x7.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEm        = writable_clu7x7.totalIem + writable_clu7x7.totalEgIet - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu7x7.totalIem + writable_clu7x7.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
             dPtHad       = writable_clu7x7.totalIhad - tau.visPtHad*2;
             dPtHadOPtHad = (writable_clu7x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
@@ -1521,8 +1563,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu5x5.totalIet - tau.visPt*2;
             dPtOPt       = (writable_clu5x5.totalIet - tau.visPt*2) / tau.visPt*2;
-            dPtEm        = writable_clu5x5.totalIem - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu5x5.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEm        = writable_clu5x5.totalIem + writable_clu5x5.totalEgIet - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x5.totalIem + writable_clu5x5.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
             dPtHad       = writable_clu5x5.totalIhad - tau.visPtHad*2;
             dPtHadOPtHad = (writable_clu5x5.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
@@ -1588,8 +1630,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu5x9.totalIet - tau.visPt*2;
             dPtOPt       = (writable_clu5x9.totalIet - tau.visPt*2) / tau.visPt*2;
-            dPtEm        = writable_clu5x9.totalIem - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu5x9.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEm        = writable_clu5x9.totalIem + writable_clu5x9.totalEgIet - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x9.totalIem + writable_clu5x9.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
             dPtHad       = writable_clu5x9.totalIhad - tau.visPtHad*2;
             dPtHadOPtHad = (writable_clu5x9.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
@@ -1655,8 +1697,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu5x7.totalIet - tau.visPt*2;
             dPtOPt       = (writable_clu5x7.totalIet - tau.visPt*2) / tau.visPt*2;
-            dPtEm        = writable_clu5x7.totalIem - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu5x7.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEm        = writable_clu5x7.totalIem + writable_clu5x7.totalEgIet - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x7.totalIem + writable_clu5x7.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
             dPtHad       = writable_clu5x7.totalIhad - tau.visPtHad*2;
             dPtHadOPtHad = (writable_clu5x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
@@ -1722,8 +1764,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu3x7.totalIet - tau.visPt*2;
             dPtOPt       = (writable_clu3x7.totalIet - tau.visPt*2) / tau.visPt*2;
-            dPtEm        = writable_clu3x7.totalIem - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu3x7.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEm        = writable_clu3x7.totalIem + writable_clu3x7.totalEgIet - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu3x7.totalIem + writable_clu3x7.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
             dPtHad       = writable_clu3x7.totalIhad - tau.visPtHad*2;
             dPtHadOPtHad = (writable_clu3x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
@@ -1789,8 +1831,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu3x5.totalIet - tau.visPt*2;
             dPtOPt       = (writable_clu3x5.totalIet - tau.visPt*2) / tau.visPt*2;
-            dPtEm        = writable_clu3x5.totalIem - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu3x5.totalIem - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEm        = writable_clu3x5.totalIem + writable_clu3x5.totalEgIet - tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu3x5.totalIem + writable_clu3x5.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
             dPtHad       = writable_clu3x5.totalIhad - tau.visPtHad*2;
             dPtHadOPtHad = (writable_clu3x5.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
         }
@@ -1851,12 +1893,6 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
             dPt    = writable_hgclu.pt - tau.visPt;
             dPtOPt = (writable_hgclu.pt - tau.visPt) / tau.visPt;
-
-            dEta         = writable_hgclu.eta - tau.visEta;
-            dPhi         = reco::deltaPhi(writable_hgclu.phi, tau.visPhi);
-            dR           = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt          = writable_hgclu.pt - tau.visPt*2;
-            dPtOPt       = (writable_hgclu.pt - tau.visPt*2) / tau.visPt*2;
         }
         _tau_cl3d_dEta.push_back(dEta);
         _tau_cl3d_dPhi.push_back(dPhi);
@@ -2404,9 +2440,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl9x9_totalEm.push_back(clu9x9.totalEm);
         _cl9x9_totalHad.push_back(clu9x9.totalHad);
         _cl9x9_totalEt.push_back(clu9x9.totalEt);
+        _cl9x9_totalEgEt.push_back(clu9x9.totalEgEt);
         _cl9x9_totalIem.push_back(clu9x9.totalIem);
         _cl9x9_totalIhad.push_back(clu9x9.totalIhad);
         _cl9x9_totalIet.push_back(clu9x9.totalIet);
+        _cl9x9_totalEgIet.push_back(clu9x9.totalEgIet);
         
         std::vector<float> tmp_towerEta;
         std::vector<float> tmp_towerPhi;
@@ -2478,9 +2516,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl7x7_totalEm.push_back(clu7x7.totalEm);
         _cl7x7_totalHad.push_back(clu7x7.totalHad);
         _cl7x7_totalEt.push_back(clu7x7.totalEt);
+        _cl7x7_totalEgEt.push_back(clu7x7.totalEgEt);
         _cl7x7_totalIem.push_back(clu7x7.totalIem);
         _cl7x7_totalIhad.push_back(clu7x7.totalIhad);
         _cl7x7_totalIet.push_back(clu7x7.totalIet);
+        _cl7x7_totalEgIet.push_back(clu7x7.totalEgIet);
         
         std::vector<float> tmp_towerEta;
         std::vector<float> tmp_towerPhi;
@@ -2552,9 +2592,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x5_totalEm.push_back(clu5x5.totalEm);
         _cl5x5_totalHad.push_back(clu5x5.totalHad);
         _cl5x5_totalEt.push_back(clu5x5.totalEt);
+        _cl5x5_totalEgEt.push_back(clu5x5.totalEgEt);
         _cl5x5_totalIem.push_back(clu5x5.totalIem);
         _cl5x5_totalIhad.push_back(clu5x5.totalIhad);
         _cl5x5_totalIet.push_back(clu5x5.totalIet);
+        _cl5x5_totalEgIet.push_back(clu5x5.totalEgIet);
         
         std::vector<float> tmp_towerEta;
         std::vector<float> tmp_towerPhi;
@@ -2626,9 +2668,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x9_totalEm.push_back(clu5x9.totalEm);
         _cl5x9_totalHad.push_back(clu5x9.totalHad);
         _cl5x9_totalEt.push_back(clu5x9.totalEt);
+        _cl5x9_totalEgEt.push_back(clu5x9.totalEgEt);
         _cl5x9_totalIem.push_back(clu5x9.totalIem);
         _cl5x9_totalIhad.push_back(clu5x9.totalIhad);
         _cl5x9_totalIet.push_back(clu5x9.totalIet);
+        _cl5x9_totalEgIet.push_back(clu5x9.totalEgIet);
         
         std::vector<float> tmp_towerEta;
         std::vector<float> tmp_towerPhi;
@@ -2700,9 +2744,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x7_totalEm.push_back(clu5x7.totalEm);
         _cl5x7_totalHad.push_back(clu5x7.totalHad);
         _cl5x7_totalEt.push_back(clu5x7.totalEt);
+        _cl5x7_totalEgEt.push_back(clu5x7.totalEgEt);
         _cl5x7_totalIem.push_back(clu5x7.totalIem);
         _cl5x7_totalIhad.push_back(clu5x7.totalIhad);
         _cl5x7_totalIet.push_back(clu5x7.totalIet);
+        _cl5x7_totalEgIet.push_back(clu5x7.totalEgIet);
         
         std::vector<float> tmp_towerEta;
         std::vector<float> tmp_towerPhi;
@@ -2774,9 +2820,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl3x7_totalEm.push_back(clu3x7.totalEm);
         _cl3x7_totalHad.push_back(clu3x7.totalHad);
         _cl3x7_totalEt.push_back(clu3x7.totalEt);
+        _cl3x7_totalEgEt.push_back(clu3x7.totalEgEt);
         _cl3x7_totalIem.push_back(clu3x7.totalIem);
         _cl3x7_totalIhad.push_back(clu3x7.totalIhad);
         _cl3x7_totalIet.push_back(clu3x7.totalIet);
+        _cl3x7_totalEgIet.push_back(clu3x7.totalEgIet);
         
         std::vector<float> tmp_towerEta;
         std::vector<float> tmp_towerPhi;
@@ -2848,9 +2896,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl3x5_totalEm.push_back(clu3x5.totalEm);
         _cl3x5_totalHad.push_back(clu3x5.totalHad);
         _cl3x5_totalEt.push_back(clu3x5.totalEt);
+        _cl3x5_totalEgEt.push_back(clu3x5.totalEgEt);
         _cl3x5_totalIem.push_back(clu3x5.totalIem);
         _cl3x5_totalIhad.push_back(clu3x5.totalIhad);
         _cl3x5_totalIet.push_back(clu3x5.totalIet);
+        _cl3x5_totalEgIet.push_back(clu3x5.totalEgIet);
         
         std::vector<float> tmp_towerEta;
         std::vector<float> tmp_towerPhi;
