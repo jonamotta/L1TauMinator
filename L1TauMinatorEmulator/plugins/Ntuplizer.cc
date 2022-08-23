@@ -1427,11 +1427,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dPhi         = reco::deltaPhi(writable_clu9x9.seedPhi, tau.visPhi);
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu9x9.totalIet - tau.visPt*2;
-            dPtOPt       = (writable_clu9x9.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtOPt       = (writable_clu9x9.totalIet - tau.visPt*2) / (tau.visPt*2);
             dPtEm        = writable_clu9x9.totalIem + writable_clu9x9.totalEgIet - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu9x9.totalIem + writable_clu9x9.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu9x9.totalIem + writable_clu9x9.totalEgIet - tau.visPtEm*2) / (tau.visPtEm*2);
             dPtHad       = writable_clu9x9.totalIhad - tau.visPtHad*2;
-            dPtHadOPtHad = (writable_clu9x9.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu9x9.totalIhad - tau.visPtHad*2) / (tau.visPtHad*2);
 
         }
         _tau_cl9x9_dEta.push_back(dEta);
@@ -1495,11 +1495,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dPhi         = reco::deltaPhi(writable_clu7x7.seedPhi, tau.visPhi);
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu7x7.totalIet - tau.visPt*2;
-            dPtOPt       = (writable_clu7x7.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtOPt       = (writable_clu7x7.totalIet - tau.visPt*2) / (tau.visPt*2);
             dPtEm        = writable_clu7x7.totalIem + writable_clu7x7.totalEgIet - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu7x7.totalIem + writable_clu7x7.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu7x7.totalIem + writable_clu7x7.totalEgIet - tau.visPtEm*2) / (tau.visPtEm*2);
             dPtHad       = writable_clu7x7.totalIhad - tau.visPtHad*2;
-            dPtHadOPtHad = (writable_clu7x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu7x7.totalIhad - tau.visPtHad*2) / (tau.visPtHad*2);
         }
         _tau_cl7x7_dEta.push_back(dEta);
         _tau_cl7x7_dPhi.push_back(dPhi);
@@ -1562,11 +1562,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dPhi         = reco::deltaPhi(writable_clu5x5.seedPhi, tau.visPhi);
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu5x5.totalIet - tau.visPt*2;
-            dPtOPt       = (writable_clu5x5.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtOPt       = (writable_clu5x5.totalIet - tau.visPt*2) / (tau.visPt*2);
             dPtEm        = writable_clu5x5.totalIem + writable_clu5x5.totalEgIet - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu5x5.totalIem + writable_clu5x5.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x5.totalIem + writable_clu5x5.totalEgIet - tau.visPtEm*2) / (tau.visPtEm*2);
             dPtHad       = writable_clu5x5.totalIhad - tau.visPtHad*2;
-            dPtHadOPtHad = (writable_clu5x5.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu5x5.totalIhad - tau.visPtHad*2) / (tau.visPtHad*2);
         }
         _tau_cl5x5_dEta.push_back(dEta);
         _tau_cl5x5_dPhi.push_back(dPhi);
@@ -1629,11 +1629,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dPhi         = reco::deltaPhi(writable_clu5x9.seedPhi, tau.visPhi);
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu5x9.totalIet - tau.visPt*2;
-            dPtOPt       = (writable_clu5x9.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtOPt       = (writable_clu5x9.totalIet - tau.visPt*2) / (tau.visPt*2);
             dPtEm        = writable_clu5x9.totalIem + writable_clu5x9.totalEgIet - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu5x9.totalIem + writable_clu5x9.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x9.totalIem + writable_clu5x9.totalEgIet - tau.visPtEm*2) / (tau.visPtEm*2);
             dPtHad       = writable_clu5x9.totalIhad - tau.visPtHad*2;
-            dPtHadOPtHad = (writable_clu5x9.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu5x9.totalIhad - tau.visPtHad*2) / (tau.visPtHad*2);
         }
         _tau_cl5x9_dEta.push_back(dEta);
         _tau_cl5x9_dPhi.push_back(dPhi);
@@ -1696,11 +1696,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dPhi         = reco::deltaPhi(writable_clu5x7.seedPhi, tau.visPhi);
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu5x7.totalIet - tau.visPt*2;
-            dPtOPt       = (writable_clu5x7.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtOPt       = (writable_clu5x7.totalIet - tau.visPt*2) / (tau.visPt*2);
             dPtEm        = writable_clu5x7.totalIem + writable_clu5x7.totalEgIet - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu5x7.totalIem + writable_clu5x7.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu5x7.totalIem + writable_clu5x7.totalEgIet - tau.visPtEm*2) / (tau.visPtEm*2);
             dPtHad       = writable_clu5x7.totalIhad - tau.visPtHad*2;
-            dPtHadOPtHad = (writable_clu5x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu5x7.totalIhad - tau.visPtHad*2) / (tau.visPtHad*2);
         }
         _tau_cl5x7_dEta.push_back(dEta);
         _tau_cl5x7_dPhi.push_back(dPhi);
@@ -1763,11 +1763,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dPhi         = reco::deltaPhi(writable_clu3x7.seedPhi, tau.visPhi);
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu3x7.totalIet - tau.visPt*2;
-            dPtOPt       = (writable_clu3x7.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtOPt       = (writable_clu3x7.totalIet - tau.visPt*2) / (tau.visPt*2);
             dPtEm        = writable_clu3x7.totalIem + writable_clu3x7.totalEgIet - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu3x7.totalIem + writable_clu3x7.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu3x7.totalIem + writable_clu3x7.totalEgIet - tau.visPtEm*2) / (tau.visPtEm*2);
             dPtHad       = writable_clu3x7.totalIhad - tau.visPtHad*2;
-            dPtHadOPtHad = (writable_clu3x7.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu3x7.totalIhad - tau.visPtHad*2) / (tau.visPtHad*2);
         }
         _tau_cl3x7_dEta.push_back(dEta);
         _tau_cl3x7_dPhi.push_back(dPhi);
@@ -1830,11 +1830,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dPhi         = reco::deltaPhi(writable_clu3x5.seedPhi, tau.visPhi);
             dR           = sqrt(dEta * dEta + dPhi * dPhi);
             dPt          = writable_clu3x5.totalIet - tau.visPt*2;
-            dPtOPt       = (writable_clu3x5.totalIet - tau.visPt*2) / tau.visPt*2;
+            dPtOPt       = (writable_clu3x5.totalIet - tau.visPt*2) / (tau.visPt*2);
             dPtEm        = writable_clu3x5.totalIem + writable_clu3x5.totalEgIet - tau.visPtEm*2;
-            dPtEmOPtEm   = (writable_clu3x5.totalIem + writable_clu3x5.totalEgIet - tau.visPtEm*2) / tau.visPtEm*2;
+            dPtEmOPtEm   = (writable_clu3x5.totalIem + writable_clu3x5.totalEgIet - tau.visPtEm*2) / (tau.visPtEm*2);
             dPtHad       = writable_clu3x5.totalIhad - tau.visPtHad*2;
-            dPtHadOPtHad = (writable_clu3x5.totalIhad - tau.visPtHad*2) / tau.visPtHad*2;
+            dPtHadOPtHad = (writable_clu3x5.totalIhad - tau.visPtHad*2) / (tau.visPtHad*2);
         }
         _tau_cl3x5_dEta.push_back(dEta);
         _tau_cl3x5_dPhi.push_back(dPhi);
@@ -1972,8 +1972,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dEta   = writable_clu9x9.seedEta - jet.eta;
             dPhi   = reco::deltaPhi(writable_clu9x9.seedPhi, jet.phi);
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt    = writable_clu9x9.totalEt - jet.pt;
-            dPtOPt = (writable_clu9x9.totalEt - jet.pt) / jet.pt;
+            dPt    = writable_clu9x9.totalIet - jet.pt;
+            dPtOPt = (writable_clu9x9.totalIet - jet.pt*2) / (jet.pt*2);
         }
         _jet_cl9x9_dEta.push_back(dEta);
         _jet_cl9x9_dPhi.push_back(dPhi);
@@ -2030,8 +2030,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dEta   = writable_clu7x7.seedEta - jet.eta;
             dPhi   = reco::deltaPhi(writable_clu7x7.seedPhi, jet.phi);
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt    = writable_clu7x7.totalEt - jet.pt;
-            dPtOPt = (writable_clu7x7.totalEt - jet.pt) / jet.pt;
+            dPt    = writable_clu7x7.totalIet - jet.pt;
+            dPtOPt = (writable_clu7x7.totalIet - jet.pt*2) / (jet.pt*2);
         }
         _jet_cl7x7_dEta.push_back(dEta);
         _jet_cl7x7_dPhi.push_back(dPhi);
@@ -2088,8 +2088,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dEta   = writable_clu5x5.seedEta - jet.eta;
             dPhi   = reco::deltaPhi(writable_clu5x5.seedPhi, jet.phi);
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt    = writable_clu5x5.totalEt - jet.pt;
-            dPtOPt = (writable_clu5x5.totalEt - jet.pt) / jet.pt;
+            dPt    = writable_clu5x5.totalIet - jet.pt;
+            dPtOPt = (writable_clu5x5.totalIet - jet.pt*2) / (jet.pt*2);
         }
         _jet_cl5x5_dEta.push_back(dEta);
         _jet_cl5x5_dPhi.push_back(dPhi);
@@ -2146,8 +2146,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dEta   = writable_clu5x9.seedEta - jet.eta;
             dPhi   = reco::deltaPhi(writable_clu5x9.seedPhi, jet.phi);
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt    = writable_clu5x9.totalEt - jet.pt;
-            dPtOPt = (writable_clu5x9.totalEt - jet.pt) / jet.pt;
+            dPt    = writable_clu5x9.totalIet - jet.pt;
+            dPtOPt = (writable_clu5x9.totalIet - jet.pt*2) / (jet.pt*2);
         }
         _jet_cl5x9_dEta.push_back(dEta);
         _jet_cl5x9_dPhi.push_back(dPhi);
@@ -2199,8 +2199,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dEta   = writable_clu5x7.seedEta - jet.eta;
             dPhi   = reco::deltaPhi(writable_clu5x7.seedPhi, jet.phi);
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt    = writable_clu5x7.totalEt - jet.pt;
-            dPtOPt = (writable_clu5x7.totalEt - jet.pt) / jet.pt;
+            dPt    = writable_clu5x7.totalIet - jet.pt;
+            dPtOPt = (writable_clu5x7.totalIet - jet.pt*2) / (jet.pt*2);
         }
         _jet_cl5x7_dEta.push_back(dEta);
         _jet_cl5x7_dPhi.push_back(dPhi);
@@ -2254,8 +2254,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dEta   = writable_clu3x7.seedEta - jet.eta;
             dPhi   = reco::deltaPhi(writable_clu3x7.seedPhi, jet.phi);
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt    = writable_clu3x7.totalEt - jet.pt;
-            dPtOPt = (writable_clu3x7.totalEt - jet.pt) / jet.pt;
+            dPt    = writable_clu3x7.totalIet - jet.pt;
+            dPtOPt = (writable_clu3x7.totalIet - jet.pt*2) / (jet.pt*2);
         }
         _jet_cl3x7_dEta.push_back(dEta);
         _jet_cl3x7_dPhi.push_back(dPhi);
@@ -2309,8 +2309,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             dEta   = writable_clu3x5.seedEta - jet.eta;
             dPhi   = reco::deltaPhi(writable_clu3x5.seedPhi, jet.phi);
             dR     = sqrt(dEta * dEta + dPhi * dPhi);
-            dPt    = writable_clu3x5.totalEt - jet.pt;
-            dPtOPt = (writable_clu3x5.totalEt - jet.pt) / jet.pt;
+            dPt    = writable_clu3x5.totalIet - jet.pt;
+            dPtOPt = (writable_clu3x5.totalIet - jet.pt*2) / (jet.pt*2);
         }
         _jet_cl3x5_dEta.push_back(dEta);
         _jet_cl3x5_dPhi.push_back(dPhi);
