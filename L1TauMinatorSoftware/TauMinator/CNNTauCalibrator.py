@@ -121,7 +121,7 @@ if __name__ == "__main__" :
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNCalibrator_plots')
 
-    history = TauCalibratorModel.fit([X1, X2], Y, epochs=3, batch_size=12, verbose=1, validation_split=0.1)
+    history = TauCalibratorModel.fit([X1, X2], Y, epochs=10, batch_size=128, verbose=1, validation_split=0.1)
 
     TauCalibratorModel.save(outdir + '/TauCNNCalibrator')
 

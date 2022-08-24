@@ -91,6 +91,7 @@ if __name__ == "__main__" :
 
     TauIdentifierModel = keras.Model([images, positions], TauIdentified, name='TauCNNIdentifier')
 
+    # metrics = [tf.keras.metrics.BinaryAccuracy('BA'), tf.keras.metrics.FalseNegatives(name='FN'), tf.keras.metrics.FalsePositive(name='FP'), tf.keras.metrics.TrueNegatives(name='TN'), tf.keras.metrics.TruePositive(name='TP')]
     TauIdentifierModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.BinaryCrossentropy(), metrics=['accuracy'], run_eagerly=True)
 
     ############################## Get model inputs ##############################
@@ -111,13 +112,13 @@ if __name__ == "__main__" :
     X2 = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
     Y = np.load(indir+'/Y'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
 
-    
+
     ############################## Model training ##############################
 
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNIdentifier_plots')
 
-    history = TauIdentifierModel.fit([X1, X2], Y, epochs=3, batch_size=12, verbose=1, validation_split=0.1)
+    history = TauIdentifierModel.fit([X1, X2], Y, epochs=10, batch_size=128, verbose=1, validation_split=0.1)
 
     TauIdentifierModel.save(outdir + '/TauCNNIdentifier')
 
@@ -134,12 +135,48 @@ if __name__ == "__main__" :
 
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
+    plt.title('Accuracy')
+    plt.ylabel('Accuracy')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     plt.savefig(outdir+'/TauCNNIdentifier_plots/accuracy.pdf')
     plt.close()
+
+    # plt.plot(history.history['FP'])
+    # plt.plot(history.history['val_FP'])
+    # plt.title('False Positives')
+    # plt.ylabel('False Positive Rate')
+    # plt.xlabel('epoch')
+    # plt.legend(['train', 'test'], loc='upper left')
+    # plt.savefig(outdir+'/TauCNNIdentifier_plots/false_positives.pdf')
+    # plt.close()
+
+    # plt.plot(history.history['TP'])
+    # plt.plot(history.history['val_TP'])
+    # plt.title('True Positives')
+    # plt.ylabel('True Positive Rate')
+    # plt.xlabel('epoch')
+    # plt.legend(['train', 'test'], loc='upper left')
+    # plt.savefig(outdir+'/TauCNNIdentifier_plots/true_positives.pdf')
+    # plt.close()
+
+    # plt.plot(history.history['FN'])
+    # plt.plot(history.history['val_FN'])
+    # plt.title('False Negatives')
+    # plt.ylabel('False Negative Rate')
+    # plt.xlabel('epoch')
+    # plt.legend(['train', 'test'], loc='upper left')
+    # plt.savefig(outdir+'/TauCNNIdentifier_plots/false_negatives.pdf')
+    # plt.close()
+
+    # plt.plot(history.history['TN'])
+    # plt.plot(history.history['val_TN'])
+    # plt.title('True Negatives')
+    # plt.ylabel('True Negative Rate')
+    # plt.xlabel('epoch')
+    # plt.legend(['train', 'test'], loc='upper left')
+    # plt.savefig(outdir+'/TauCNNIdentifier_plots/true_negatives.pdf')
+    # plt.close()
 
     print('\nTrained model saved to folder: {}'.format(outdir))
 
