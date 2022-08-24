@@ -4,9 +4,7 @@ import numpy as np
 import math
 import os
 
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
