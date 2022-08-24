@@ -1,6 +1,7 @@
 from optparse import OptionParser
 import numpy as np
 import random
+import math
 import glob
 import os
 
@@ -136,6 +137,7 @@ if __name__ == "__main__" :
     if options.doTens4Ident: outdir += 'Identifier'
     outdir += options.caloClNxM+'Training'+options.outTag
     os.system('mkdir -p '+outdir)
+    os.system('mkdir -p '+indir+'/TauCNNValidator'+options.caloClNxM)
 
 
     readFrom = {
@@ -185,22 +187,49 @@ if __name__ == "__main__" :
     random.shuffle(mixer)
     X1sToConcatenate, X2sToConcatenate, YsToConcatenate = zip(*mixer)
 
+    dp = int(math.ceil(len(X1sToConcatenate)/5*4))
+
     # concatenate batches in single tensors
-    X1 = np.concatenate(X1sToConcatenate)
-    X2 = np.concatenate(X2sToConcatenate)
-    Y = np.concatenate(YsToConcatenate)
+    X1_train = np.concatenate(X1sToConcatenate[:dp])
+    X2_train = np.concatenate(X2sToConcatenate[:dp])
+    Y_train  = np.concatenate(YsToConcatenate[:dp])
+
+    X1_valid = np.concatenate(X1sToConcatenate[dp:])
+    X2_valid = np.concatenate(X2sToConcatenate[dp:])
+    Y_valid  = np.concatenate(YsToConcatenate[dp:])
+
+    if len(X1_train) > 300000:
+        X1_train = X1_train[:300000]
+        X2_train = X2_train[:300000]
+        Y_train = Y_train[:300000]
+
+        X1_valid = X1_valid[:60000]
+        X2_valid = X2_valid[:60000]
+        Y_valid = Y_valid[:60000]
 
     ## DEBUG
-    print(len(X1))
-    print(len(X2))
-    print(len(Y))
+    print('shape X1_train =', X1_train.shape)
+    print('shape X2_train =', X2_train.shape)
+    print('shape Y_train =', Y_train.shape)
+
+    print('shape X1_valid =', X1_valid.shape)
+    print('shape X2_valid =', X2_valid.shape)
+    print('shape Y_valid =', Y_valid.shape)
 
     if options.doTens4Calib:
-        np.savez_compressed(outdir+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz', X1)
-        np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz', X2)
-        np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forCalibrator.npz', Y)
+        np.savez_compressed(outdir+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz', X1_train)
+        np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz', X2_train)
+        np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forCalibrator.npz', Y_train)
+
+        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Calib_CNN_'+options.caloClNxM+'_forValidator.npz', X1_valid)
+        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Calib_Dense_'+options.caloClNxM+'_forValidator.npz', X2_valid)
+        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/Y_Calib_'+options.caloClNxM+'_forValidator.npz', Y_valid)
 
     elif options.doTens4Ident:
-        np.savez_compressed(outdir+'/X_CNN_'+options.caloClNxM+'_forIdentifier.npz', X1)
-        np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz', X2)
-        np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forIdentifier.npz', Y)
+        np.savez_compressed(outdir+'/X_CNN_'+options.caloClNxM+'_forIdentifier.npz', X1_train)
+        np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz', X2_train)
+        np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forIdentifier.npz', Y_train)
+
+        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Ident_CNN_'+options.caloClNxM+'_forValidator.npz', X1_valid)
+        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Ident_Dense_'+options.caloClNxM+'_forValidator.npz', X2_valid)
+        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/Y_Ident_'+options.caloClNxM+'_forValidator.npz', Y_valid)

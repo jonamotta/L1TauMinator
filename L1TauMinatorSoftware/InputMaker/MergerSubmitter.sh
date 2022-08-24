@@ -15,7 +15,7 @@
 
 # ------------------------------------------------------------------------------------------------------------------------
 
-python Merger.py --v 2 --date 2022_08_23 --caloClNxM 9x9 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500
+python3 Merger.py --v 2 --date 2022_08_23 --caloClNxM 9x9 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 7x7 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 5x5 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 5x9 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500
@@ -23,7 +23,7 @@ python Merger.py --v 2 --date 2022_08_23 --caloClNxM 5x7 --doTens4Calib --doHH -
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 3x7 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 3x5 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500
 
-python Merger.py --v 2 --date 2022_08_23 --caloClNxM 9x9 --doTens4Ident --doHH --doVBFH --doZp500 --doZp1500 --doQCD
+python3 Merger.py --v 2 --date 2022_08_23 --caloClNxM 9x9 --doTens4Ident --doHH --doVBFH --doZp500 --doZp1500 --doQCD
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 7x7 --doTens4Ident --doHH --doVBFH --doZp500 --doZp1500 --doQCD
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 5x5 --doTens4Ident --doHH --doVBFH --doZp500 --doZp1500 --doQCD
 python Merger.py --v 2 --date 2022_08_23 --caloClNxM 5x9 --doTens4Ident --doHH --doVBFH --doZp500 --doZp1500 --doQCD
