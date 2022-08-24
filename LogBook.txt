@@ -1,0 +1,29 @@
+2022_08_17_v0
+    * version zero to test the workflow
+    * no important stuff here
+
+
+2022_08_20_v1
+    * uses L1TauMinatorNtuples/v0 produced on the 20th of August
+    * first try at training with the following input:
+        X is (None, N, M, 5)
+            N runs over eta, M runs over phi
+            5 features are: Ieta, Iphi, Iem, Ihad, EgIet
+                        
+        Y is (None, 3)
+            3 targets are: hwVisPt, hwVisEmPt, hwVisHadPt
+
+    * used the CNNs tagged as _5channels2CNNs and _5channels1CNN
+    * two separate CNNs for EM and HAD part with targets the hwVisEmPt, hwVisHadPt
+        -> after discussion with Shamik, this is not corect: a particle that at gen level is em (e.g. pi0) might give had deposit too ; and viceversa a had particle (e.g. pi+) can give em deposit
+        -> the fact that I am using a CNN makes had and em parts be mixed togetehr at training, so I can just regress on the genPt without having to split em/had parts
+    * the CNNs are also getting as input eta and phi 
+        -> after discussion with Shamik, this is not useful: the CNN will see a picture of a channel which is smooth and with a linear gradient, there is nothing that can be learnt from there
+        -> it is best to move the eta/phi information to the Dense layer of the NN
+    * the CNNs are made with 2D convolutions
+        -> after discussion with Shamik, could possibly go to Conv3D but will have more paraeters and more resources will be needed in FPGA (bad!!)
+
+
+2022_08_20_v2
+    * uses L1TauMinatorNtuples/v0 produced on the 20th of August
+    * implement all the comments received from Shamik and reported above
