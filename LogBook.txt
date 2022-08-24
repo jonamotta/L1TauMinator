@@ -24,6 +24,11 @@
         -> after discussion with Shamik, could possibly go to Conv3D but will have more paraeters and more resources will be needed in FPGA (bad!!)
 
 
-2022_08_20_v2
+2022_08_23_v2
     * uses L1TauMinatorNtuples/v0 produced on the 20th of August
     * implement all the comments received from Shamik and reported above
+    * tested training and other stuff to make sure all works fine
+    * done only for 9x9 clusters, will move to L1TauMinatorNtuples/v1
+
+
+2022_08
