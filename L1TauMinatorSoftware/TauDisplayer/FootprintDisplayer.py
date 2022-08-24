@@ -10,47 +10,6 @@ import matplotlib.cm as cm
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
-def colorbar_index(ncolors, cmap, label):
-    cmap = cmap_discretize(cmap, ncolors)
-    mappable = cm.ScalarMappable(cmap=cmap)
-    mappable.set_array([])
-    mappable.set_clim(-0.5, ncolors+0.5)
-    colorbar = plt.colorbar(mappable, label=label)
-    
-    if ncolors > 10:
-        nticks = 10
-        colorbar.set_ticks(np.linspace(0, ncolors, nticks))
-        colorbar.set_ticklabels(np.linspace(0, ncolors-1, nticks).astype('int64'))
-        colorbar.ax.tick_params(which='minor', width=0, length=0)
-    else:
-        colorbar.set_ticks(np.linspace(0, ncolors, ncolors))
-        colorbar.set_ticklabels(range(ncolors))
-        colorbar.ax.tick_params(which='minor', width=0, length=0)
-
-def cmap_discretize(cmap, N):
-    """Return a discrete colormap from the continuous colormap cmap.
-
-        cmap: colormap instance, eg. cm.jet. 
-        N: number of colors.
-
-    Example
-        x = resize(arange(100), (5,100))
-        djet = cmap_discretize(cm.jet, 5)
-        imshow(x, cmap=djet)
-    """
-
-    if type(cmap) == str:
-        cmap = plt.get_cmap(cmap)
-    colors_i = np.concatenate((np.linspace(0, 1., N), (0.,0.,0.,0.)))
-    colors_rgba = cmap(colors_i)
-    indices = np.linspace(0, 1., N+1)
-    cdict = {}
-    for ki,key in enumerate(('red','green','blue')):
-        cdict[key] = [ (indices[i], colors_rgba[i-1,ki], colors_rgba[i,ki])
-                       for i in range(N+1) ]
-    # Return colormap object.
-    return mcolors.LinearSegmentedColormap(cmap.name + "_%d"%N, cdict, 1024)
-
 
 def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, NxM, saveTo):
     if len(dfFlatTowClus) == 0 or len(dfFlatGenJets) == 0:
@@ -75,9 +34,6 @@ def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, N
     if etacut:
         dfGenJets = dfGenJets[dfGenJets['jet_eta'] <= float(etacut)]
 
-    # transform pt in hardware units
-    dfGenJets['jet_hwPt'] = dfGenJets['jet_pt'].copy(deep=True) * 2
-
     # save unique identifier
     dfGenJets['uniqueId'] = 'jet_'+dfGenJets['event'].astype(str)+'_'+dfGenJets['jet_Idx'].astype(str)
 
@@ -99,6 +55,7 @@ def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, N
     # set colormaps
     HADcmap = cm.get_cmap('Blues')
     EMcmap = cm.get_cmap('Reds')
+    EGcmap = cm.get_cmap('Greens')
 
     # make the input tensors for the neural network
     dfCluJet.set_index('uniqueId',inplace=True)
@@ -111,94 +68,97 @@ def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, N
         # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
         if len(dfCluJet.cl_towerIeta.loc[idx]) != N*M: continue
 
+        if cnt == 30: break
+        cnt += 1
+
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
-        HADdeposit = np.transpose(np.array(dfCluJet.cl_towerIhad.loc[idx]).reshape(N,M))
-        ECALdeposit  = np.transpose(np.array(dfCluJet.cl_towerIem.loc[idx]).reshape(N,M))
-        EGdeposit  = np.transpose(np.array(dfCluJet.cl_towerEgIet.loc[idx]).reshape(N,M))
-        EMdeposit = ECALdeposit + EGdeposit
+        HADdeposit = np.transpose(np.array(dfCluJet.cl_towerHad.loc[idx]).reshape(N,M))
+        EMdeposit  = np.transpose(np.array(dfCluJet.cl_towerEm.loc[idx]).reshape(N,M))
+        EGdeposit  = np.transpose(np.array(dfCluJet.cl_towerEgEt.loc[idx]).reshape(N,M))
 
         if cnt == 30: break
         cnt += 1
 
-        HADmax = np.max(dfCluJet.cl_towerIhad.loc[idx])
-        EMmax  = np.max(dfCluJet.cl_towerIem.loc[idx])
+        HADmax = np.max(dfCluJet.cl_towerHad.loc[idx])
+        EMmax  = np.max(dfCluJet.cl_towerEm.loc[idx])
+        EGmax  = np.max(dfCluJet.cl_towerEgEt.loc[idx])
 
         HADcolorbarTicks = [0, HADmax]
         EMcolorbarTicks  = [0, EMmax]
+        EGcolorbarTicks  = [0, EGmax]
 
         etalabels = np.unique(dfCluJet.cl_towerIeta.loc[idx])
         philabels = np.unique(dfCluJet.cl_towerIphi.loc[idx])
 
-        props = dict(boxstyle='square', facecolor='white')
+        props = dict(boxstyle='square', facecolor='white', edgecolor='black')
         textstr1 = '\n'.join((
-            r'$E_T^{%i\times%i}=%.0f$' % (N, M, dfCluJet.cl_totalIet.loc[idx], ),
-            r'$p_T^{Gen}=%.2f$ GeV' % (dfCluJet.jet_hwPt.loc[idx], ),
+            r'$p_T^{Gen}=%.2f$ GeV' % (dfCluJet.jet_pt.loc[idx], ),
             r'$\eta^{Gen}=%.2f$' % (dfCluJet.jet_eta.loc[idx], ),
-            r'$\phi^{Gen}=%.2f$' % (dfCluJet.jet_phi.loc[idx], )))
+            r'$\phi^{Gen}=%.2f$' % (dfCluJet.jet_phi.loc[idx] )))
 
         # N sets the eta range - M sets the phi range
         Xticksshifter = np.linspace(0.5,N-0.5,N)
         Yticksshifter = np.linspace(0.5,M-0.5,M)
 
-        plt.figure(figsize=(10*(N+1)/9,8))
-        im = plt.pcolormesh(EMdeposit, cmap=EMcmap, edgecolor='black', vmin=0)
-        ncolors = max(2,EMmax+1)
-        colorbar = plt.colorbar(im)
-        colorbar.set_label(label='iem', fontsize=20)
-        plt.clim(0., ncolors+0.5)
-        if ncolors > 10:
-            nticks = 10
-            colorbar.set_ticks(np.linspace(0, ncolors, nticks))
-            colorbar.set_ticklabels(np.linspace(0, ncolors, nticks).astype('int64'))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
-        else:
-            colorbar.set_ticks(np.linspace(0, ncolors, ncolors))
-            colorbar.set_ticklabels(range(ncolors))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
+        fig, axs = plt.subplots(1,3, figsize=(40,10))
+        # plt.subplots_adjust(wspace=0.2)
+        
+        imEG = axs[0].pcolormesh(EGdeposit, cmap=EGcmap, edgecolor='black', vmin=0)
+        axs[0].text(0.2, N-0.2, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
+        colorbar = plt.colorbar(imEG, ax=axs[0])
+        colorbar.ax.tick_params(which='both', width=0, length=0)
+        cbar_yticks = plt.getp(colorbar.ax.axes, 'yticklabels')
+        plt.setp(cbar_yticks, color='w')
+        colorbar.set_label(label=r'EG $E_T$')
+        colorbar.ax.yaxis.set_label_coords(1.2,1)
+        for i in range(EGdeposit.shape[0]):
+            for j in range(EGdeposit.shape[1]):
+                if EGdeposit[i, j] >= 1.0: axs[0].text(j+0.5, i+0.5, format(EGdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EGdeposit[i, j] > EGmax*0.8 else "black")
+        axs[0].set_xticks(Xticksshifter)
+        axs[0].set_xticklabels(etalabels)
+        axs[0].set_yticks(Yticksshifter)
+        axs[0].set_yticklabels(philabels)
+        axs[0].set_xlabel(r'$\eta$')
+        axs[0].set_ylabel(r'$\phi$')
+        axs[0].tick_params(which='both', width=0, length=0)
 
-        # colorbar_index(ncolors=max(2,EMmax+1), cmap=EMcmap, label='iem') # for discretized colorbar
+        imEM = axs[1].pcolormesh(EMdeposit, cmap=EMcmap, edgecolor='black', vmin=0)
+        colorbar = plt.colorbar(imEM, ax=axs[1])
+        colorbar.ax.tick_params(which='both', width=0, length=0)
+        cbar_yticks = plt.getp(colorbar.ax.axes, 'yticklabels')
+        plt.setp(cbar_yticks, color='w')
+        colorbar.set_label(label=r'EM $E_T$')
+        colorbar.ax.yaxis.set_label_coords(1.2,1)
         for i in range(EMdeposit.shape[0]):
             for j in range(EMdeposit.shape[1]):
-                if EMdeposit[i, j] > 0: plt.text(j+0.5, i+0.5, format(EMdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EMdeposit[i, j] > EMmax*0.8 else "black")
-        plt.xticks(Xticksshifter, etalabels)
-        plt.yticks(Yticksshifter, philabels)
-        plt.tick_params(which='both', width=0, length=0)
-        plt.xlabel(f'$i\eta$', fontsize=20)
-        plt.ylabel(f'$i\phi$', fontsize=20)
-        plt.text(0.2, 8.8, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        mplhep.cms.label('', data=False, rlabel='', fontsize=20)
-        plt.savefig(saveTo['JetDisplay']+'/'+idx+'_EMdeposit_clu'+str(N)+'x'+str(M)+'.pdf')
-        plt.close()
-        
-        plt.figure(figsize=(10*(N+1)/9,8))
-        im = plt.pcolormesh(HADdeposit, cmap=HADcmap, edgecolor='black', vmin=0)
-        ncolors = max(2,HADmax+1)
-        colorbar = plt.colorbar(im)
-        colorbar.set_label(label='ihad', fontsize=20)
-        plt.clim(-0.5, ncolors+0.5)
-        if ncolors > 10:
-            nticks = 10
-            colorbar.set_ticks(np.linspace(0, ncolors, nticks))
-            colorbar.set_ticklabels(np.linspace(0, ncolors-1, nticks).astype('int64'))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
-        else:
-            colorbar.set_ticks(np.linspace(0, ncolors, ncolors))
-            colorbar.set_ticklabels(range(ncolors))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
+                if EMdeposit[i, j] >= 1.0: axs[1].text(j+0.5, i+0.5, format(EMdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EMdeposit[i, j] > EMmax*0.8 else "black")
+        axs[1].set_xticks(Xticksshifter)
+        axs[1].set_xticklabels(etalabels)
+        axs[1].set_yticks(Yticksshifter)
+        axs[1].set_yticklabels(philabels)
+        axs[1].set_xlabel(r'$\eta$')
+        axs[1].set_ylabel(r'$\phi$')
+        axs[1].tick_params(which='both', width=0, length=0)
 
-        # colorbar_index(ncolors=max(2,HADmax+1), cmap=HADcmap, label='ihad') # for discretized colorbar
+        imHAD = axs[2].pcolormesh(HADdeposit, cmap=HADcmap, edgecolor='black', vmin=0)
+        colorbar = plt.colorbar(imHAD, ax=axs[2])
+        colorbar.ax.tick_params(which='both', width=0, length=0)
+        cbar_yticks = plt.getp(colorbar.ax.axes, 'yticklabels')
+        plt.setp(cbar_yticks, color='w')
+        colorbar.set_label(label=r'HAD $E_T$')
+        colorbar.ax.yaxis.set_label_coords(1.2,1)
         for i in range(HADdeposit.shape[0]):
             for j in range(HADdeposit.shape[1]):
-                if HADdeposit[i, j] > 0: plt.text(j+0.5, i+0.5, format(HADdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if HADdeposit[i, j] > HADmax*0.8 else "black")
-        plt.xticks(Xticksshifter, etalabels)
-        plt.yticks(Yticksshifter, philabels)
-        plt.tick_params(which='both', width=0, length=0)
-        plt.xlabel(f'$i\eta$', fontsize=20)
-        plt.ylabel(f'$i\phi$', fontsize=20)
-        plt.text(0.2, 8.8, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        mplhep.cms.label('', data=False, rlabel='', fontsize=20)
-        plt.savefig(saveTo['JetDisplay']+'/'+idx+'_HADdeposit_clu'+str(N)+'x'+str(M)+'.pdf')
-        plt.close()
+                if HADdeposit[i, j] >= 1.0: axs[2].text(j+0.5, i+0.5, format(HADdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if HADdeposit[i, j] > HADmax*0.8 else "black")
+        axs[2].set_xticks(Xticksshifter)
+        axs[2].set_xticklabels(etalabels)
+        axs[2].set_yticks(Yticksshifter)
+        axs[2].set_yticklabels(philabels)
+        axs[2].set_xlabel(r'$\eta$')
+        axs[2].set_ylabel(r'$\phi$')
+        axs[2].tick_params(which='both', width=0, length=0)
+        
+        fig.savefig(saveTo['JetDisplay']+'/'+idx+'_footprint_clu'+str(N)+'x'+str(M)+'.pdf')
 
 
 def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, NxM, saveTo):
@@ -219,19 +179,13 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
 
     # Apply cut on tau pt
     if uTauPtCut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] <= float(uTauPtCut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] <= float(uTauPtCut)]
     if lTauPtCut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] >= float(lTauPtCut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] >= float(lTauPtCut)]
 
     # Apply cut on tau eta
     if etacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(etacut)]
-
-    # transform pt in hardware units
-    dfGenTaus['tau_hwPt'] = dfGenTaus['tau_pt'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPt'] = dfGenTaus['tau_visPt'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPtEm'] = dfGenTaus['tau_visPtEm'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPtHad'] = dfGenTaus['tau_visPtHad'].copy(deep=True) * 2
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visEta'] <= float(etacut)]
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -254,6 +208,7 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
     # set colormaps
     HADcmap = cm.get_cmap('Blues')
     EMcmap = cm.get_cmap('Reds')
+    EGcmap = cm.get_cmap('Greens')
 
     # make the input tensors for the neural network
     dfCluTau.set_index('uniqueId',inplace=True)
@@ -266,96 +221,109 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
         if len(dfCluTau.cl_towerIeta.loc[idx]) != N*M: continue
 
+        if cnt == 30: break
+        cnt += 1
+
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
-        HADdeposit = np.transpose(np.array(dfCluTau.cl_towerIhad.loc[idx]).reshape(N,M))
-        ECALdeposit  = np.transpose(np.array(dfCluTau.cl_towerIem.loc[idx]).reshape(N,M))
-        EGdeposit  = np.transpose(np.array(dfCluTau.cl_towerEgIet.loc[idx]).reshape(N,M))
-        EMdeposit = ECALdeposit + EGdeposit
+        HADdeposit = np.transpose(np.array(dfCluTau.cl_towerHad.loc[idx]).reshape(N,M))
+        EMdeposit  = np.transpose(np.array(dfCluTau.cl_towerEm.loc[idx]).reshape(N,M))
+        EGdeposit  = np.transpose(np.array(dfCluTau.cl_towerEgEt.loc[idx]).reshape(N,M))
 
         if cnt == 30: break
         cnt += 1
 
-        HADmax = np.max(dfCluTau.cl_towerIhad.loc[idx])
-        EMmax  = np.max(dfCluTau.cl_towerIem.loc[idx])
+        HADmax = np.max(dfCluTau.cl_towerHad.loc[idx])
+        EMmax  = np.max(dfCluTau.cl_towerEm.loc[idx])
+        EGmax  = np.max(dfCluTau.cl_towerEgEt.loc[idx])
 
         HADcolorbarTicks = [0, HADmax]
         EMcolorbarTicks  = [0, EMmax]
+        EGcolorbarTicks  = [0, EGmax]
 
         etalabels = np.unique(dfCluTau.cl_towerIeta.loc[idx])
         philabels = np.unique(dfCluTau.cl_towerIphi.loc[idx])
 
-        props = dict(boxstyle='square', facecolor='white')
+        DMdict = {
+            0  : r'h^{\pm}',
+            1  : r'h^{\pm}\pi^{0}',
+            2  : r'h^{\pm}\pi^{0}',
+            10 : r'h^{\pm}h^{\mp}h^{\pm}',
+            11 : r'h^{\pm}h^{\mp}h^{\pm}\pi^{0}',
+            12 : r'h^{\pm}h^{\mp}h^{\pm}\pi^{0}'
+        }
+
+        props = dict(boxstyle='square', facecolor='white', edgecolor='black')
         textstr1 = '\n'.join((
-            r'$E_T^{%i\times%i}=%.0f$' % (N, M, dfCluTau.cl_totalIet.loc[idx], ),
-            r'$p_T^{Gen}=%.2f$ GeV' % (dfCluTau.tau_hwVisPt.loc[idx], ),
+            r'$p_T^{Gen}=%.2f$ GeV' % (dfCluTau.tau_visPt.loc[idx], ),
             r'$\eta^{Gen}=%.2f$' % (dfCluTau.tau_visEta.loc[idx], ),
             r'$\phi^{Gen}=%.2f$' % (dfCluTau.tau_visPhi.loc[idx], ),
-            r'$DM=%i$' % (dfCluTau.tau_DM.loc[idx], )))
+            r'$DM=%s$' % (DMdict[dfCluTau.tau_DM.loc[idx]] )))
 
         # N sets the eta range - M sets the phi range
         Xticksshifter = np.linspace(0.5,N-0.5,N)
         Yticksshifter = np.linspace(0.5,M-0.5,M)
 
-        plt.figure(figsize=(10,8))
-        im = plt.pcolormesh(EMdeposit, cmap=EMcmap, edgecolor='black', vmin=0)
-        ncolors = max(2,EMmax+1)
-        colorbar = plt.colorbar(im)
-        colorbar.set_label(label='iem')
-        plt.clim(0., ncolors+0.5)
-        if ncolors > 10:
-            nticks = 10
-            colorbar.set_ticks(np.linspace(0, ncolors, nticks))
-            colorbar.set_ticklabels(np.linspace(0, ncolors, nticks).astype('int64'))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
-        else:
-            colorbar.set_ticks(np.linspace(0, ncolors, ncolors))
-            colorbar.set_ticklabels(range(ncolors))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
+        fig, axs = plt.subplots(1,3, figsize=(40,10))
+        # plt.subplots_adjust(wspace=0.2)
+        
+        imEG = axs[0].pcolormesh(EGdeposit, cmap=EGcmap, edgecolor='black', vmin=0)
+        axs[0].text(0.2, N-0.2, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
+        colorbar = plt.colorbar(imEG, ax=axs[0])
+        colorbar.ax.tick_params(which='both', width=0, length=0)
+        cbar_yticks = plt.getp(colorbar.ax.axes, 'yticklabels')
+        plt.setp(cbar_yticks, color='w')
+        colorbar.set_label(label=r'EG $E_T$')
+        colorbar.ax.yaxis.set_label_coords(1.2,1)
+        for i in range(EGdeposit.shape[0]):
+            for j in range(EGdeposit.shape[1]):
+                if EGdeposit[i, j] >= 1.0: axs[0].text(j+0.5, i+0.5, format(EGdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EGdeposit[i, j] > EGmax*0.8 else "black")
+        axs[0].set_xticks(Xticksshifter)
+        axs[0].set_xticklabels(etalabels)
+        axs[0].set_yticks(Yticksshifter)
+        axs[0].set_yticklabels(philabels)
+        axs[0].set_xlabel(r'$\eta$')
+        axs[0].set_ylabel(r'$\phi$')
+        axs[0].tick_params(which='both', width=0, length=0)
 
-        # colorbar_index(ncolors=max(2,EMmax+1), cmap=EMcmap, label='iem') # for discretized colorbar
+        imEM = axs[1].pcolormesh(EMdeposit, cmap=EMcmap, edgecolor='black', vmin=0)
+        colorbar = plt.colorbar(imEM, ax=axs[1])
+        colorbar.ax.tick_params(which='both', width=0, length=0)
+        cbar_yticks = plt.getp(colorbar.ax.axes, 'yticklabels')
+        plt.setp(cbar_yticks, color='w')
+        colorbar.set_label(label=r'EM $E_T$')
+        colorbar.ax.yaxis.set_label_coords(1.2,1)
         for i in range(EMdeposit.shape[0]):
             for j in range(EMdeposit.shape[1]):
-                if EMdeposit[i, j] > 0: plt.text(j+0.5, i+0.5, format(EMdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EMdeposit[i, j] > EMmax*0.8 else "black")
-        plt.xticks(Xticksshifter, etalabels)
-        plt.yticks(Yticksshifter, philabels)
-        plt.tick_params(which='both', width=0, length=0)
-        plt.xlabel(f'$i\eta$')
-        plt.ylabel(f'$i\phi$')
-        plt.text(0.2, 8.8, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        mplhep.cms.label('', data=False, rlabel='')
-        plt.savefig(saveTo['TauDisplay']+'/'+idx+'_EMdeposit_clu'+str(N)+'x'+str(M)+'.pdf')
-        plt.close()
-        
-        plt.figure(figsize=(10,8))
-        im = plt.pcolormesh(HADdeposit, cmap=HADcmap, edgecolor='black', vmin=0)
-        ncolors = max(2,HADmax+1)
-        colorbar = plt.colorbar(im)
-        colorbar.set_label(label='ihad')
-        plt.clim(-0.5, ncolors+0.5)
-        if ncolors > 10:
-            nticks = 10
-            colorbar.set_ticks(np.linspace(0, ncolors, nticks))
-            colorbar.set_ticklabels(np.linspace(0, ncolors-1, nticks).astype('int64'))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
-        else:
-            colorbar.set_ticks(np.linspace(0, ncolors, ncolors))
-            colorbar.set_ticklabels(range(ncolors))
-            colorbar.ax.tick_params(which='minor', width=0, length=0)
+                if EMdeposit[i, j] >= 1.0: axs[1].text(j+0.5, i+0.5, format(EMdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EMdeposit[i, j] > EMmax*0.8 else "black")
+        axs[1].set_xticks(Xticksshifter)
+        axs[1].set_xticklabels(etalabels)
+        axs[1].set_yticks(Yticksshifter)
+        axs[1].set_yticklabels(philabels)
+        axs[1].set_xlabel(r'$\eta$')
+        axs[1].set_ylabel(r'$\phi$')
+        axs[1].tick_params(which='both', width=0, length=0)
 
-        # colorbar_index(ncolors=max(2,HADmax+1), cmap=HADcmap, label='ihad') # for discretized colorbar
+        imHAD = axs[2].pcolormesh(HADdeposit, cmap=HADcmap, edgecolor='black', vmin=0)
+        colorbar = plt.colorbar(imHAD, ax=axs[2])
+        colorbar.ax.tick_params(which='both', width=0, length=0)
+        cbar_yticks = plt.getp(colorbar.ax.axes, 'yticklabels')
+        plt.setp(cbar_yticks, color='w')
+        colorbar.set_label(label=r'HAD $E_T$')
+        colorbar.ax.yaxis.set_label_coords(1.2,1)
         for i in range(HADdeposit.shape[0]):
             for j in range(HADdeposit.shape[1]):
-                if HADdeposit[i, j] > 0: plt.text(j+0.5, i+0.5, format(HADdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if HADdeposit[i, j] > HADmax*0.8 else "black")
-        plt.xticks(Xticksshifter, etalabels)
-        plt.yticks(Yticksshifter, philabels)
-        plt.tick_params(which='both', width=0, length=0)
-        plt.xlabel(f'$i\eta$')
-        plt.ylabel(f'$i\phi$')
-        plt.text(0.2, 8.8, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        mplhep.cms.label('', data=False, rlabel='')
-        plt.savefig(saveTo['TauDisplay']+'/'+idx+'_HADdeposit_clu'+str(N)+'x'+str(M)+'.pdf')
-        plt.close()
+                if HADdeposit[i, j] >= 1.0: axs[2].text(j+0.5, i+0.5, format(HADdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if HADdeposit[i, j] > HADmax*0.8 else "black")
+        axs[2].set_xticks(Xticksshifter)
+        axs[2].set_xticklabels(etalabels)
+        axs[2].set_yticks(Yticksshifter)
+        axs[2].set_yticklabels(philabels)
+        axs[2].set_xlabel(r'$\eta$')
+        axs[2].set_ylabel(r'$\phi$')
+        axs[2].tick_params(which='both', width=0, length=0)
+        
+        fig.savefig(saveTo['TauDisplay']+'/'+idx+'_footprint_clu'+str(N)+'x'+str(M)+'.pdf')
 
+        plt.close()
 
 #######################################################################
 ######################### SCRIPT BODY #################################
