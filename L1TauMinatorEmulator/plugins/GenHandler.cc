@@ -82,6 +82,9 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         if (!isGoodTau(particle)) { continue; }
 
+        // skip very forward taus
+        if (abs(particle.eta()) > 3.5) { continue; }
+
         GenHelper::GenTau GenTau;
 
         GenTau.pt = particle.pt();
@@ -241,6 +244,8 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         // skip very forward jets
         if (abs(jet.eta()) > 3.5) { continue; }
+        // skip very low pt jets
+        if (jet.pt() < 15) { continue; }
 
         GenHelper::GenJet GenJet;
 
