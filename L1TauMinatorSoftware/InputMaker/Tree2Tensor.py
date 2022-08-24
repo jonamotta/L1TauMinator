@@ -17,6 +17,9 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfGenJets = dfFlatGenJets.copy(deep=True)
     dfTowClus = dfFlatTowClus.copy(deep=True)
 
+    # compute absolute eta of teh seeds
+    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta'])
+
     # get clusters' shape dimensions
     N = int(NxM.split('x')[0])
     M = int(NxM.split('x')[1])
@@ -56,7 +59,8 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluJet = dfGenJets.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
 
     # split dataframes between signal, qcd and pu
-    features = ['uniqueId','cl_towerIeta','cl_towerIphi','cl_towerIem','cl_towerIhad','cl_towerEgIet'] #,'cl_towerNeg']
+    # features = ['uniqueId','cl_towerIeta','cl_towerIphi','cl_towerIem','cl_towerIhad','cl_towerEgIet'] #,'cl_towerNeg']
+    features = ['uniqueId', 'cl_absSeedIeta', 'cl_seedIphi', 'cl_towerEgEt', 'cl_towerEm', 'cl_towerHad']
     dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl_tauMatchIdx']][features]
     dfCluJet = dfCluJet[dfCluJet['jet_Idx'] == dfCluJet['cl_jetMatchIdx']][features]
     dfCluPU = dfCluPU[features].copy(deep=True)
@@ -79,10 +83,24 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluTauJetPu = pd.concat([dfCluTau, dfCluJet, dfCluPU], axis=0)
     dfCluTauJetPu  = dfCluTauJetPu.sample(frac=1).copy(deep=True)
 
-    # make the input tensors for the neural network
+    # make uniqueId the index
     dfCluTauJetPu.set_index('uniqueId',inplace=True)
 
-    XL = []
+    # one hot encode the eta phi position of the seed of the cluster
+    OHEseedEtaPhi = pd.get_dummies(dfCluTauJetPu[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
+    if len(OHEseedEtaPhi.columns) < 107:
+        for i in range(1,36):
+            if 'cl_absSeedIeta_'+str(i)+'.0' not in OHEseedEtaPhi:
+                OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
+                print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
+        for i in range(1,73):
+            if 'cl_seedIphi_'+str(i)+'.0' not in OHEseedEtaPhi:
+                OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
+                print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
+
+    # make the input tensors for the neural network
+    X1L = []
+    X2L = []
     YL = []
     for i, idx in enumerate(dfCluTauJetPu.index):
         # progress
@@ -90,18 +108,21 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
             print(i/len(dfCluTauJetPu.index)*100, '%')
 
         # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
-        if len(dfCluTauJetPu.cl_towerIeta.loc[idx]) != N*M: continue
+        if len(dfCluTauJetPu.cl_towerHad.loc[idx]) != N*M: continue
 
-        # features for the NN
-        xl = []
+        # features of the Dense NN
+        x2 = OHEseedEtaPhi.loc[idx].to_numpy()
+
+        # features for the CNN
+        x1l = []
         for j in range(N*M):
-            xl.append(dfCluTauJetPu.cl_towerIeta.loc[idx][j])
-            xl.append(dfCluTauJetPu.cl_towerIphi.loc[idx][j])
-            xl.append(dfCluTauJetPu.cl_towerIem.loc[idx][j])
-            xl.append(dfCluTauJetPu.cl_towerIhad.loc[idx][j])
-            xl.append(dfCluTauJetPu.cl_towerEgIet.loc[idx][j])
-            # xl.append(dfCluTauJetPu.cl_towerNeg.loc[idx][j])
-        x = np.array(xl).reshape(N,M,5)
+            # x1l.append(dfCluTauJetPu.cl_towerIeta.loc[idx][j])
+            # x1l.append(dfCluTauJetPu.cl_towerIphi.loc[idx][j])
+            x1l.append(dfCluTauJetPu.cl_towerEgEt.loc[idx][j])
+            x1l.append(dfCluTauJetPu.cl_towerEm.loc[idx][j])
+            x1l.append(dfCluTauJetPu.cl_towerHad.loc[idx][j])
+            # x1l.append(dfCluTauJetPu.cl_towerNeg.loc[idx][j])
+        x1 = np.array(x1l).reshape(N,M,3)
         
         # target of the NN
         yl = []
@@ -109,15 +130,22 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
         y = np.array(yl)
 
         # inputs to the NN
-        XL.append(x)
+        X1L.append(x1)
+        X2L.append(x2)
         YL.append(y)
 
     # tensorize the lists
-    X = np.array(XL)
+    X1 = np.array(X1L)
+    X2 = np.array(X2L)
     Y = np.array(YL)
     
+    print(X1.shape)
+    print(X2.shape)
+    print(Y.shape)
+
     # save .npz files with tensor formatted datasets
-    np.savez_compressed(saveTensTo['inputsIdentifier'], X)
+    np.savez_compressed(saveTensTo['inputsIdentifierCNN'], X1)
+    np.savez_compressed(saveTensTo['inputsIdentifierDense'], X2)
     np.savez_compressed(saveTensTo['targetsIdentifier'], Y)
 
 
@@ -128,6 +156,9 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
 
     dfGenTaus = dfFlatGenTaus.copy(deep=True)
     dfTowClus = dfFlatTowClus.copy(deep=True)
+
+    # compute absolute eta of teh seeds
+    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta'])
 
     # get clusters' shape dimensions
     N = int(NxM.split('x')[0])
@@ -147,10 +178,10 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(etacut)]
 
     # transform pt in hardware units
-    dfGenTaus['tau_hwPt'] = dfGenTaus['tau_pt'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPt'] = dfGenTaus['tau_visPt'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPtEm'] = dfGenTaus['tau_visPtEm'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPtHad'] = dfGenTaus['tau_visPtHad'].copy(deep=True) * 2
+    # dfGenTaus['tau_hwPt'] = dfGenTaus['tau_pt'].copy(deep=True) * 2
+    # dfGenTaus['tau_hwVisPt'] = dfGenTaus['tau_visPt'].copy(deep=True) * 2
+    # dfGenTaus['tau_hwVisPtEm'] = dfGenTaus['tau_visPtEm'].copy(deep=True) * 2
+    # dfGenTaus['tau_hwVisPtHad'] = dfGenTaus['tau_visPtHad'].copy(deep=True) * 2
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -170,9 +201,24 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     # shuffle the rows so that no possible order gets learned
     dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
 
-    # make the input tensors for the neural network
+    # make uniqueId the index
     dfCluTau.set_index('uniqueId',inplace=True)
-    XL = []
+
+    # one hot encode the eta phi position of the seed of the cluster
+    OHEseedEtaPhi = pd.get_dummies(dfCluTau[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
+    if len(OHEseedEtaPhi.columns) < 107:
+        for i in range(1,36):
+            if 'cl_absSeedIeta_'+str(i)+'.0' not in OHEseedEtaPhi:
+                OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
+                print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
+        for i in range(1,73):
+            if 'cl_seedIphi_'+str(i)+'.0' not in OHEseedEtaPhi:
+                OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
+                print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
+
+    # make the input tensors for the neural network
+    X1L = []
+    X2L = []
     YL = []
     for i, idx in enumerate(dfCluTau.index):
         # progress
@@ -182,34 +228,44 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
         if len(dfCluTau.cl_towerIeta.loc[idx]) != N*M: continue
 
-        # features for the NN
-        xl = []
+        # features of the Dense NN
+        x2 = OHEseedEtaPhi.loc[idx].to_numpy()
+
+        # features for the CNN
+        x1l = []
         for j in range(N*M):
-            xl.append(dfCluTau.cl_towerIeta.loc[idx][j])
-            xl.append(dfCluTau.cl_towerIphi.loc[idx][j])
-            xl.append(dfCluTau.cl_towerIem.loc[idx][j])
-            xl.append(dfCluTau.cl_towerIhad.loc[idx][j])
-            xl.append(dfCluTau.cl_towerEgIet.loc[idx][j])
-            # xl.append(dfCluTau.cl_towerNeg.loc[idx][j])
-        x = np.array(xl).reshape(N,M,5)
+            # x1l.append(dfCluTau.cl_towerIeta.loc[idx][j])
+            # x1l.append(dfCluTau.cl_towerIphi.loc[idx][j])
+            x1l.append(dfCluTau.cl_towerEgIet.loc[idx][j])
+            x1l.append(dfCluTau.cl_towerIem.loc[idx][j])
+            x1l.append(dfCluTau.cl_towerIhad.loc[idx][j])
+            # x1l.append(dfCluTau.cl_towerNeg.loc[idx][j])
+        x1 = np.array(x1l).reshape(N,M,3)
         
         # targets of the NN
         yl = []
-        yl.append(dfCluTau.tau_hwVisPt.loc[idx])
-        yl.append(dfCluTau.tau_hwVisPtEm.loc[idx])
-        yl.append(dfCluTau.tau_hwVisPtHad.loc[idx])
+        yl.append(dfCluTau.tau_visPt.loc[idx])
+        # yl.append(dfCluTau.tau_visPtEm.loc[idx])
+        # yl.append(dfCluTau.tau_visPtHad.loc[idx])
         y = np.array(yl)
 
         # inputs to the NN
-        XL.append(x)
+        X1L.append(x1)
+        X2L.append(x2)
         YL.append(y)
 
     # tensorize the lists
-    X = np.array(XL)
+    X1 = np.array(X1L)
+    X2 = np.array(X2L)
     Y = np.array(YL)
 
+    print(X1.shape)
+    print(X2.shape)
+    print(Y.shape)
+
     # save .npz files with tensor formatted datasets
-    np.savez_compressed(saveTensTo['inputsCalibrator'], X)
+    np.savez_compressed(saveTensTo['inputsCalibratorCNN'], X1)
+    np.savez_compressed(saveTensTo['inputsCalibratorDense'], X2)
     np.savez_compressed(saveTensTo['targetsCalibrator'], Y)
 
 
@@ -255,8 +311,8 @@ if __name__ == "__main__" :
     branches_genjet = ['jet_Idx', 'jet_eta', 'jet_phi', 'jet_pt', 'jet_e', 'jet_eEm', 'jet_eHad', 'jet_eInv']
     branches_cl3d   = ['cl3d_pt', 'cl3d_energy', 'cl3d_eta', 'cl3d_phi', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_seemax', 'cl3d_spptot', 'cl3d_sppmax', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmax', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz', 'cl3d_quality', 'cl3d_tauMatchIdx', 'cl3d_jetMatchIdx']
     NxM = options.caloClNxM
-    # branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_nEGs', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_towerEgIet', 'cl'+NxM+'_towerNeg']
-    branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_towerEgIet']
+    branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_nEGs', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_towerEgIet', 'cl'+NxM+'_towerNeg']
+    # branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_towerEgIet']
 
     # define the two paths where to store the hdf5 files
     saveDfsTo = {
@@ -389,35 +445,37 @@ if __name__ == "__main__" :
         'event'           : np.repeat(dfTowClus[b'EventNumber'].values, dfTowClus[b'cl'+bNxM+b'_seedIeta'].str.len()), # event IDs are copied to keep proper track of what is what
         'cl_barrelSeeded' : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_barrelSeeded'])),
         'cl_nHits'        : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nHits'])),
-        # 'cl_nEGs'         : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nEGs'])),
+        'cl_nEGs'         : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_nEGs'])),
         'cl_seedIeta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedIeta'])),
         'cl_seedIphi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedIphi'])),
-        # 'cl_seedEta'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedEta'])),
-        # 'cl_seedPhi'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedPhi'])),
+        'cl_seedEta'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedEta'])),
+        'cl_seedPhi'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_seedPhi'])),
         'cl_isBarrel'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_isBarrel'])),
         'cl_isOverlap'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_isOverlap'])),
         'cl_isEndcap'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_isEndcap'])),
         'cl_tauMatchIdx'  : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_tauMatchIdx'])),
         'cl_jetMatchIdx'  : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_jetMatchIdx'])),
-        # 'cl_totalEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEm'])),
-        # 'cl_totalHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalHad'])),
-        # 'cl_totalEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEt'])),
+        'cl_totalEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEm'])),
+        'cl_totalHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalHad'])),
+        'cl_totalEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEt'])),
+        # 'cl_totalEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totaEglEt'])),
         'cl_totalIem'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIem'])),
         'cl_totalIhad'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIhad'])),
         'cl_totalIet'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIet'])),
-        # 'cl_towerEta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEta'])),
-        # 'cl_towerPhi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerPhi'])),
-        # 'cl_towerEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEm'])),
-        # 'cl_towerHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerHad'])),
-        # 'cl_towerEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEt'])),
-        # 'cl_towerEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgEt'])),
+        # 'cl_totalEgIet'   : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totaEglIet'])),
+        'cl_towerEta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEta'])),
+        'cl_towerPhi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerPhi'])),
+        'cl_towerEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEm'])),
+        'cl_towerHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerHad'])),
+        'cl_towerEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEt'])),
+        'cl_towerEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgEt'])),
         'cl_towerIeta'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIeta'])),
         'cl_towerIphi'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIphi'])),
         'cl_towerIem'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIem'])),
         'cl_towerIhad'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIhad'])),
         'cl_towerIet'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerIet'])),
         'cl_towerEgIet'   : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEgIet'])),
-        # 'cl_towerNeg'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerNeg'])),
+        'cl_towerNeg'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerNeg'])),
         })
 
 
@@ -433,10 +491,12 @@ if __name__ == "__main__" :
     ##################### TENSORIZE FOR NN ####################
 
     saveTensTo = {
-        'inputsCalibrator'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsIdentifier'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsCalibrator' : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsIdentifier' : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz'
+        'inputsCalibratorCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_CNN_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsCalibratorDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_Dense_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_CNN_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_Dense_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsCalibrator'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsIdentifier'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz'
     }
 
     if options.doTens4Calib:

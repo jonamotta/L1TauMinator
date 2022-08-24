@@ -68,7 +68,8 @@ if not options.doHH and not options.doQCD and not options.doVBFH and not options
     exit()
 
 ##################### DEFINE INPUTS AND OUTPUTS ####################
-indir  = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples'
+version = "0"
+indir  = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version
 outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
 
 if options.doHH:

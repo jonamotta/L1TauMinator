@@ -50,8 +50,8 @@ if __name__ == "__main__" :
     indirs = []
     taglists = []
 
-    if options.doTens4Calib: splitter = 'X_Calibrator'
-    if options.doTens4Ident: splitter = 'X_Identifier'
+    if options.doTens4Calib: splitter = 'X_CNN_Calibrator'
+    if options.doTens4Ident: splitter = 'X_CNN_Identifier'
 
     if options.doHH:
         tmp = indir+'/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches/TensorizedInputs_'+options.caloClNxM+options.inTag
@@ -139,13 +139,16 @@ if __name__ == "__main__" :
 
 
     readFrom = {
-        'inputsCalibrator'  : '/X_Calibrator'+options.caloClNxM,
-        'inputsIdentifier'  : '/X_Identifier'+options.caloClNxM,
-        'targetsCalibrator' : '/Y_Calibrator'+options.caloClNxM,
-        'targetsIdentifier' : '/Y_Identifier'+options.caloClNxM
+        'inputsCalibratorCNN'    : '/X_CNN_Calibrator'+options.caloClNxM,
+        'inputsCalibratorDense'  : '/X_Dense_Calibrator'+options.caloClNxM,
+        'inputsIdentifierCNN'    : '/X_CNN_Identifier'+options.caloClNxM,
+        'inputsIdentifierDense'  : '/X_Dense_Identifier'+options.caloClNxM,
+        'targetsCalibrator'      : '/Y_Calibrator'+options.caloClNxM,
+        'targetsIdentifier'      : '/Y_Identifier'+options.caloClNxM
     }
 
-    XsToConcatenate = []
+    X1sToConcatenate = []
+    X2sToConcatenate = []
     YsToConcatenate = []
 
     for i_fold, taglist in enumerate(taglists):
@@ -160,11 +163,13 @@ if __name__ == "__main__" :
                 # exit()
 
                 if options.doTens4Calib:
-                    XsToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsCalibrator']+tag+'.npz', allow_pickle=True)['arr_0'])
+                    X1sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsCalibratorCNN']+tag+'.npz', allow_pickle=True)['arr_0'])
+                    X2sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsCalibratorDense']+tag+'.npz', allow_pickle=True)['arr_0'])
                     YsToConcatenate.append(np.load(indirs[i_fold]+readFrom['targetsCalibrator']+tag+'.npz', allow_pickle=True)['arr_0'])
 
                 elif options.doTens4Ident:
-                    XsToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsIdentifier']+tag+'.npz', allow_pickle=True)['arr_0'])
+                    X1sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsIdentifierCNN']+tag+'.npz', allow_pickle=True)['arr_0'])
+                    X2sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsIdentifierDense']+tag+'.npz', allow_pickle=True)['arr_0'])
                     YsToConcatenate.append(np.load(indirs[i_fold]+readFrom['targetsIdentifier']+tag+'.npz', allow_pickle=True)['arr_0'])
 
 
@@ -173,19 +178,29 @@ if __name__ == "__main__" :
                 print('** INFO: towers'+tag+' not found --> skipping')
                 continue
 
-            if idx==50: break
+            # if idx==50: break
 
-    X = np.concatenate(XsToConcatenate)
+    # shuffle the single batches to make the dataset mroe homogeneous and not dependent on concatenation order
+    mixer = list(zip(X1sToConcatenate, X2sToConcatenate, YsToConcatenate))
+    random.shuffle(mixer)
+    X1sToConcatenate, X2sToConcatenate, YsToConcatenate = zip(*mixer)
+
+    # concatenate batches in single tensors
+    X1 = np.concatenate(X1sToConcatenate)
+    X2 = np.concatenate(X2sToConcatenate)
     Y = np.concatenate(YsToConcatenate)
 
     ## DEBUG
-    print(len(X))
+    print(len(X1))
+    print(len(X2))
     print(len(Y))
 
     if options.doTens4Calib:
-        np.savez_compressed(outdir+'/X'+options.caloClNxM+'_forCalibrator.npz', X)
+        np.savez_compressed(outdir+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz', X1)
+        np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz', X2)
         np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forCalibrator.npz', Y)
 
     elif options.doTens4Ident:
-        np.savez_compressed(outdir+'/X'+options.caloClNxM+'_forIdentifier.npz', X)
+        np.savez_compressed(outdir+'/X_CNN_'+options.caloClNxM+'_forIdentifier.npz', X1)
+        np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz', X2)
         np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forIdentifier.npz', Y)
