@@ -47,7 +47,8 @@ parser.add_option("--uJetPtCut",    dest="uJetPtCut",                         de
 parser.add_option("--lJetPtCut",    dest="lJetPtCut",                         default=None)
 parser.add_option("--uTauPtCut",    dest="uTauPtCut",                         default=None)
 parser.add_option("--lTauPtCut",    dest="lTauPtCut",                         default=None)
-parser.add_option("--etacut",       dest="etacut",                            default=None)
+parser.add_option("--uEtacut",      dest="uEtacut",                           default=None)
+parser.add_option("--lEtacut",      dest="lEtacut",                           default=None)
 parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
 parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
 (options, args) = parser.parse_args()
@@ -138,12 +139,12 @@ for i, infile in enumerate(InFiles[:]):
     # TENSORIZATION OPTIONS
     cmsRun += ' --infileTag ' + tag
     if options.outTag != "": cmsRun += ' --outTag '    + options.outTag
-    if options.outTag:       cmsRun += ' --outTag '    + options.outTag
     if options.uJetPtCut:    cmsRun += ' --uJetPtCut ' + options.uJetPtCut
     if options.lJetPtCut:    cmsRun += ' --lJetPtCut ' + options.lJetPtCut
     if options.uTauPtCut:    cmsRun += ' --uTauPtCut ' + options.uTauPtCut
     if options.lTauPtCut:    cmsRun += ' --lTauPtCut ' + options.lTauPtCut
-    if options.etacut:       cmsRun += ' --etacut '    + options.etacut
+    if options.uEtacut:      cmsRun += ' --uEtacut '   + options.uEtacut
+    if options.lEtacut:      cmsRun += ' --lEtacut '   + options.lEtacut
     if options.doTens4Calib: cmsRun += ' --doTens4Calib'
     if options.doTens4Ident: cmsRun += ' --doTens4Ident'
     cmsRun += ' >& ' + outLogName

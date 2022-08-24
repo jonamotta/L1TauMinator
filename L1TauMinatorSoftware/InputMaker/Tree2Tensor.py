@@ -8,7 +8,7 @@ import glob
 import sys
 import os
 
-def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, etacut, NxM):
+def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0:
         print('** WARNING : no data to be tensorized for identification here')
         return
@@ -39,10 +39,13 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     if lTauPtCut:
         dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] >= float(lTauPtCut)]
 
-    # Apply cut on tau/jet eta
-    if etacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(etacut)]
-        dfGenJets = dfGenJets[dfGenJets['jet_eta'] <= float(etacut)]
+    # Apply cut on tau eta
+    if uEtacut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(uEtacut)]
+        dfGenJets = dfGenJets[dfGenJets['jet_eta'] <= float(uEtacut)]
+    if lEtacut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(lEtacut)]
+        dfGenJets = dfGenJets[dfGenJets['jet_eta'] <= float(lEtacut)]
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -149,7 +152,7 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     np.savez_compressed(saveTensTo['targetsIdentifier'], Y)
 
 
-def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, NxM):
+def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0 or len(dfFlatGenTaus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -174,14 +177,10 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] >= float(lTauPtCut)]
 
     # Apply cut on tau eta
-    if etacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(etacut)]
-
-    # transform pt in hardware units
-    # dfGenTaus['tau_hwPt'] = dfGenTaus['tau_pt'].copy(deep=True) * 2
-    # dfGenTaus['tau_hwVisPt'] = dfGenTaus['tau_visPt'].copy(deep=True) * 2
-    # dfGenTaus['tau_hwVisPtEm'] = dfGenTaus['tau_visPtEm'].copy(deep=True) * 2
-    # dfGenTaus['tau_hwVisPtHad'] = dfGenTaus['tau_visPtHad'].copy(deep=True) * 2
+    if uEtacut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(uEtacut)]
+    if lEtacut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(lEtacut)]
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -295,7 +294,8 @@ if __name__ == "__main__" :
     parser.add_option("--lJetPtCut",    dest="lJetPtCut",                         default=None)
     parser.add_option("--uTauPtCut",    dest="uTauPtCut",                         default=None)
     parser.add_option("--lTauPtCut",    dest="lTauPtCut",                         default=None)
-    parser.add_option("--etacut",       dest="etacut",                            default=None)
+    parser.add_option("--uEtacut",      dest="uEtacut",                           default=None)
+    parser.add_option("--lEtacut",      dest="lEtacut",                           default=None)
     parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
     parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
     (options, args) = parser.parse_args()
@@ -490,21 +490,32 @@ if __name__ == "__main__" :
 
     ##################### TENSORIZE FOR NN ####################
 
+    if options.outTag != "":
+        outTag = options.outTag
+    else:
+        outTag = ""
+        if options.uJetPtCut : outTag += '_uJetPtCut'+options.uJetPtCut
+        if options.lJetPtCut : outTag += '_lJetPtCut'+options.lJetPtCut
+        if options.uTauPtCut : outTag += '_uTauPtCut'+options.uTauPtCut
+        if options.lTauPtCut : outTag += '_lTauPtCut'+options.lTauPtCut
+        if options.uEtacut   : outTag += '_uEtacut'+options.uEtacut
+        if options.lEtacut   : outTag += '_lEtacut'+options.lEtacut
+
     saveTensTo = {
-        'inputsCalibratorCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_CNN_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsCalibratorDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_Dense_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsIdentifierCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_CNN_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsIdentifierDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/X_Dense_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsCalibrator'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsIdentifier'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz'
+        'inputsCalibratorCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsCalibratorDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsCalibrator'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsIdentifier'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz'
     }
 
     if options.doTens4Calib:
         print('** INFO : doing tensorization for calibration')
-        TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.etacut, options.caloClNxM)
+        TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
     if options.doTens4Ident:
         print('** INFO : doing tensorization for identification')
-        TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.etacut, options.caloClNxM)
+        TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
 
 
     print('** INFO : ALL DONE!')
