@@ -5,9 +5,14 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 import tensorflow as tf
 import numpy as np
+import shap
 import os
 
 np.random.seed(7)
+
+import matplotlib.pyplot as plt
+import mplhep
+plt.style.use(mplhep.style.CMS)
 
 
 #######################################################################
@@ -108,8 +113,8 @@ if __name__ == "__main__" :
     # X2 is (None, 107)
     #       107 are the OHE version of the 35 ieta (absolute) and 72 iphi values
     #
-    # Y is (None, 1)
-    #       target: visPt
+    # Y is (None, 4)
+    #       target: visPt, visEta, visPhi, DM
 
     X1 = np.load(indir+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
     X2 = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
@@ -121,11 +126,9 @@ if __name__ == "__main__" :
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNCalibrator_plots')
 
-    history = TauCalibratorModel.fit([X1, X2], Y, epochs=10, batch_size=128, verbose=1, validation_split=0.1)
+    history = TauCalibratorModel.fit([X1, X2], Y[:0], epochs=3, batch_size=128, verbose=1, validation_split=0.1)
 
     TauCalibratorModel.save(outdir + '/TauCNNCalibrator')
-
-    print(history.history.keys())
 
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
@@ -145,5 +148,131 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauCNNCalibrator_plots/RootMeanSquaredError.pdf')
     plt.close()
 
-    print('\nTrained model saved to folder: {}'.format(outdir))
+
+    ############################## Model validation ##############################
+
+    X1_valid = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNValidator'+options.caloClNxM+'/X_Calib_CNN_'+options.caloClNxM+'_forValidator.npz')['arr_0']
+    X2_valid = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNValidator'+options.caloClNxM+'/X_Calib_Dense_'+options.caloClNxM+'_forValidator.npz')['arr_0']
+    Y_valid  = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNValidator'+options.caloClNxM+'/Y_Calib_'+options.caloClNxM+'_forValidator.npz')['arr_0']
+
+    train_calib = TauCalibratorModel.predict([X1, X2])
+    valid_calib = TauCalibratorModel.predict([X1_valid, X2_valid])
+    
+    dfTrain = pd.DataFrame()
+    dfTrain['uncalib_pt'] = np.sum(np.sum(np.sum(X1, axis=3), axis=2), axis=1).ravel()
+    dfTrain['calib_pt']   = train_calib.ravel()
+    dfTrain['gen_pt']     = Y[:0].ravel()
+    dfTrain['gen_eta']    = Y[:1].ravel()
+    dfTrain['gen_phi']    = Y[:2].ravel()
+    dfTrain['gen_dm']     = Y[:3].ravel()
+
+    dfValid = pd.DataFrame()
+    dfValid['uncalib_pt'] = np.sum(np.sum(np.sum(X1_valid, axis=3), axis=2), axis=1).ravel()
+    dfValid['calib_pt']   = valid_calib.ravel()
+    dfValid['gen_pt']     = Y_valid[:0].ravel()
+    dfValid['gen_eta']    = Y_valid[:1].ravel()
+    dfValid['gen_phi']    = Y_valid[:2].ravel()
+    dfValid['gen_dm']     = Y_valid[:3].ravel()
+
+    # PLOTS INCLUSIVE
+    plt.figure(figsize=(10,10))
+    plt.hist(dfValid['uncalib_pt']/dfValid['gen_pt'], bins=np.arange(0,5,0.1), label=r'Uncalibrated response, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(dfValid['uncalib_pt']/dfValid['gen_pt']), np.std(dfValid['uncalib_pt']/dfValid['gen_pt'])),  color='red',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfTrain['calib_pt']/dfTrain['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Train. Calibrated response, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(dfTrain['calib_pt']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt']/dfTrain['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfValid['calib_pt']/dfValid['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated response, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(dfValid['calib_pt']/dfValid['gen_pt']), np.std(dfValid['calib_pt']/dfValid['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/responses_comparison.pdf')
+    plt.close()
+
+    # PLOTS PER DM
+    tmp0 = dfValid[dfValid['gen_dm']==0]
+    tmp1 = dfValid[(dfValid['gen_dm']==1) | (dfValid['gen_dm']==2)]
+    tmp10 = dfValid[dfValid['gen_dm']==10]
+    tmp11 = dfValid[(dfValid['gen_dm']==11) | (dfValid['gen_dm']==12)]
+    plt.figure(figsize=(10,10))
+    plt.hist(tmp0['uncalib_pt']/tmp0['gen_pt'],   bins=np.arange(0,5,0.1), label=r'DM 0, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp0['uncalib_pt']/tmp0['gen_pt']), np.std(tmp0['uncalib_pt']/tmp0['gen_pt'])),      color='red',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp1['uncalib_pt']/tmp1['gen_pt'],   bins=np.arange(0,5,0.1), label=r'DM 1, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp1['uncalib_pt']/tmp1['gen_pt']), np.std(tmp1['uncalib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp10['uncalib_pt']/tmp10['gen_pt'], bins=np.arange(0,5,0.1), label=r'DM 10, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp10['uncalib_pt']/tmp10['gen_pt']), np.std(tmp10['uncalib_pt']/tmp10['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp11['uncalib_pt']/tmp11['gen_pt'], bins=np.arange(0,5,0.1), label=r'DM 11, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp11['uncalib_pt']/tmp11['gen_pt']), np.std(tmp11['uncalib_pt']/tmp11['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/uncalibrated_DM_responses_comparison.pdf')
+    plt.close()
+
+    plt.figure(figsize=(10,10))
+    plt.hist(tmp0['calib_pt']/tmp0['gen_pt'],   bins=np.arange(0,5,0.1), label=r'DM 0, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp0['calib_pt']/tmp0['gen_pt']), np.std(tmp0['calib_pt']/tmp0['gen_pt'])),      color='red',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp1['calib_pt']/tmp1['gen_pt'],   bins=np.arange(0,5,0.1), label=r'DM 1, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp1['calib_pt']/tmp1['gen_pt']), np.std(tmp1['calib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp10['calib_pt']/tmp10['gen_pt'], bins=np.arange(0,5,0.1), label=r'DM 10, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp10['calib_pt']/tmp10['gen_pt']), np.std(tmp10['calib_pt']/tmp10['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp11['calib_pt']/tmp11['gen_pt'], bins=np.arange(0,5,0.1), label=r'DM 11, $\mu$: %.2f, $\sigma$ : %.2f' % (np.mean(tmp11['calib_pt']/tmp11['gen_pt']), np.std(tmp11['calib_pt']/tmp11['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/uncalibrated_DM_responses_comparison.pdf')
+    plt.close()
+
+
+    # 2D REPOSNSE VS ETA
+    plt.figure(figsize=(10,10))
+    plt.scatter(dfValid['uncalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_eta'], label=r'Uncalibrated', alpha=0.2, color='red')
+    plt.scatter(dfValid['calib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_eta'], label=r'Calibrated', alpha=0.2, color='green')
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'|\eta^{Gen \tau}|')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/response_vs_eta_comparison.pdf')
+    plt.close()
+
+    # 2D REPOSNSE VS PHI
+    plt.figure(figsize=(10,10))
+    plt.scatter(dfValid['uncalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_phi'], label=r'Uncalibrated', alpha=0.2, color='red')
+    plt.scatter(dfValid['calib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_phi'], label=r'Calibrated', alpha=0.2, color='green')
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'|\phi^{Gen \tau}|')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/response_vs_phi_comparison.pdf')
+    plt.close()
+
+    # 2D REPOSNSE VS PT
+    plt.figure(figsize=(10,10))
+    plt.scatter(dfValid['uncalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_pt'], label=r'Uncalibrated', alpha=0.2, color='red')
+    plt.scatter(dfValid['calib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_pt'], label=r'Calibrated', alpha=0.2, color='green')
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'|p_{T}^{Gen \tau}|')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/response_vs_pt_comparison.pdf')
+    plt.close()
+
+
+    ############################## Feature importance ##############################
+
+#    # since we have two inputs we pass a list of inputs to the explainer
+#    explainer = shap.GradientExplainer(TauCalibratorModel, [X1, X2])
+#
+#    # we explain the model's predictions on the first three samples of the test set
+#    shap_values = explainer.shap_values([X1_valid[:3], X2_valid[:3]])
+#
+#    # since the model has 10 outputs we get a list of 10 explanations (one for each output)
+#    print(len(shap_values))
+#
+#    # since the model has 2 inputs we get a list of 2 explanations (one for each input) for each output
+#    print(len(shap_values[0]))
+#
+#    plt.figure(figsize=(10,10))
+#    # here we plot the explanations for all classes for the first input (this is the feed forward input)
+#    shap.image_plot([shap_values[i][0] for i in range(len(shap_values))], X1_valid[:3], show=False)
+#    plt.savefig(outdir+'/TauCNNCalibrator_plots/shap0.pdf')
+#    plt.close()
+#
+#    plt.figure(figsize=(10,10))
+#    # here we plot the explanations for all classes for the second input (this is the conv-net input)
+#    shap.image_plot([shap_values[i][1] for i in range(len(shap_values))], X2_valid[:3], show=False)
+#    plt.savefig(outdir+'/TauCNNCalibrator_plots/shap1.pdf')
+#    plt.close()
 

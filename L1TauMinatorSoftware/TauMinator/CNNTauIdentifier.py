@@ -3,11 +3,16 @@ from tensorflow.keras import layers, models
 from optparse import OptionParser
 import matplotlib.pyplot as plt
 from tensorflow import keras
+from sklearn import metrics
 import tensorflow as tf
 import numpy as np
 import os
 
-np.random.seed(7)
+np.random.seed(77)
+
+import matplotlib.pyplot as plt
+import mplhep
+plt.style.use(mplhep.style.CMS)
 
 
 #######################################################################
@@ -122,8 +127,6 @@ if __name__ == "__main__" :
 
     TauIdentifierModel.save(outdir + '/TauCNNIdentifier')
 
-    print(history.history.keys())
-
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model loss')
@@ -178,5 +181,72 @@ if __name__ == "__main__" :
     # plt.savefig(outdir+'/TauCNNIdentifier_plots/true_negatives.pdf')
     # plt.close()
 
-    print('\nTrained model saved to folder: {}'.format(outdir))
+
+    ############################## Model validation ##############################
+
+    X1_valid = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNValidator'+options.caloClNxM+'/X_Ident_CNN_'+options.caloClNxM+'_forValidator.npz')['arr_0']
+    X2_valid = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNValidator'+options.caloClNxM+'/X_Ident_Dense_'+options.caloClNxM+'_forValidator.npz')['arr_0']
+    Y_valid  = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNValidator'+options.caloClNxM+'/Y_Ident_'+options.caloClNxM+'_forValidator.npz')['arr_0']
+
+    train_ident = TauIdentifierModel.predict([X1, X2])
+    FPRtrain, TPRtrain, THRtrain = metrics.roc_curve(Y, train_ident)
+
+    valid_ident = TauIdentifierModel.predict([X1_valid, X2_valid])
+    FPRvalid, TPRvalid, THRvalid = metrics.roc_curve(Y_valid, valid_ident)
+
+    plt.figure(figsize=(10,10))
+    plt.plot(TPRtrain, FPRtrain, label='Training ROC',   color='blue',lw=2)
+    plt.plot(TPRvalid, FPRvalid, label='Validation ROC', color='green',lw=2)
+    plt.grid(linestyle=':')
+    plt.legend(loc = 'upper left')
+    # plt.xlim(0.85,1.001)
+    #plt.yscale('log')
+    #plt.ylim(0.01,1)
+    plt.xlabel('Signal Efficiency')
+    plt.ylabel('Background Efficiency')
+    plt.savefig(outdir+'/TauCNNIdentifier_plots/validation_roc.pdf')
+    plt.close()
+
+    df = pd.DataFrame()
+    df['score'] = valid_ident.ravel()
+    df['true']  = Y_valid.ravel()
+    plt.figure(figsize=(10,10))
+    plt.hist(df[df['true']==1]['score'], bins=np.arange(-14,1,0.33), label='Tau', color='green', density=True, alpha=0.5)
+    plt.hist(df[df['true']==0]['score'], bins=np.arange(-14,1,0.33), label='PU', color='red', density=True, alpha=0.5)
+    plt.grid(linestyle=':')
+    plt.legend(loc = 'upper left')
+    # plt.xlim(0.85,1.001)
+    #plt.yscale('log')
+    #plt.ylim(0.01,1)
+    plt.xlabel(r'CNN score')
+    plt.ylabel(r'a.u.')
+    plt.savefig(outdir+'/TauCNNIdentifier_plots/CNN_score.pdf')
+    plt.close()
+
+
+    ############################## Feature importance ##############################
+
+    # since we have two inputs we pass a list of inputs to the explainer
+    explainer = shap.GradientExplainer(TauIdentifierModel, [X1, X2])
+
+    # we explain the model's predictions on the first three samples of the test set
+    shap_values = explainer.shap_values([X1_valid[:3], X2_valid[:3]])
+
+    # since the model has 10 outputs we get a list of 10 explanations (one for each output)
+    print(len(shap_values))
+
+    # since the model has 2 inputs we get a list of 2 explanations (one for each input) for each output
+    print(len(shap_values[0]))
+
+    plt.figure(figsize=(10,10))
+    # here we plot the explanations for all classes for the first input (this is the feed forward input)
+    shap.image_plot([shap_values[i][0] for i in range(len(shap_values))], X1_valid[:3], show=False)
+    plt.savefig(outdir+'/TauCNNIdentifier_plots/shap0.pdf')
+    plt.close()
+
+    plt.figure(figsize=(10,10))
+    # here we plot the explanations for all classes for the second input (this is the conv-net input)
+    shap.image_plot([shap_values[i][1] for i in range(len(shap_values))], X2_valid[:3], show=False)
+    plt.savefig(outdir+'/TauCNNIdentifier_plots/shap1.pdf')
+    plt.close()
 
