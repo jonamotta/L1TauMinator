@@ -143,12 +143,6 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     if etacut:
         dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(etacut)]
 
-    # transform pt in hardware units
-    dfGenTaus['tau_hwPt'] = dfGenTaus['tau_pt'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPt'] = dfGenTaus['tau_visPt'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPtEm'] = dfGenTaus['tau_visPtEm'].copy(deep=True) * 2
-    dfGenTaus['tau_hwVisPtHad'] = dfGenTaus['tau_visPtHad'].copy(deep=True) * 2
-
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
 
@@ -192,9 +186,10 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         
         # targets of the NN
         yl = []
-        yl.append(dfCluTau.tau_hwVisPt.loc[idx])
-        yl.append(dfCluTau.tau_hwVisPtEm.loc[idx])
-        yl.append(dfCluTau.tau_hwVisPtHad.loc[idx])
+        yl.append(dfCluTau.tau_visPt.loc[idx])
+        yl.append(dfCluTau.tau_visEta.loc[idx])
+        yl.append(dfCluTau.tau_visPhi.loc[idx])
+        yl.append(dfCluTau.tau_DM.loc[idx])
         y = np.array(yl)
 
         # inputs to the NN

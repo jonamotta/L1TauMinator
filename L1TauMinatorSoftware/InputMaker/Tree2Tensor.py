@@ -244,8 +244,9 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         # targets of the NN
         yl = []
         yl.append(dfCluTau.tau_visPt.loc[idx])
-        # yl.append(dfCluTau.tau_visPtEm.loc[idx])
-        # yl.append(dfCluTau.tau_visPtHad.loc[idx])
+        yl.append(dfCluTau.tau_visEta.loc[idx])
+        yl.append(dfCluTau.tau_visPhi.loc[idx])
+        yl.append(dfCluTau.tau_DM.loc[idx])
         y = np.array(yl)
 
         # inputs to the NN
