@@ -18,7 +18,7 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfTowClus = dfFlatTowClus.copy(deep=True)
 
     # compute absolute eta of teh seeds
-    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta'])
+    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta']).astype(int)
 
     # get clusters' shape dimensions
     N = int(NxM.split('x')[0])
@@ -43,9 +43,11 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     if uEtacut:
         dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(uEtacut)]
         dfGenJets = dfGenJets[dfGenJets['jet_eta'] <= float(uEtacut)]
+        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] <= float(uEtacut)]
     if lEtacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(lEtacut)]
-        dfGenJets = dfGenJets[dfGenJets['jet_eta'] <= float(lEtacut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] >= float(lEtacut)]
+        dfGenJets = dfGenJets[dfGenJets['jet_eta'] >= float(lEtacut)]
+        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] >= float(lEtacut)]
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -54,12 +56,18 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluPU['uniqueId'] = 'pu_'+dfCluPU['event'].astype(str)+'_'+dfCluPU.index.astype(str)
 
     # join the taus and the clusters datasets -> this creates all the possible combination of clusters and jets/taus for each event
-    # important that dfFlatET is joined to dfFlatEJ and not viceversa --> this because dfFlatEJ contains the safe jets to be used and the safe event numbers
+    # important that dfTowClus is joined to dfGen* and not viceversa --> this because dfGen* contains the safe jets to be used and the safe event numbers
     dfGenTaus.set_index('event', inplace=True)
     dfGenJets.set_index('event', inplace=True)
     dfTowClus.set_index('event', inplace=True)
     dfCluTau = dfGenTaus.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
     dfCluJet = dfGenJets.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
+
+    # make sure these columns are ints and not floats due to NaN entries due to missing tau/jet-clu matches
+    dfCluTau.dropna(axis=0, how='any', inplace=True)
+    dfCluJet.dropna(axis=0, how='any', inplace=True)
+    dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
+    dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
 
     # split dataframes between signal, qcd and pu
     # features = ['uniqueId','cl_towerIeta','cl_towerIphi','cl_towerIem','cl_towerIhad','cl_towerEgIet'] #,'cl_towerNeg']
@@ -79,8 +87,9 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluPU  = dfCluPU.sample(frac=1).copy(deep=True)
 
     # get roughly the same amount of signal ad background to have a more balanced dataset
-    # dfCluJet = dfCluJet.head(dfCluTau.shape[0])
-    # dfCluPU  = dfCluPU.head(dfCluTau.shape[0])
+    if dfCluTau.shape[0] != 0:
+        dfCluJet = dfCluJet.head(dfCluTau.shape[0])
+        dfCluPU  = dfCluPU.head(dfCluTau.shape[0])
 
     # concatenate and shuffle
     dfCluTauJetPu = pd.concat([dfCluTau, dfCluJet, dfCluPU], axis=0)
@@ -91,13 +100,14 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
 
     # one hot encode the eta phi position of the seed of the cluster
     OHEseedEtaPhi = pd.get_dummies(dfCluTauJetPu[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
+
     if len(OHEseedEtaPhi.columns) < 107:
         for i in range(1,36):
-            if 'cl_absSeedIeta_'+str(i)+'.0' not in OHEseedEtaPhi:
+            if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
                 OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
                 print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
         for i in range(1,73):
-            if 'cl_seedIphi_'+str(i)+'.0' not in OHEseedEtaPhi:
+            if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
                 OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
                 print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
 
@@ -161,7 +171,7 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     dfTowClus = dfFlatTowClus.copy(deep=True)
 
     # compute absolute eta of teh seeds
-    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta'])
+    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta']).astype(int)
 
     # get clusters' shape dimensions
     N = int(NxM.split('x')[0])
@@ -179,8 +189,10 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     # Apply cut on tau eta
     if uEtacut:
         dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(uEtacut)]
+        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] <= float(uEtacut)]
     if lEtacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(lEtacut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] >= float(lEtacut)]
+        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] >= float(lEtacut)]
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -189,10 +201,14 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     dfTowClus = dfTowClus[dfTowClus['cl_tauMatchIdx'] >= 0]
 
     # join the taus and the clusters datasets -> this creates all the possible combination of clusters and taus for each event
-    # important that dfFlatET is joined to dfFlatEJ and not viceversa --> this because dfFlatEJ contains the safe jets to be used and the safe event numbers
+    # important that dfTowClus is joined to dfGenTaus and not viceversa --> this because dfGenTaus contains the safe jets to be used and the safe event numbers
     dfGenTaus.set_index('event', inplace=True)
     dfTowClus.set_index('event', inplace=True)
     dfCluTau = dfGenTaus.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
+
+    # make sure these columns are ints and not floats due to NaN entries due to missing tau-clu matches
+    dfCluTau.dropna(axis=0, how='any', inplace=True)
+    dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
 
     # keep only the good matches between taus and clusters
     dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl_tauMatchIdx']]
@@ -205,13 +221,14 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
 
     # one hot encode the eta phi position of the seed of the cluster
     OHEseedEtaPhi = pd.get_dummies(dfCluTau[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
+
     if len(OHEseedEtaPhi.columns) < 107:
         for i in range(1,36):
-            if 'cl_absSeedIeta_'+str(i)+'.0' not in OHEseedEtaPhi:
+            if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
                 OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
                 print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
         for i in range(1,73):
-            if 'cl_seedIphi_'+str(i)+'.0' not in OHEseedEtaPhi:
+            if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
                 OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
                 print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
 
@@ -312,7 +329,7 @@ if __name__ == "__main__" :
     branches_genjet = ['jet_Idx', 'jet_eta', 'jet_phi', 'jet_pt', 'jet_e', 'jet_eEm', 'jet_eHad', 'jet_eInv']
     branches_cl3d   = ['cl3d_pt', 'cl3d_energy', 'cl3d_eta', 'cl3d_phi', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_seemax', 'cl3d_spptot', 'cl3d_sppmax', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmax', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz', 'cl3d_quality', 'cl3d_tauMatchIdx', 'cl3d_jetMatchIdx']
     NxM = options.caloClNxM
-    branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_nEGs', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_towerEgIet', 'cl'+NxM+'_towerNeg']
+    branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalEm', 'cl'+NxM+'_totalHad', 'cl'+NxM+'_totalEt', 'cl'+NxM+'_totalEgEt', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_totalEgIet', 'cl'+NxM+'_towerEta', 'cl'+NxM+'_towerPhi', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEt', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_nEGs', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_towerEgIet', 'cl'+NxM+'_towerNeg']
     # branches_clNxM = ['cl'+NxM+'_barrelSeeded', 'cl'+NxM+'_nHits', 'cl'+NxM+'_seedIeta', 'cl'+NxM+'_seedIphi', 'cl'+NxM+'_isBarrel', 'cl'+NxM+'_isOverlap', 'cl'+NxM+'_isEndcap', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_jetMatchIdx', 'cl'+NxM+'_totalIem', 'cl'+NxM+'_totalIhad', 'cl'+NxM+'_totalIet', 'cl'+NxM+'_towerIeta', 'cl'+NxM+'_towerIphi', 'cl'+NxM+'_towerIem', 'cl'+NxM+'_towerIhad', 'cl'+NxM+'_towerIet', 'cl'+NxM+'_towerEgIet']
 
     # define the two paths where to store the hdf5 files
@@ -459,11 +476,11 @@ if __name__ == "__main__" :
         'cl_totalEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEm'])),
         'cl_totalHad'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalHad'])),
         'cl_totalEt'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEt'])),
-        # 'cl_totalEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totaEglEt'])),
+        'cl_totalEgEt'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEgEt'])),
         'cl_totalIem'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIem'])),
         'cl_totalIhad'    : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIhad'])),
         'cl_totalIet'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalIet'])),
-        # 'cl_totalEgIet'   : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totaEglIet'])),
+        'cl_totalEgIet'   : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_totalEgIet'])),
         'cl_towerEta'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEta'])),
         'cl_towerPhi'     : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerPhi'])),
         'cl_towerEm'      : list(chain.from_iterable(dfTowClus[b'cl'+bNxM+b'_towerEm'])),

@@ -69,7 +69,7 @@ if not options.doHH and not options.doQCD and not options.doVBFH and not options
     exit()
 
 ##################### DEFINE INPUTS AND OUTPUTS ####################
-version = "0"
+version = "1"
 indir  = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version
 outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
 
@@ -103,9 +103,21 @@ elif options.doTestRun:
 
 os.system('mkdir -p '+outdir+'/L1Clusters')
 os.system('mkdir -p '+outdir+'/GenObjects')
-os.system('mkdir -p '+outdir+'/TensorizedInputs_'+options.caloClNxM+options.outTag)
 
-jobsdir = outdir+'/jobs/jobs_'+options.caloClNxM+options.outTag
+
+if options.outTag != "":
+    outTag = options.outTag
+else:
+    outTag = ""
+    if options.uJetPtCut : outTag += '_uJetPtCut'+options.uJetPtCut
+    if options.lJetPtCut : outTag += '_lJetPtCut'+options.lJetPtCut
+    if options.uTauPtCut : outTag += '_uTauPtCut'+options.uTauPtCut
+    if options.lTauPtCut : outTag += '_lTauPtCut'+options.lTauPtCut
+    if options.uEtacut   : outTag += '_uEtacut'+options.uEtacut
+    if options.lEtacut   : outTag += '_lEtacut'+options.lEtacut
+os.system('mkdir -p '+outdir+'/TensorizedInputs_'+options.caloClNxM+outTag)
+
+jobsdir = outdir+'/jobs/jobs_'+options.caloClNxM+outTag
 os.system('mkdir -p '+jobsdir)
 
 # list Ntuples
@@ -138,7 +150,7 @@ for i, infile in enumerate(InFiles[:]):
     if options.doTestRun: cmsRun += ' --doTestRun'
     # TENSORIZATION OPTIONS
     cmsRun += ' --infileTag ' + tag
-    if options.outTag != "": cmsRun += ' --outTag '    + options.outTag
+    if outTag != "":         cmsRun += ' --outTag '    + outTag
     if options.uJetPtCut:    cmsRun += ' --uJetPtCut ' + options.uJetPtCut
     if options.lJetPtCut:    cmsRun += ' --lJetPtCut ' + options.lJetPtCut
     if options.uTauPtCut:    cmsRun += ' --uTauPtCut ' + options.uTauPtCut
@@ -163,4 +175,4 @@ for i, infile in enumerate(InFiles[:]):
     # command = ('/home/llr/cms/evernazza/t3submit -short \'' + outJobName +"\'")
     print(command)
     os.system (command)
-    # if i == 2: break
+    # break
