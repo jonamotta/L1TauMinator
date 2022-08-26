@@ -48,66 +48,18 @@ if __name__ == "__main__" :
     CNN = models.Sequential(name="CNNcalibrator")
     DNN = models.Sequential(name="DNNcalibrator")
 
-    if options.caloClNxM == "9x9":
-        CNN.add( qlayers.QConv2D(9, (2, 2), input_shape=(9, 9, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer1') )
-        CNN.add( qlayers.MaxPooling2D((2, 2), name="CNNlayer2") )
-        CNN.add( qlayers.QConv2D(18, (2, 2), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer3") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer3') )
-        CNN.add( qlayers.Flatten(name="CNNflatened") )    
+    CNN.add( qlayers.QConv2D(16, (2, 2), input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer1") )
+    CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer1') )
+    CNN.add( qlayers.MaxPooling2D((2, 2), name="CNNlayer2") )
+    CNN.add( qlayers.QConv2D(24, (2, 2), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer3") )
+    CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer3') )
+    CNN.add( qlayers.Flatten(name="CNNflatened") )    
 
-        DNN.add( qlayers.QDense(32, name="DNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer1') )
-        DNN.add( qlayers.QDense(16, name="DNNlayer2") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer2') )
-        DNN.add( qlayers.QDense(1, name="DNNout") )
-
-    elif options.caloClNxM == "7x7":
-        CNN.add( qlayers.QConv2D(7, (2, 2), input_shape=(7, 7, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer1') )
-        CNN.add( qlayers.MaxPooling2D((2, 2), name="CNNlayer2") )
-        CNN.add( qlayers.QConv2D(14, (2, 2), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer3") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer3') )
-        CNN.add( qlayers.Flatten(name="CNNflatened") )    
-
-        DNN.add( qlayers.QDense(32, name="DNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer1') )
-        DNN.add( qlayers.QDense(16, name="DNNlayer2") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer2') )
-        DNN.add( qlayers.QDense(1, name="DNNout") )
-
-    elif options.caloClNxM == "5x5":
-        CNN.add( qlayers.QConv2D(5, (2, 2), input_shape=(5, 5, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer1') )
-        CNN.add( qlayers.MaxPooling2D((2, 2), name="CNNlayer2") )
-        CNN.add( qlayers.QConv2D(10, (2, 2), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer3") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer3') )
-        CNN.add( qlayers.Flatten(name="CNNflatened") )    
-
-        DNN.add( qlayers.QDense(32, name="DNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer1') )
-        DNN.add( qlayers.QDense(16, name="DNNlayer2") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer2') )
-        DNN.add( qlayers.QDense(1, name="DNNout") )
-
-    elif options.caloClNxM == "5x9":
-        CNN.add( qlayers.QConv2D(9, (2, 2), input_shape=(5, 9, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer1') )
-        CNN.add( qlayers.MaxPooling2D((2, 2), name="CNNlayer2") )
-        CNN.add( qlayers.QConv2D(18, (2, 2), kernel_initializer=RN(seed=7), bias_initializer='zeros', kernel_quantizer="quantized_bits(6,0,alpha=1)", bias_quantizer="quantized_bits(6,0,alpha=1)", name="CNNlayer3") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluCNNlayer3') )
-        CNN.add( qlayers.Flatten(name="CNNflatened") )    
-
-        DNN.add( qlayers.QDense(32, name="DNNlayer1") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer1') )
-        DNN.add( qlayers.QDense(16, name="DNNlayer2") )
-        CNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer2') )
-        DNN.add( qlayers.QDense(1, name="DNNout") )
-
-    else:
-        print(' ** ERROR : requested a non-available shape of the TowerClusters')
-        print(' ** EXITING!')
-        exit()
+    DNN.add( qlayers.QDense(32, name="DNNlayer1") )
+    DNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer1') )
+    DNN.add( qlayers.QDense(16, name="DNNlayer2") )
+    DNN.add( qlayers.QActivation('quantized_relu(6)', name='reluDNNlayer2') )
+    DNN.add( qlayers.QDense(1, name="DNNout") )
 
     CNNflatened = CNN(layers.Lambda(lambda x : x, name="CNNlayer0")(images))
     middleMan = layers.Concatenate(axis=1, name='middleMan')([CNNflatened, positions])
