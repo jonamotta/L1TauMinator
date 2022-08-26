@@ -136,8 +136,7 @@ if __name__ == "__main__" :
     if options.doTens4Calib: outdir += 'Calibrator'
     if options.doTens4Ident: outdir += 'Identifier'
     outdir += options.caloClNxM+'Training'+options.outTag
-    os.system('mkdir -p '+outdir)
-    os.system('mkdir -p '+indir+'/TauCNNValidator'+options.caloClNxM)
+    os.system('mkdir -p '+indir+'/TauCNNEvaluator'+options.caloClNxM+options.outTag)
 
 
     readFrom = {
@@ -180,7 +179,9 @@ if __name__ == "__main__" :
                 print('** INFO: towers'+tag+' not found --> skipping')
                 continue
 
-            # if idx==50: break
+            # uncomment if you wnat to have a smaller dataset tha the full one
+            if options.doTens4Calib and idx==400: break
+            if options.doTens4Ident and idx==200: break
 
     # shuffle the single batches to make the dataset mroe homogeneous and not dependent on concatenation order
     mixer = list(zip(X1sToConcatenate, X2sToConcatenate, YsToConcatenate))
@@ -198,15 +199,6 @@ if __name__ == "__main__" :
     X2_valid = np.concatenate(X2sToConcatenate[dp:])
     Y_valid  = np.concatenate(YsToConcatenate[dp:])
 
-    if len(X1_train) > 300000:
-        X1_train = X1_train[:300000]
-        X2_train = X2_train[:300000]
-        Y_train = Y_train[:300000]
-
-        X1_valid = X1_valid[:60000]
-        X2_valid = X2_valid[:60000]
-        Y_valid = Y_valid[:60000]
-
     ## DEBUG
     print('shape X1_train =', X1_train.shape)
     print('shape X2_train =', X2_train.shape)
@@ -221,15 +213,15 @@ if __name__ == "__main__" :
         np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz', X2_train)
         np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forCalibrator.npz', Y_train)
 
-        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Calib_CNN_'+options.caloClNxM+'_forValidator.npz', X1_valid)
-        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Calib_Dense_'+options.caloClNxM+'_forValidator.npz', X2_valid)
-        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/Y_Calib_'+options.caloClNxM+'_forValidator.npz', Y_valid)
+        np.savez_compressed(indir+'/TauCNNEvaluator'+options.caloClNxM+options.outTag+'/X_Calib_CNN_'+options.caloClNxM+'_forEvaluator.npz', X1_valid)
+        np.savez_compressed(indir+'/TauCNNEvaluator'+options.caloClNxM+options.outTag+'/X_Calib_Dense_'+options.caloClNxM+'_forEvaluator.npz', X2_valid)
+        np.savez_compressed(indir+'/TauCNNEvaluator'+options.caloClNxM+options.outTag+'/Y_Calib_'+options.caloClNxM+'_forEvaluator.npz', Y_valid)
 
     elif options.doTens4Ident:
         np.savez_compressed(outdir+'/X_CNN_'+options.caloClNxM+'_forIdentifier.npz', X1_train)
         np.savez_compressed(outdir+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz', X2_train)
         np.savez_compressed(outdir+'/Y'+options.caloClNxM+'_forIdentifier.npz', Y_train)
 
-        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Ident_CNN_'+options.caloClNxM+'_forValidator.npz', X1_valid)
-        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/X_Ident_Dense_'+options.caloClNxM+'_forValidator.npz', X2_valid)
-        np.savez_compressed(indir+'/TauCNNValidator'+options.caloClNxM+'/Y_Ident_'+options.caloClNxM+'_forValidator.npz', Y_valid)
+        np.savez_compressed(indir+'/TauCNNEvaluator'+options.caloClNxM+options.outTag+'/X_Ident_CNN_'+options.caloClNxM+'_forEvaluator.npz', X1_valid)
+        np.savez_compressed(indir+'/TauCNNEvaluator'+options.caloClNxM+options.outTag+'/X_Ident_Dense_'+options.caloClNxM+'_forEvaluator.npz', X2_valid)
+        np.savez_compressed(indir+'/TauCNNEvaluator'+options.caloClNxM+options.outTag+'/Y_Ident_'+options.caloClNxM+'_forEvaluator.npz', Y_valid)
