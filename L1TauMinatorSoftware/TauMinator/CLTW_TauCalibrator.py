@@ -148,6 +148,21 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauCNNCalibrator_plots/RootMeanSquaredError.pdf')
     plt.close()
 
+    w = TauCalibratorModel.layers[0].weights[0].numpy()
+    h, b = np.histogram(w, bins=100)
+    props = dict(boxstyle='square', facecolor='white', edgecolor='black')
+    textstr1 = '\n'.join((r'% of zeros = {}'.format(np.sum(w==0)/np.size(w))))
+    plt.figure(figsize=(10,10))
+    plt.bar(b[:-1], h, width=b[1]-b[0])
+    plt.text(w.min()+0.01, h.max()-1, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
+    plt.legend(loc = 'upper left')
+    plt.grid(linestyle=':')
+    plt.semilogy()
+    plt.xlabel('Weight value')
+    plt.ylabel('Recurrence')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/model_sparsity.pdf')
+    plt.close()
+
 
     ############################## Model validation ##############################
 

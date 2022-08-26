@@ -96,8 +96,8 @@ if __name__ == "__main__" :
 
     TauIdentifierModel = keras.Model([images, positions], TauIdentified, name='TauCNNIdentifier')
 
-    # metrics = [tf.keras.metrics.BinaryAccuracy('BA'), tf.keras.metrics.FalseNegatives(name='FN'), tf.keras.metrics.FalsePositive(name='FP'), tf.keras.metrics.TrueNegatives(name='TN'), tf.keras.metrics.TruePositive(name='TP')]
-    TauIdentifierModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.BinaryCrossentropy(), metrics=['accuracy'], run_eagerly=True)
+    metrics = [tf.keras.metrics.BinaryAccuracy(), tf.keras.metrics.FalseNegatives(), tf.keras.metrics.FalsePositives(), tf.keras.metrics.TrueNegatives(), tf.keras.metrics.TruePositives(), tf.keras.metrics.AUC()]
+    TauIdentifierModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.BinaryCrossentropy(), metrics=metrics, run_eagerly=True)
 
     ############################## Get model inputs ##############################
 
@@ -126,6 +126,8 @@ if __name__ == "__main__" :
     history = TauIdentifierModel.fit([X1, X2], Y, epochs=10, batch_size=128, verbose=1, validation_split=0.1)
 
     TauIdentifierModel.save(outdir + '/TauCNNIdentifier')
+
+    print(history.history.keys())
 
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
@@ -221,6 +223,21 @@ if __name__ == "__main__" :
     plt.xlabel(r'CNN score')
     plt.ylabel(r'a.u.')
     plt.savefig(outdir+'/TauCNNIdentifier_plots/CNN_score.pdf')
+    plt.close()
+
+    w = TauIdentifierModel.layers[0].weights[0].numpy()
+    h, b = np.histogram(w, bins=100)
+    props = dict(boxstyle='square', facecolor='white', edgecolor='black')
+    textstr1 = '\n'.join((r'% of zeros = {}'.format(np.sum(w==0)/np.size(w))))
+    plt.figure(figsize=(10,10))
+    plt.bar(b[:-1], h, width=b[1]-b[0])
+    plt.text(w.min()+0.01, h.max()-1, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
+    plt.legend(loc = 'upper left')
+    plt.grid(linestyle=':')
+    plt.semilogy()
+    plt.xlabel('Weight value')
+    plt.ylabel('Recurrence')
+    plt.savefig(outdir+'/TauCNNIdentifier_plots/model_sparsity.pdf')
     plt.close()
 
 
