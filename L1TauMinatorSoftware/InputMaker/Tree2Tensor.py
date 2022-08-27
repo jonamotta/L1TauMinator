@@ -70,7 +70,6 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
 
     # split dataframes between signal, qcd and pu
-    # features = ['uniqueId','cl_towerIeta','cl_towerIphi','cl_towerIem','cl_towerIhad','cl_towerEgIet'] #,'cl_towerNeg']
     features = ['uniqueId', 'cl_absSeedIeta', 'cl_seedIphi', 'cl_towerEgEt', 'cl_towerEm', 'cl_towerHad']
     dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl_tauMatchIdx']][features]
     dfCluJet = dfCluJet[dfCluJet['jet_Idx'] == dfCluJet['cl_jetMatchIdx']][features]
@@ -129,12 +128,9 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            # x1l.append(dfCluTauJetPu.cl_towerIeta.loc[idx][j])
-            # x1l.append(dfCluTauJetPu.cl_towerIphi.loc[idx][j])
             x1l.append(dfCluTauJetPu.cl_towerEgEt.loc[idx][j])
             x1l.append(dfCluTauJetPu.cl_towerEm.loc[idx][j])
             x1l.append(dfCluTauJetPu.cl_towerHad.loc[idx][j])
-            # x1l.append(dfCluTauJetPu.cl_towerNeg.loc[idx][j])
         x1 = np.array(x1l).reshape(N,M,3)
         
         # target of the NN
@@ -242,7 +238,7 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
             print(i/len(dfCluTau.index)*100, '%')
 
         # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
-        if len(dfCluTau.cl_towerIeta.loc[idx]) != N*M: continue
+        if len(dfCluTau.cl_towerHad.loc[idx]) != N*M: continue
 
         # features of the Dense NN
         x2 = OHEseedEtaPhi.loc[idx].to_numpy()
@@ -250,12 +246,9 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            # x1l.append(dfCluTau.cl_towerIeta.loc[idx][j])
-            # x1l.append(dfCluTau.cl_towerIphi.loc[idx][j])
-            x1l.append(dfCluTau.cl_towerEgIet.loc[idx][j])
-            x1l.append(dfCluTau.cl_towerIem.loc[idx][j])
-            x1l.append(dfCluTau.cl_towerIhad.loc[idx][j])
-            # x1l.append(dfCluTau.cl_towerNeg.loc[idx][j])
+            x1l.append(dfCluTau.cl_towerEgEt.loc[idx][j])
+            x1l.append(dfCluTau.cl_towerEm.loc[idx][j])
+            x1l.append(dfCluTau.cl_towerHad.loc[idx][j])
         x1 = np.array(x1l).reshape(N,M,3)
         
         # targets of the NN
