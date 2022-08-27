@@ -180,8 +180,8 @@ if __name__ == "__main__" :
                 continue
 
             # uncomment if you wnat to have a smaller dataset tha the full one
-            if options.doTens4Calib and idx==400: break
-            if options.doTens4Ident and idx==200: break
+            # if options.doTens4Calib and idx==400: break
+            # if options.doTens4Ident and idx==200: break
 
     # shuffle the single batches to make the dataset mroe homogeneous and not dependent on concatenation order
     mixer = list(zip(X1sToConcatenate, X2sToConcatenate, YsToConcatenate))
