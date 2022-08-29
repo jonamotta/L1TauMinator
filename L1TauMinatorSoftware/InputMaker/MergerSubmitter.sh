@@ -68,5 +68,5 @@ source /opt/exp_soft/cms/t3/t3setup
 
 # ------------------------------------------------------------------------------------------------------------------------
 
-python MergerSubmitter.py --v 4 --date 2022_08_27 --caloClNxM 5x9 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500 --inTag _lJetPtCut20_lTauPtCut20 --outTag _lJetPtCut20_lTauPtCut20
-python MergerSubmitter.py --v 4 --date 2022_08_27 --caloClNxM 5x9 --doTens4Ident --doHH --doVBFH --doZp500 --doZp1500 --inTag _lJetPtCut20_lTauPtCut20 --outTag _lJetPtCut20_lTauPtCut20
+python MergerSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doTens4Calib --doHH --doVBFH --doZp500 --doZp1500 --inTag _lJetPtCut20_lTauPtCut20_uEtacut1.3 --outTag _lJetPtCut20_lTauPtCut20_uEtacut1.3
+python MergerSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doTens4Ident --doHH --doVBFH --doZp500 --doZp1500 --inTag _lJetPtCut20_lTauPtCut20_uEtacut1.3 --outTag _lJetPtCut20_lTauPtCut20_uEtacut1.3

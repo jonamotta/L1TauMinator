@@ -35,9 +35,9 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
 
     # Apply cut on tau pt
     if uTauPtCut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] <= float(uTauPtCut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] <= float(uTauPtCut)]
     if lTauPtCut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] >= float(lTauPtCut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] >= float(lTauPtCut)]
 
     # Apply cut on tau eta
     if uEtacut:
@@ -63,14 +63,17 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     dfCluTau = dfGenTaus.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
     dfCluJet = dfGenJets.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
 
-    # make sure these columns are ints and not floats due to NaN entries due to missing tau/jet-clu matches
+    # remove NaN entries due to missing tau/jet-clu matches
     dfCluTau.dropna(axis=0, how='any', inplace=True)
     dfCluJet.dropna(axis=0, how='any', inplace=True)
+
+    # make sure these columns are ints and not floats
     dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
     dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
 
     # split dataframes between signal, qcd and pu
-    features = ['uniqueId', 'cl_absSeedIeta', 'cl_seedIphi', 'cl_towerEgEt', 'cl_towerEm', 'cl_towerHad']
+    # features = ['uniqueId', 'cl_absSeedIeta', 'cl_seedIphi', 'cl_towerEgEt', 'cl_towerEm', 'cl_towerHad']
+    features = ['uniqueId', 'cl_seedEta', 'cl_seedPhi', 'cl_towerEgEt', 'cl_towerEm', 'cl_towerHad']
     dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl_tauMatchIdx']][features]
     dfCluJet = dfCluJet[dfCluJet['jet_Idx'] == dfCluJet['cl_jetMatchIdx']][features]
     dfCluPU = dfCluPU[features].copy(deep=True)
@@ -97,18 +100,18 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     # make uniqueId the index
     dfCluTauJetPu.set_index('uniqueId',inplace=True)
 
-    # one hot encode the eta phi position of the seed of the cluster
-    OHEseedEtaPhi = pd.get_dummies(dfCluTauJetPu[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
+    # # one hot encode the eta phi position of the seed of the cluster
+    # OHEseedEtaPhi = pd.get_dummies(dfCluTauJetPu[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
 
-    if len(OHEseedEtaPhi.columns) < 107:
-        for i in range(1,36):
-            if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
-                OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
-                print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
-        for i in range(1,73):
-            if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
-                OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
-                print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
+    # if len(OHEseedEtaPhi.columns) < 107:
+    #     for i in range(1,36):
+    #         if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
+    #             OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
+    #             print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
+    #     for i in range(1,73):
+    #         if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
+    #             OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
+    #             print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
 
     # make the input tensors for the neural network
     X1L = []
@@ -123,7 +126,11 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
         if len(dfCluTauJetPu.cl_towerHad.loc[idx]) != N*M: continue
 
         # features of the Dense NN
-        x2 = OHEseedEtaPhi.loc[idx].to_numpy()
+        # x2 = OHEseedEtaPhi.loc[idx].to_numpy()
+        x2l = []
+        x2l.append(dfCluTauJetPu.cl_seedEta.loc[idx])
+        x2l.append(dfCluTauJetPu.cl_seedPhi.loc[idx])
+        x2 = np.array(x2l)
 
         # features for the CNN
         x1l = []
@@ -178,9 +185,9 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
 
     # Apply cut on tau pt
     if uTauPtCut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] <= float(uTauPtCut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] <= float(uTauPtCut)]
     if lTauPtCut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_pt'] >= float(lTauPtCut)]
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] >= float(lTauPtCut)]
 
     # Apply cut on tau eta
     if uEtacut:
@@ -202,8 +209,10 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     dfTowClus.set_index('event', inplace=True)
     dfCluTau = dfGenTaus.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
 
-    # make sure these columns are ints and not floats due to NaN entries due to missing tau-clu matches
+    # remove NaN entries due to missing tau/jet-clu matches
     dfCluTau.dropna(axis=0, how='any', inplace=True)
+
+    # make sure these columns are ints and not floats
     dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
 
     # keep only the good matches between taus and clusters
@@ -215,18 +224,18 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     # make uniqueId the index
     dfCluTau.set_index('uniqueId',inplace=True)
 
-    # one hot encode the eta phi position of the seed of the cluster
-    OHEseedEtaPhi = pd.get_dummies(dfCluTau[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
+    # # one hot encode the eta phi position of the seed of the cluster
+    # OHEseedEtaPhi = pd.get_dummies(dfCluTau[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
 
-    if len(OHEseedEtaPhi.columns) < 107:
-        for i in range(1,36):
-            if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
-                OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
-                print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
-        for i in range(1,73):
-            if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
-                OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
-                print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
+    # if len(OHEseedEtaPhi.columns) < 107:
+    #     for i in range(1,36):
+    #         if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
+    #             OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
+    #             print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
+    #     for i in range(1,73):
+    #         if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
+    #             OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
+    #             print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
 
     # make the input tensors for the neural network
     X1L = []
@@ -241,7 +250,11 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         if len(dfCluTau.cl_towerHad.loc[idx]) != N*M: continue
 
         # features of the Dense NN
-        x2 = OHEseedEtaPhi.loc[idx].to_numpy()
+        # x2 = OHEseedEtaPhi.loc[idx].to_numpy()
+        x2l = []
+        x2l.append(dfCluTau.cl_seedEta.loc[idx])
+        x2l.append(dfCluTau.cl_seedPhi.loc[idx])
+        x2 = np.array(x2l)
 
         # features for the CNN
         x1l = []
