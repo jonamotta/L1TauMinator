@@ -1,3 +1,0 @@
-python3 ResolutionDisplayer.py --indir /data_CMS/cms/motta/Phase2L1T/2022_08_23_v2/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1__FEVT__forDisplay__batches --tag _0_numEvent3000 --caloClNxM 9x9,7x7,5x5,5x9,5x7,3x7,3x5 --doTauDisplay --doJetDisplay
-
-python3 ResolutionDisplayer.py --indir /data_CMS/cms/motta/Phase2L1T/2022_08_23_v2/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT_forDisplay__batches --tag _0_numEvent3000 --caloClNxM 9x9,7x7,5x5,5x9,5x7,3x7,3x5 --doTauDisplay --doJetDisplay
