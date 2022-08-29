@@ -31,4 +31,33 @@
     * done only for 9x9 clusters, will move to L1TauMinatorNtuples/v1
 
 
-2022_08
+2022_08_25_v3
+    * full blown training for all possible shapes
+    * identification works very well
+    * calibration has some issues and gives very good rms but very bad mean
+    * 5x9 looks to be the best working option for identification
+    * here the input for the calibration was still the iet deposit -> had to manually modif y the targets
+
+2022_08_27_v4
+    * all inputs fixed
+    * training only for 5x9 clusters
+    * identification works really well
+    * calibration still shows the bad mean behaviour
+        * tried multiple different losses
+        * problem looks to lay in the tf.nn.l2_loss() function
+        * all built-in losses work much better, MeanAbsolutePercentageError() gives the best results (MAPE)
+
+2022_08_29_v5
+    * modify position inputs for the cluster seed
+        -> pass from OHE ieta/iphi to the float value of ieta/iphi
+    * correct the input taus cut to be on vis_pt and not on pt
+    * tested DNN only calibration
+        -> gives exactly the same performance as the CNN+DNN 
+        -> this confirms the possibility of having the same CNN for both Ident/Calib and then separate DNN after the CNN
+    * tested efficiency 
+        -> the current problem is the calibration which lowers the efficiency even wothout applying the identification
+        -> possible solution: run till the rate estimation and see what happens
+        -> real only solution: need to have a much better calibration
+    * tested barrel only calibration and identification
+        -> the results improvement is almost none
+        -> should be able to easily go on running with the full detector as an input
