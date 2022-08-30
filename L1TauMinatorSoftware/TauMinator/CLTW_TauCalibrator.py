@@ -372,4 +372,5 @@ if __name__ == "__main__" :
 #    plt.figure(figsize=(10,10))
 #    # here we plot the explanations for all classes for the second input (this is the conv-net input)
 #    shap.image_plot([shap_values[i][1] for i in range(len(shap_values))], X2_valid[:3], show=False)
-#    plt.savefig(outdir+'/TauCNNCalibrator_plots/sh
+#    plt.savefig(outdir+'/TauCNNCalibrator_plots/shap1.pdf')
+#    plt.close()
