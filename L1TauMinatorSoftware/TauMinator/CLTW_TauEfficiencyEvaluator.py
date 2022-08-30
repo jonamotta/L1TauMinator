@@ -83,6 +83,14 @@ if __name__ == "__main__" :
     WP95 = np.interp(0.95, TPR, THR)
     WP90 = np.interp(0.90, TPR, THR)
 
+    wp_dict = {
+        'wp99' : WP99,
+        'wp95' : WP95,
+        'wp90' : WP90
+    }
+
+    save_obj(wp_dict, indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/TauMinatorCNN_WPs.pkl')
+
     df = pd.DataFrame()
     df['gen_pt' ] = Y_calib[:,0].ravel()
     df['gen_eta'] = Y_calib[:,1].ravel()
