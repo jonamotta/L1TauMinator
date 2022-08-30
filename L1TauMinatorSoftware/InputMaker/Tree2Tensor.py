@@ -8,6 +8,87 @@ import glob
 import sys
 import os
 
+
+def TensorizeForRate(dfFlatTowClus, uEtacut, lEtacut, NxM):
+    if len(dfFlatTowClus) == 0:
+        print('** WARNING : no data to be tensorized for calibration here')
+        return
+
+    dfTowClus = dfFlatTowClus.copy(deep=True)
+
+    # get clusters' shape dimensions
+    N = int(NxM.split('x')[0])
+    M = int(NxM.split('x')[1])
+
+    # Apply cut on tau eta
+    if uEtacut:
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) <= float(uEtacut)]
+    if lEtacut:
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) >= float(lEtacut)]
+
+    # save unique identifier
+    dfTowClus['uniqueId'] = dfTowClus['event'].astype(str)+'_'+dfTowClus.index.astype(str)
+
+    # shuffle the rows so that no possible order gets learned
+    dfTowClus = dfTowClus.sample(frac=1).copy(deep=True)
+
+    # make uniqueId the index
+    dfTowClus.set_index('uniqueId',inplace=True)
+
+    # make the input tensors for the neural network
+    X1L = []
+    X2L = []
+    YL = []
+    for i, idx in enumerate(dfTowClus.index):
+        # progress
+        if i%100 == 0:
+            print(i/len(dfTowClus.index)*100, '%')
+
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfTowClus.cl_towerHad.loc[idx]) != N*M: continue
+
+        # features of the Dense NN
+        # x2 = OHEseedEtaPhi.loc[idx].to_numpy()
+        x2l = []
+        x2l.append(dfTowClus.cl_seedEta.loc[idx])
+        x2l.append(dfTowClus.cl_seedPhi.loc[idx])
+        x2 = np.array(x2l)
+
+        # features for the CNN
+        x1l = []
+        for j in range(N*M):
+            x1l.append(dfTowClus.cl_towerEgEt.loc[idx][j])
+            x1l.append(dfTowClus.cl_towerEm.loc[idx][j])
+            x1l.append(dfTowClus.cl_towerHad.loc[idx][j])
+        x1 = np.array(x1l).reshape(N,M,3)
+        
+        # "targets" of the NN
+        yl = []
+        yl.append(dfTowClus.event.loc[idx])
+        yl.append(dfTowClus.cl_seedEta.loc[idx])
+        yl.append(dfTowClus.cl_seedPhi.loc[idx])
+        y = np.array(yl)
+
+        # inputs to the NN
+        X1L.append(x1)
+        X2L.append(x2)
+        YL.append(y)
+
+    # tensorize the lists
+    X1 = np.array(X1L)
+    X2 = np.array(X2L)
+    Y = np.array(YL)
+
+    print(X1.shape)
+    print(X2.shape)
+    print(Y.shape)
+
+    # save .npz files with tensor formatted datasets
+    np.savez_compressed(saveTensTo['inputsRateCNN'], X1)
+    np.savez_compressed(saveTensTo['inputsRateDense'], X2)
+    np.savez_compressed(saveTensTo['targetsRate'], Y)
+
+
 def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0:
         print('** WARNING : no data to be tensorized for identification here')
@@ -41,13 +122,13 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
 
     # Apply cut on tau eta
     if uEtacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(uEtacut)]
-        dfGenJets = dfGenJets[dfGenJets['jet_eta'] <= float(uEtacut)]
-        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] <= float(uEtacut)]
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) <= float(uEtacut)]
+        dfGenJets = dfGenJets[abs(dfGenJets['jet_eta']) <= float(uEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) <= float(uEtacut)]
     if lEtacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] >= float(lEtacut)]
-        dfGenJets = dfGenJets[dfGenJets['jet_eta'] >= float(lEtacut)]
-        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] >= float(lEtacut)]
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) >= float(lEtacut)]
+        dfGenJets = dfGenJets[abs(dfGenJets['jet_eta']) >= float(lEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) >= float(lEtacut)]
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -191,11 +272,11 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
 
     # Apply cut on tau eta
     if uEtacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] <= float(uEtacut)]
-        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] <= float(uEtacut)]
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) <= float(uEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) <= float(uEtacut)]
     if lEtacut:
-        dfGenTaus = dfGenTaus[dfGenTaus['tau_eta'] >= float(lEtacut)]
-        dfTowClus = dfTowClus[dfTowClus['cl_seedEta'] >= float(lEtacut)]
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) >= float(lEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) >= float(lEtacut)]
 
     # save unique identifier
     dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
@@ -322,6 +403,7 @@ if __name__ == "__main__" :
     parser.add_option("--lEtacut",      dest="lEtacut",                           default=None)
     parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
     parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
+    parser.add_option('--doTens4Rate',  dest='doTens4Rate',  action='store_true', default=False)
     (options, args) = parser.parse_args()
 
     print(options)
@@ -400,6 +482,12 @@ if __name__ == "__main__" :
     dfTowClus = pd.concat([df_event, df_clNxM], axis=1)
     dfGenTaus = pd.concat([df_event, df_gentau], axis=1)
     dfGenJets = pd.concat([df_event, df_genjet], axis=1)
+
+    ## uncomment for fast tests
+    # dfHGClus = dfHGClus.head(100).copy(deep=True)
+    # dfTowClus = dfTowClus.head(100).copy(deep=True)
+    # dfGenTaus = dfGenTaus.head(100).copy(deep=True)
+    # dfGenJets = dfGenJets.head(100).copy(deep=True)
 
 
     ##################### FLATTEN THE TTREES ####################
@@ -526,20 +614,27 @@ if __name__ == "__main__" :
         if options.lEtacut   : outTag += '_lEtacut'+options.lEtacut
 
     saveTensTo = {
-        'inputsCalibratorCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsCalibratorDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsIdentifierCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsIdentifierDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsCalibrator'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsIdentifier'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz'
+        'inputsCalibratorCNN'   : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsCalibratorDense' : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierCNN'   : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierDense' : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsRateCNN'         : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsRateDense'       : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsCalibrator'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsIdentifier'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsRate'           : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz'
     }
 
     if options.doTens4Calib:
         print('** INFO : doing tensorization for calibration')
         TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
+    
     if options.doTens4Ident:
         print('** INFO : doing tensorization for identification')
         TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
-
+    
+    if options.doTens4Rate:
+        print('** INFO : doing tensorization for rate evaluation')
+        TensorizeForRate(dfFlatTowClus, options.uEtacut, options.lEtacut, options.caloClNxM)
 
     print('** INFO : ALL DONE!')

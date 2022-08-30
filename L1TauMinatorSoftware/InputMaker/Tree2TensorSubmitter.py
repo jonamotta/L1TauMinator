@@ -51,6 +51,7 @@ parser.add_option("--uEtacut",      dest="uEtacut",                           de
 parser.add_option("--lEtacut",      dest="lEtacut",                           default=None)
 parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
 parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
+parser.add_option('--doTens4Rate', dest='doTens4Rate', action='store_true', default=False)
 (options, args) = parser.parse_args()
 
 if not options.date or not options.v:
@@ -58,7 +59,7 @@ if not options.date or not options.v:
     print('** EXITING')
     exit()
 
-if not options.doTens4Calib and not options.doTens4Ident:
+if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Rate:
     print('** ERROR : no tensorization need specified')
     print('** EXITING')
     exit()
@@ -86,8 +87,11 @@ elif options.doQCD:
     outdir += '/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT__batches'
 
 elif options.doMinBias:
-    indir  += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT'
-    outdir += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT__batches'
+    # indir  += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT'
+    # outdir += '/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT__batches'
+
+    indir  += '/tmpRate'
+    outdir += '/tmpRate__batches'
 
 elif options.doZp500:
     indir  += '/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD'
@@ -159,6 +163,7 @@ for i, infile in enumerate(InFiles[:]):
     if options.lEtacut:      cmsRun += ' --lEtacut '   + options.lEtacut
     if options.doTens4Calib: cmsRun += ' --doTens4Calib'
     if options.doTens4Ident: cmsRun += ' --doTens4Ident'
+    if options.doTens4Rate: cmsRun += ' --doTens4Rate'
     cmsRun += ' >& ' + outLogName
 
     skimjob = open(outJobName, 'w')

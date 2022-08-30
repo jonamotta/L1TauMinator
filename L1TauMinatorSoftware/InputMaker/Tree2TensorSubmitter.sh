@@ -123,7 +123,16 @@ source /opt/exp_soft/cms/t3/t3setup
 
 
 
-python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doVBFH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
-python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doHH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
-python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doZp500 --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
-python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doZp1500 --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+# python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doVBFH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+# python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doHH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+# python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doZp500 --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+# python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doZp1500 --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+
+
+# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doVBFH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doHH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+
+# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doVBFH --doTens4Calib --doTens4Ident --lTauPtCut 20 --uEtacut 1.3
+# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doHH --doTens4Calib --doTens4Ident --lTauPtCut 20 --uEtacut 1.3
+
+python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doMinBias --doTens4Rate --uEtacut 1.3
