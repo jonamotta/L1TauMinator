@@ -44,13 +44,15 @@ parser.add_option('--doZp1500',     dest='doZp1500',     action='store_true', de
 parser.add_option('--doTestRun',    dest='doTestRun',    action='store_true', default=False)
 parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=None)
 parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=None)
+parser.add_option('--doTens4Rate',  dest='doTens4Rate',  action='store_true', default=None)
 (options, args) = parser.parse_args()
 
 
 jobsdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNN'
-if options.doTens4Calib: jobsdir += 'Calibrator'
-if options.doTens4Ident: jobsdir += 'Identifier'
-jobsdir += options.caloClNxM+'Training'+options.outTag
+if options.doTens4Calib: jobsdir += 'Calibrator'+options.caloClNxM+'Training'
+if options.doTens4Ident: jobsdir += 'Identifier'+options.caloClNxM+'Training'
+if options.doTens4Rate:  jobsdir += 'Evaluator'+options.caloClNxM
+jobsdir += options.outTag
 os.system('mkdir -p '+jobsdir)
 
 outJobName  = jobsdir + '/job.sh'
@@ -71,6 +73,7 @@ if options.doZp1500      : cmsRun += ' --doZp1500'
 if options.doTestRun     : cmsRun += ' --doTestRun'
 if options.doTens4Calib  : cmsRun += ' --doTens4Calib'
 if options.doTens4Ident  : cmsRun += ' --doTens4Ident'
+if options.doTens4Rate   : cmsRun += ' --doTens4Rate'
 cmsRun += ' >& ' + outLogName
 
 skimjob = open(outJobName, 'w')
