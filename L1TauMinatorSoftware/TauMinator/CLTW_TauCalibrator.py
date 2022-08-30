@@ -63,6 +63,22 @@ if __name__ == "__main__" :
     #    - one DNN that takes the flat output of the the CNN and the cluster position 
     #    - the custom loss targets the visPt of the tau
 
+    # class Custom_LogRectifier(tf.keras.layers.Layer):
+    #     def __init__(self, num_outputs):
+    #         super(Custom_LogRectifier, self).__init__()
+    #         self.num_outputs = num_outputs
+
+    #     def build(self, input_shape):
+    #         self.k0 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
+    #         self.k1 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
+    #         self.k2 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
+    #         self.k3 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
+    #         self.k4 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
+
+    #     def call(self, inputs):
+    #         log = tf.math.log(inputs)
+    #         return self.k0 + self.k1*log + self.k2*tf.math.pow(log, 2) + self.k3*tf.math.pow(log, 3) +  self.k4*tf.math.pow(log, 4)
+
     if options.train:
         images = keras.Input(shape = (N, M, 3), name='TowerClusterImage')
         positions = keras.Input(shape = 2, name='TowerClusterPosition')
@@ -74,17 +90,20 @@ if __name__ == "__main__" :
         if N <  5 and M <  5: wndw = (1,1)
 
         CNN.add( layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer1") )
+        CNN.add( layers.BatchNormalization(name='BNlayer1') )
         CNN.add( layers.Activation('relu', name='reluCNNlayer1') )
         CNN.add( layers.MaxPooling2D(wndw, name="CNNlayer2") )
         CNN.add( layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer3") )
+        CNN.add( layers.BatchNormalization(name='BNlayer2') )
         CNN.add( layers.Activation('relu', name='reluCNNlayer3') )
         CNN.add( layers.Flatten(name="CNNflatened") )
 
-        DNN.add( layers.Dense(32, name="DNNlayer1") )
+        DNN.add( layers.Dense(45, name="DNNlayer1") )
         DNN.add( layers.Activation('relu', name='reluDNNlayer1') )
         DNN.add( layers.Dense(16, name="DNNlayer2") )
         DNN.add( layers.Activation('relu', name='reluDNNlayer2') )
         DNN.add( layers.Dense(1, name="DNNout") )
+        # DNN.add( Custom_LogRectifier(1) )
 
         CNNflatened = CNN(layers.Lambda(lambda x : x, name="CNNlayer0")(images))
         middleMan = layers.Concatenate(axis=1, name='middleMan')([CNNflatened, positions])
@@ -105,6 +124,12 @@ if __name__ == "__main__" :
                                    metrics=['RootMeanSquaredError'],
                                    run_eagerly=True)
 
+
+        # print(TauCalibrated)
+        # print(CNN.summary())
+        # print(DNN.summary())
+        # print(TauCalibratorModel.summary())
+        # exit()
 
         ############################## Model training ##############################
 
@@ -265,7 +290,8 @@ if __name__ == "__main__" :
     plt.ylabel(r'$p_{T}^{Gen \tau}$')
     plt.legend(loc = 'upper right', fontsize=16)
     plt.grid(linestyle='dotted')
-    plt.xlim(-0.1,5)
+    # plt.xlim(-0.1,5)
+    plt.xlim(0.0,2.0)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauCNNCalibrator_plots/response_vs_pt_comparison.pdf')
     plt.close()
@@ -346,6 +372,4 @@ if __name__ == "__main__" :
 #    plt.figure(figsize=(10,10))
 #    # here we plot the explanations for all classes for the second input (this is the conv-net input)
 #    shap.image_plot([shap_values[i][1] for i in range(len(shap_values))], X2_valid[:3], show=False)
-#    plt.savefig(outdir+'/TauCNNCalibrator_plots/shap1.pdf')
-#    plt.close()
-
+#    plt.savefig(outdir+'/TauCNNCalibrator_plots/sh
