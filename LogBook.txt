@@ -61,3 +61,20 @@
     * tested barrel only calibration and identification
         -> the results improvement is almost none
         -> should be able to easily go on running with the full detector as an input
+    * tested VBF only training
+        -> yield better performance because huge outlayers from Z' dataset are removed
+        -> possibly remove the Z' datasets from the tarining and maybe just use them for some additional validation
+
+    * in the tensirization, the cut on eta here was not working properly because no absolute value was applied!! AHRG!!
+
+
+2022_08_30_v6
+    * fixed eta cut bug in tensorization
+    * using only VBF samples (GGHH also available if wanted)
+    * first work up until the rate estimation
+    * barrel only algorithm
+
+
+
+
+
