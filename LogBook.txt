@@ -67,12 +67,16 @@
 
     * in the tensirization, the cut on eta here was not working properly because no absolute value was applied!! AHRG!!
 
-
 2022_08_30_v6
     * fixed eta cut bug in tensorization
     * using only VBF samples (GGHH also available if wanted)
     * first work up until the rate estimation
     * barrel only algorithm
+
+2022_08_31_v7
+    * introduced BDTs for HGCAL
+    * CNN calibration standard in the barrel
+    * BDT calibration standard in the endcap
 
 
 
