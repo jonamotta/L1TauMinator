@@ -32,7 +32,10 @@ parser = OptionParser()
 # GENERAL OPTIONS
 parser.add_option("--v",            dest="v",            help="Version of the iteration",                                        default=None)
 parser.add_option("--date",         dest="date",         help="Date of birth of this version",                                   default=None)
-parser.add_option('--caloClNxM',    dest='caloClNxM',    help='Which shape of CaloCluster to use?',                              default="9x9")
+parser.add_option('--caloClNxM',    dest='caloClNxM',    help='Which shape of CaloCluster to use?',                              default="5x9")
+# INPUTS PREPARATION OPTIONS
+parser.add_option('--doHGCAL',      dest='doHGCAL',      help='Do HGCAL inputs preparation?',               action='store_true', default=False)
+parser.add_option('--doCALO',       dest='doCALO',       help='Do CALO inputs preparation?',                action='store_true', default=False)
 # TTREE READING OPTIONS
 parser.add_option('--doHH',         dest='doHH',         help='Read the HH samples?',                       action='store_true', default=False)
 parser.add_option('--doQCD',        dest='doQCD',        help='Read the QCD samples?',                      action='store_true', default=False)
@@ -56,6 +59,11 @@ parser.add_option('--doTens4Rate', dest='doTens4Rate', action='store_true', defa
 
 if not options.date or not options.v:
     print('** ERROR : no version and date specified --> no output folder specified')
+    print('** EXITING')
+    exit()
+
+if not options.doHGCAL and not options.doCALO:
+    print('** ERROR : no detector need specified')
     print('** EXITING')
     exit()
 
@@ -119,9 +127,9 @@ else:
     if options.lTauPtCut : outTag += '_lTauPtCut'+options.lTauPtCut
     if options.uEtacut   : outTag += '_uEtacut'+options.uEtacut
     if options.lEtacut   : outTag += '_lEtacut'+options.lEtacut
-os.system('mkdir -p '+outdir+'/TensorizedInputs_'+options.caloClNxM+outTag)
 
-jobsdir = outdir+'/jobs/jobs_'+options.caloClNxM+outTag
+if options.doCALO:  jobsdir = outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/jobs/jobs_'+options.caloClNxM+outTag
+if options.doHGCAL: jobsdir = outdir+'/PickledInputs'+outTag+'/jobs/jobs'+outTag
 os.system('mkdir -p '+jobsdir)
 
 # list Ntuples
@@ -144,6 +152,9 @@ for i, infile in enumerate(InFiles[:]):
     cmsRun += ' --infile '  + infile
     cmsRun += ' --outdir ' + outdir
     cmsRun += ' --caloClNxM ' + options.caloClNxM
+    # INPUTS PREPARATION OPTIONS
+    if options.doCALO:  cmsRun += ' --doCALO'
+    if options.doHGCAL: cmsRun += ' --doHGCAL'
     # TTREE READING OPTIONS
     if options.doHH:      cmsRun += ' --doHH'
     if options.doQCD:     cmsRun += ' --doQCD'

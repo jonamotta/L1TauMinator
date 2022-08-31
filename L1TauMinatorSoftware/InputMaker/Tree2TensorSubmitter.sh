@@ -129,10 +129,10 @@ source /opt/exp_soft/cms/t3/t3setup
 # python Tree2TensorSubmitter.py --v 5 --date 2022_08_29 --caloClNxM 5x9 --doZp1500 --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
 
 
-# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doVBFH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
-# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doHH --doTens4Calib --doTens4Ident --lTauPtCut 20 --lJetPtCut 20 --uEtacut 1.3
+python Tree2TensorSubmitter.py --v 7 --date 2022_08_31 --caloClNxM 5x9 --doCALO --doVBFH --doTens4Calib --lTauPtCut 18 --uEtacut 1.5
+python Tree2TensorSubmitter.py --v 7 --date 2022_08_31 --caloClNxM 5x9 --doCALO --doVBFH --doTens4Ident --lTauPtCut 18
 
-# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doVBFH --doTens4Calib --doTens4Ident --lTauPtCut 20 --uEtacut 1.3
-# python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doHH --doTens4Calib --doTens4Ident --lTauPtCut 20 --uEtacut 1.3
+python Tree2TensorSubmitter.py --v 7 --date 2022_08_31                 --doHGCAL --doVBFH --doTens4Calib --doTens4Ident --lTauPtCut 18 --lEtacut 1.5
 
-python Tree2TensorSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doMinBias --doTens4Rate --uEtacut 1.3
+python Tree2TensorSubmitter.py --v 7 --date 2022_08_31 --caloClNxM 5x9 --doCALO  --doMinBias --doTens4Rate
+python Tree2TensorSubmitter.py --v 7 --date 2022_08_31                 --doHGCAL --doMinBias --doTens4Rate

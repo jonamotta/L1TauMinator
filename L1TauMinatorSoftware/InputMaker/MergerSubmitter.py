@@ -35,6 +35,8 @@ parser.add_option("--date",         dest="date",                              de
 parser.add_option("--inTag",        dest="inTag",                             default="")
 parser.add_option("--outTag",       dest="outTag",                            default="")
 parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="9x9")
+parser.add_option('--doHGCAL',      dest='doHGCAL',      action='store_true', default=False)
+parser.add_option('--doCALO',       dest='doCALO',       action='store_true', default=False)
 parser.add_option('--doHH',         dest='doHH',         action='store_true', default=False)
 parser.add_option('--doQCD',        dest='doQCD',        action='store_true', default=False)
 parser.add_option('--doVBFH',       dest='doVBFH',       action='store_true', default=False)
@@ -42,17 +44,45 @@ parser.add_option('--doMinBias',    dest='doMinBias',    action='store_true', de
 parser.add_option('--doZp500',      dest='doZp500',      action='store_true', default=False)
 parser.add_option('--doZp1500',     dest='doZp1500',     action='store_true', default=False)
 parser.add_option('--doTestRun',    dest='doTestRun',    action='store_true', default=False)
-parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=None)
-parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=None)
-parser.add_option('--doTens4Rate',  dest='doTens4Rate',  action='store_true', default=None)
+parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
+parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
+parser.add_option('--doTens4Rate',  dest='doTens4Rate',  action='store_true', default=False)
 (options, args) = parser.parse_args()
 
+if not options.date or not options.v:
+    print('** ERROR : no version and date specified --> no output folder specified')
+    print('** EXITING')
+    exit()
 
-jobsdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNN'
-if options.doTens4Calib: jobsdir += 'Calibrator'+options.caloClNxM+'Training'
-if options.doTens4Ident: jobsdir += 'Identifier'+options.caloClNxM+'Training'
-if options.doTens4Rate:  jobsdir += 'Evaluator'+options.caloClNxM
-jobsdir += options.outTag
+if not options.doHGCAL and not options.doCALO:
+    print('** ERROR : no detector need specified')
+    print('** EXITING')
+    exit()
+
+if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Rate:
+    print('** ERROR : no merging need specified')
+    print('** EXITING')
+    exit()
+
+if not options.doHH and not options.doQCD and not options.doVBFH and not options.doMinBias and not options.doZp500 and not options.doZp1500 and not options.doTestRun:
+    print('** ERROR : no matching dataset specified. What do you want to do (doHH, doQCD, doVBFH, doMinBias, doTestRun)?')
+    print('** EXITING')
+    exit()
+
+
+jobsdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
+
+if options.doHGCAL:
+    if options.doTens4Calib: jobsdir += '/TauBDTCalibratorTraining'
+    if options.doTens4Ident: jobsdir += '/TauBDTIdentifierTraining'
+
+if options.doCALO:
+    if options.doTens4Calib: jobsdir += '/TauCNNCalibrator'+options.caloClNxM+'Training'
+    if options.doTens4Ident: jobsdir += '/TauCNNIdentifier'+options.caloClNxM+'Training'
+
+if options.doTens4Rate:  jobsdir += 'TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'
+
+jobsdir += options.outTag+'/jobs'
 os.system('mkdir -p '+jobsdir)
 
 outJobName  = jobsdir + '/job.sh'
@@ -64,6 +94,8 @@ cmsRun += ' --date '+options.date
 cmsRun += ' --inTag '+options.inTag
 cmsRun += ' --outTag '+options.outTag
 cmsRun += ' --caloClNxM '+options.caloClNxM
+if options.doHGCAL       : cmsRun += ' --doHGCAL'
+if options.doCALO        : cmsRun += ' --doCALO'
 if options.doHH          : cmsRun += ' --doHH'
 if options.doQCD         : cmsRun += ' --doQCD'
 if options.doVBFH        : cmsRun += ' --doVBFH'

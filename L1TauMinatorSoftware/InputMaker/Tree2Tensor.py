@@ -9,7 +9,7 @@ import sys
 import os
 
 
-def TensorizeForRate(dfFlatTowClus, uEtacut, lEtacut, NxM):
+def TensorizeForClNxMRate(dfFlatTowClus, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -48,7 +48,6 @@ def TensorizeForRate(dfFlatTowClus, uEtacut, lEtacut, NxM):
         if len(dfTowClus.cl_towerHad.loc[idx]) != N*M: continue
 
         # features of the Dense NN
-        # x2 = OHEseedEtaPhi.loc[idx].to_numpy()
         x2l = []
         x2l.append(dfTowClus.cl_seedEta.loc[idx])
         x2l.append(dfTowClus.cl_seedPhi.loc[idx])
@@ -89,7 +88,7 @@ def TensorizeForRate(dfFlatTowClus, uEtacut, lEtacut, NxM):
     np.savez_compressed(saveTensTo['targetsRate'], Y)
 
 
-def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
+def TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0:
         print('** WARNING : no data to be tensorized for identification here')
         return
@@ -181,19 +180,6 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     # make uniqueId the index
     dfCluTauJetPu.set_index('uniqueId',inplace=True)
 
-    # # one hot encode the eta phi position of the seed of the cluster
-    # OHEseedEtaPhi = pd.get_dummies(dfCluTauJetPu[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
-
-    # if len(OHEseedEtaPhi.columns) < 107:
-    #     for i in range(1,36):
-    #         if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
-    #             OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
-    #             print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
-    #     for i in range(1,73):
-    #         if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
-    #             OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
-    #             print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
-
     # make the input tensors for the neural network
     X1L = []
     X2L = []
@@ -207,7 +193,6 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
         if len(dfCluTauJetPu.cl_towerHad.loc[idx]) != N*M: continue
 
         # features of the Dense NN
-        # x2 = OHEseedEtaPhi.loc[idx].to_numpy()
         x2l = []
         x2l.append(dfCluTauJetPu.cl_seedEta.loc[idx])
         x2l.append(dfCluTauJetPu.cl_seedPhi.loc[idx])
@@ -246,7 +231,7 @@ def TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJet
     np.savez_compressed(saveTensTo['targetsIdentifier'], Y)
 
 
-def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
+def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0 or len(dfFlatGenTaus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -305,19 +290,6 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     # make uniqueId the index
     dfCluTau.set_index('uniqueId',inplace=True)
 
-    # # one hot encode the eta phi position of the seed of the cluster
-    # OHEseedEtaPhi = pd.get_dummies(dfCluTau[['cl_absSeedIeta', 'cl_seedIphi']], columns=['cl_absSeedIeta', 'cl_seedIphi'])
-
-    # if len(OHEseedEtaPhi.columns) < 107:
-    #     for i in range(1,36):
-    #         if 'cl_absSeedIeta_'+str(i) not in OHEseedEtaPhi:
-    #             OHEseedEtaPhi['cl_absSeedIeta_'+str(i)] = 0
-    #             print('adding ieta_'+str(i)+' column to OHEseedEtaPhi')
-    #     for i in range(1,73):
-    #         if 'cl_seedIphi_'+str(i) not in OHEseedEtaPhi:
-    #             OHEseedEtaPhi['cl_seedIphi_'+str(i)] = 0
-    #             print('adding iphi_'+str(i)+' column to OHEseedEtaPhi')
-
     # make the input tensors for the neural network
     X1L = []
     X2L = []
@@ -331,7 +303,6 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
         if len(dfCluTau.cl_towerHad.loc[idx]) != N*M: continue
 
         # features of the Dense NN
-        # x2 = OHEseedEtaPhi.loc[idx].to_numpy()
         x2l = []
         x2l.append(dfCluTau.cl_seedEta.loc[idx])
         x2l.append(dfCluTau.cl_seedPhi.loc[idx])
@@ -373,6 +344,168 @@ def TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, 
     np.savez_compressed(saveTensTo['targetsCalibrator'], Y)
 
 
+def TensorizeForCl3dRate(dfFlatHGClus, uEtacut, lEtacut):
+    if len(dfFlatHGClus) == 0:
+        print('** WARNING : no data to be tensorized for calibration here')
+        return
+
+    dfHGClus = dfFlatHGClus.copy(deep=True)
+
+    # Apply cut on tau eta
+    if uEtacut:
+        dfHGClus = dfHGClus[abs(dfHGClus['cl3d_eta']) <= float(uEtacut)]
+    if lEtacut:
+        dfHGClus = dfHGClus[abs(dfHGClus['cl3d_eta']) >= float(lEtacut)]
+
+    # save unique identifier
+    dfHGClus['uniqueId'] = dfHGClus['event'].astype(str)+'_'+dfHGClus.index.astype(str)
+
+    # shuffle the rows so that no possible order gets learned
+    dfHGClus = dfHGClus.sample(frac=1).copy(deep=True)
+
+    # make uniqueId the index
+    # dfHGClus.set_index('uniqueId',inplace=True)
+
+    # save .pkl file with formatted datasets
+    dfHGClus.to_pickle(saveTensTo['inputsRateBDT'])
+
+
+def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut):
+    if len(dfFlatHGClus) == 0:
+        print('** WARNING : no data to be tensorized for identification here')
+        return
+
+    dfGenTaus = dfFlatGenTaus.copy(deep=True)
+    dfGenJets = dfFlatGenJets.copy(deep=True)
+    dfHGClus = dfFlatHGClus.copy(deep=True)
+
+    # Select only hadronic taus
+    dfGenTaus = dfGenTaus[dfGenTaus['tau_DM'] >= 0]
+
+    # Apply cut on jet pt
+    if uJetPtCut:
+        dfGenJets = dfGenJets[dfGenJets['jet_pt'] <= float(uJetPtCut)]
+    if lJetPtCut:
+        dfGenJets = dfGenJets[dfGenJets['jet_pt'] >= float(lJetPtCut)]
+
+    # Apply cut on tau pt
+    if uTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] <= float(uTauPtCut)]
+    if lTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] >= float(lTauPtCut)]
+
+    # Apply cut on tau eta
+    if uEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) <= float(uEtacut)]
+        dfGenJets = dfGenJets[abs(dfGenJets['jet_eta']) <= float(uEtacut)]
+        dfHGClus  = dfHGClus[abs(dfHGClus['cl3d_eta']) <= float(uEtacut)]
+    if lEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) >= float(lEtacut)]
+        dfGenJets = dfGenJets[abs(dfGenJets['jet_eta']) >= float(lEtacut)]
+        dfHGClus  = dfHGClus[abs(dfHGClus['cl3d_eta']) >= float(lEtacut)]
+
+    # save unique identifier
+    dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
+    dfGenJets['uniqueId'] = 'jet_'+dfGenJets['event'].astype(str)+'_'+dfGenJets['jet_Idx'].astype(str)
+    dfCluPU  = dfHGClus[(dfHGClus['cl3d_tauMatchIdx']==-99) & (dfHGClus['cl3d_jetMatchIdx']==-99)].copy(deep=True)
+    dfCluPU['uniqueId'] = 'pu_'+dfCluPU['event'].astype(str)+'_'+dfCluPU.index.astype(str)
+
+    # join the taus and the clusters datasets -> this creates all the possible combination of clusters and jets/taus for each event
+    # important that dfHGClus is joined to dfGen* and not viceversa --> this because dfGen* contains the safe jets to be used and the safe event numbers
+    dfGenTaus.set_index('event', inplace=True)
+    dfGenJets.set_index('event', inplace=True)
+    dfHGClus.set_index('event', inplace=True)
+    dfCluTau = dfGenTaus.join(dfHGClus, on='event', how='left', rsuffix='_joined', sort=False)
+    dfCluJet = dfGenJets.join(dfHGClus, on='event', how='left', rsuffix='_joined', sort=False)
+
+    # remove NaN entries due to missing tau/jet-clu matches
+    dfCluTau.dropna(axis=0, how='any', inplace=True)
+    dfCluJet.dropna(axis=0, how='any', inplace=True)
+
+    # split dataframes between signal, qcd and pu
+    dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl3d_tauMatchIdx']]
+    dfCluJet = dfCluJet[dfCluJet['jet_Idx'] == dfCluJet['cl3d_jetMatchIdx']]
+    dfCluPU = dfCluPU.copy(deep=True)
+
+    # put ID label for signal and backgorund
+    dfCluTau['targetId'] = 1
+    dfCluJet['targetId'] = 0
+    dfCluPU['targetId']  = 0
+
+    # shuffle the rows so that no possible order gets learned
+    dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
+    dfCluJet = dfCluJet.sample(frac=1).copy(deep=True)
+    dfCluPU  = dfCluPU.sample(frac=1).copy(deep=True)
+
+    # get roughly the same amount of signal ad background to have a more balanced dataset
+    if dfCluTau.shape[0] != 0:
+        dfCluJet = dfCluJet.head(dfCluTau.shape[0])
+        dfCluPU  = dfCluPU.head(dfCluTau.shape[0])
+
+    # concatenate and shuffle
+    dfCluTauJetPu = pd.concat([dfCluTau, dfCluJet, dfCluPU], axis=0)
+    dfCluTauJetPu  = dfCluTauJetPu.sample(frac=1).copy(deep=True)
+
+    # make uniqueId the index
+    # dfCluTauJetPu.set_index('uniqueId',inplace=True)
+
+    # save .pkl file with formatted datasets
+    dfCluTau.to_pickle(saveTensTo['inputsIdentifierBDT'])
+
+
+def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut):
+    if len(dfFlatHGClus) == 0 or len(dfFlatGenTaus) == 0:
+        print('** WARNING : no data to be tensorized for calibration here')
+        return
+
+    dfGenTaus = dfFlatGenTaus.copy(deep=True)
+    dfHGClus  = dfFlatHGClus.copy(deep=True)
+
+    # Select only hadronic taus
+    dfGenTaus = dfGenTaus[dfGenTaus['tau_DM'] >= 0]
+
+    # Apply cut on tau pt
+    if uTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] <= float(uTauPtCut)]
+    if lTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] >= float(lTauPtCut)]
+
+    # Apply cut on tau eta
+    if uEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) <= float(uEtacut)]
+        dfHGClus  = dfHGClus[abs(dfHGClus['cl3d_eta']) <= float(uEtacut)]
+    if lEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) >= float(lEtacut)]
+        dfHGClus  = dfHGClus[abs(dfHGClus['cl3d_eta']) >= float(lEtacut)]
+
+    # save unique identifier
+    dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
+
+    # keep only the clusters that are matched to a tau
+    dfHGClus = dfHGClus[dfHGClus['cl3d_tauMatchIdx'] >= 0]
+
+    # join the taus and the clusters datasets -> this creates all the possible combination of clusters and taus for each event
+    # important that dfHGClus is joined to dfGenTaus and not viceversa --> this because dfGenTaus contains the safe jets to be used and the safe event numbers
+    dfGenTaus.set_index('event', inplace=True)
+    dfHGClus.set_index('event', inplace=True)
+    dfCluTau = dfGenTaus.join(dfHGClus, on='event', how='left', rsuffix='_joined', sort=False)
+
+    # remove NaN entries due to missing tau/jet-clu matches
+    dfCluTau.dropna(axis=0, how='any', inplace=True)
+
+    # keep only the good matches between taus and clusters
+    dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl3d_tauMatchIdx']]
+
+    # shuffle the rows so that no possible order gets learned
+    dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
+
+    # make uniqueId the index
+    # dfCluTau.set_index('uniqueId',inplace=True)
+
+    # save .pkl file with formatted datasets
+    dfCluTau.to_pickle(saveTensTo['inputsCalibratorBDT'])
+
+
 #######################################################################
 ######################### SCRIPT BODY #################################
 #######################################################################
@@ -384,6 +517,9 @@ if __name__ == "__main__" :
     parser.add_option("--infile",       dest="infile",                                                                               default=None)
     parser.add_option("--outdir",       dest="outdir",                                                                               default=None)
     parser.add_option('--caloClNxM',    dest='caloClNxM',    help='Which shape of CaloCluster to use?',                              default="9x9")
+    # INPUTS PREPARATION OPTIONS
+    parser.add_option('--doHGCAL',      dest='doHGCAL',      help='Do HGCAL inputs preparation?',               action='store_true', default=False)
+    parser.add_option('--doCALO',       dest='doCALO',       help='Do CALO inputs preparation?',                action='store_true', default=False)
     # TTREE READING OPTIONS
     parser.add_option('--doHH',         dest='doHH',         help='Read the HH samples?',                       action='store_true', default=False)
     parser.add_option('--doQCD',        dest='doQCD',        help='Read the QCD samples?',                      action='store_true', default=False)
@@ -444,6 +580,7 @@ if __name__ == "__main__" :
     else:
         arr_event  = TTree.arrays(branches_event)
         arr_clNxM  = TTree.arrays(branches_clNxM)
+        arr_cl3d   = TTree.arrays(branches_cl3d)
 
 
     ## DEBUG STUFF
@@ -480,26 +617,28 @@ if __name__ == "__main__" :
         #             print('    ** WARNING - EVT', evtN[i],'**    ->', len(ietas[i][j]), '    -> seedEta ', seedEtas[i][j], 'seedPhi', seedPhis[i][j])
         # print('*******************************************************')
 
-        if not options.doTens4Rate:
-            df_event  = pd.DataFrame(arr_event)
-            df_gentau = pd.DataFrame(arr_gentau)
-            df_genjet = pd.DataFrame(arr_genjet)
-            df_cl3d   = pd.DataFrame(arr_cl3d)
-            df_clNxM  = pd.DataFrame(arr_clNxM)
+    if not options.doTens4Rate:
+        df_event  = pd.DataFrame(arr_event)
+        df_gentau = pd.DataFrame(arr_gentau)
+        df_genjet = pd.DataFrame(arr_genjet)
+        df_cl3d   = pd.DataFrame(arr_cl3d)
+        df_clNxM  = pd.DataFrame(arr_clNxM)
 
-            dfHGClus  = pd.concat([df_event, df_cl3d], axis=1)
-            dfTowClus = pd.concat([df_event, df_clNxM], axis=1)
-            dfGenTaus = pd.concat([df_event, df_gentau], axis=1)
-            dfGenJets = pd.concat([df_event, df_genjet], axis=1)
-        
-        else:
-            df_event  = pd.DataFrame(arr_event)
-            df_clNxM  = pd.DataFrame(arr_clNxM)
+        dfHGClus  = pd.concat([df_event, df_cl3d], axis=1)
+        dfTowClus = pd.concat([df_event, df_clNxM], axis=1)
+        dfGenTaus = pd.concat([df_event, df_gentau], axis=1)
+        dfGenJets = pd.concat([df_event, df_genjet], axis=1)
+    
+    else:
+        df_event  = pd.DataFrame(arr_event)
+        df_clNxM  = pd.DataFrame(arr_clNxM)
+        df_cl3d   = pd.DataFrame(arr_cl3d)
 
-            dfTowClus = pd.concat([df_event, df_clNxM], axis=1)
+        dfHGClus  = pd.concat([df_event, df_cl3d], axis=1)
+        dfTowClus = pd.concat([df_event, df_clNxM], axis=1)
 
     ## uncomment for fast tests
-    # dfHGClus = dfHGClus.head(100).copy(deep=True)
+    dfHGClus = dfHGClus.head(100).copy(deep=True)
     dfTowClus = dfTowClus.head(100).copy(deep=True)
     # dfGenTaus = dfGenTaus.head(100).copy(deep=True)
     # dfGenJets = dfGenJets.head(100).copy(deep=True)
@@ -607,6 +746,31 @@ if __name__ == "__main__" :
             })
 
     else:
+        # flatten out the hgcal clusters dataframe
+        dfFlatHGClus = pd.DataFrame({
+            'event'                 : np.repeat(dfHGClus[b'EventNumber'].values, dfHGClus[b'cl3d_eta'].str.len()), # event IDs are copied to keep proper track of what is what
+            'cl3d_pt'               : list(chain.from_iterable(dfHGClus[b'cl3d_pt'])),
+            'cl3d_energy'           : list(chain.from_iterable(dfHGClus[b'cl3d_energy'])),
+            'cl3d_eta'              : list(chain.from_iterable(dfHGClus[b'cl3d_eta'])),
+            'cl3d_phi'              : list(chain.from_iterable(dfHGClus[b'cl3d_phi'])),
+            'cl3d_showerlength'     : list(chain.from_iterable(dfHGClus[b'cl3d_showerlength'])),
+            'cl3d_coreshowerlength' : list(chain.from_iterable(dfHGClus[b'cl3d_coreshowerlength'])),
+            'cl3d_firstlayer'       : list(chain.from_iterable(dfHGClus[b'cl3d_firstlayer'])),
+            'cl3d_seetot'           : list(chain.from_iterable(dfHGClus[b'cl3d_seetot'])),
+            'cl3d_seemax'           : list(chain.from_iterable(dfHGClus[b'cl3d_seemax'])),
+            'cl3d_spptot'           : list(chain.from_iterable(dfHGClus[b'cl3d_spptot'])),
+            'cl3d_sppmax'           : list(chain.from_iterable(dfHGClus[b'cl3d_sppmax'])),
+            'cl3d_szz'              : list(chain.from_iterable(dfHGClus[b'cl3d_szz'])),
+            'cl3d_srrtot'           : list(chain.from_iterable(dfHGClus[b'cl3d_srrtot'])),
+            'cl3d_srrmax'           : list(chain.from_iterable(dfHGClus[b'cl3d_srrmax'])),
+            'cl3d_srrmean'          : list(chain.from_iterable(dfHGClus[b'cl3d_srrmean'])),
+            'cl3d_hoe'              : list(chain.from_iterable(dfHGClus[b'cl3d_hoe'])),
+            'cl3d_meanz'            : list(chain.from_iterable(dfHGClus[b'cl3d_meanz'])),
+            'cl3d_quality'          : list(chain.from_iterable(dfHGClus[b'cl3d_quality'])),
+            'cl3d_tauMatchIdx'      : list(chain.from_iterable(dfHGClus[b'cl3d_tauMatchIdx'])),
+            'cl3d_jetMatchIdx'      : list(chain.from_iterable(dfHGClus[b'cl3d_jetMatchIdx']))
+            })
+
         bNxM = NxM.encode('utf-8')
         # flatten out the tower clusters dataframe
         dfFlatTowClus = pd.DataFrame({
@@ -630,6 +794,7 @@ if __name__ == "__main__" :
         dfFlatGenJets.to_pickle(saveDfsTo['GenJets']+options.infileTag+'.pkl')
     else:
         dfFlatTowClus.to_pickle(saveDfsTo['TowClus']+options.infileTag+'.pkl')
+        dfFlatHGClus.to_pickle(saveDfsTo['HGClus']+options.infileTag+'.pkl')
 
 
     ##################### TENSORIZE FOR NN ####################
@@ -654,19 +819,26 @@ if __name__ == "__main__" :
         'inputsRateDense'       : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Rate'+options.caloClNxM+options.infileTag+'.npz',
         'targetsCalibrator'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
         'targetsIdentifier'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsRate'           : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz'
+        'targetsRate'           : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        # -----------------------
+        'inputsCalibratorBDT'   : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Calibrator'+options.infileTag+'.pkl',
+        'inputsIdentifierBDT'   : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Identifier'+options.infileTag+'.pkl',
+        'inputsRateBDT'         : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl'
     }
 
     if options.doTens4Calib:
         print('** INFO : doing tensorization for calibration')
-        TensorizeForCalibration(dfFlatTowClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
-    
+        if options.doCALO:  TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
+        if options.doHGCAL: TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut)
+
     if options.doTens4Ident:
         print('** INFO : doing tensorization for identification')
-        TensorizeForIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
-    
+        if options.doCALO:  TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
+        if options.doHGCAL: TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut)
+
     if options.doTens4Rate:
         print('** INFO : doing tensorization for rate evaluation')
-        TensorizeForRate(dfFlatTowClus, options.uEtacut, options.lEtacut, options.caloClNxM)
+        if options.doCALO:  TensorizeForClNxMRate(dfFlatTowClus, options.uEtacut, options.lEtacut, options.caloClNxM)
+        if options.doHGCAL: TensorizeForCl3dRate(dfFlatHGClus, options.uEtacut, options.lEtacut)
 
     print('** INFO : ALL DONE!')

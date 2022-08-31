@@ -77,6 +77,13 @@ source /opt/exp_soft/cms/t3/t3setup
 # python MergerSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doTens4Calib --doVBFH --inTag _lTauPtCut20_uEtacut1.3 --outTag _lTauPtCut20_uEtacut1.3
 # python MergerSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doTens4Ident --doVBFH --inTag _lTauPtCut20_uEtacut1.3 --outTag _lTauPtCut20_uEtacut1.3
 
-python MergerSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doTens4Rate --doMinBias --inTag _uEtacut1.3 --outTag _uEtacut1.3
+# python MergerSubmitter.py --v 6 --date 2022_08_30 --caloClNxM 5x9 --doTens4Rate --doMinBias --inTag _uEtacut1.3 --outTag _uEtacut1.3
 
+# ------------------------------------------------------------------------------------------------------------------------
+
+python MergerSubmitter.py --v 7 --date 2022_08_31 --caloClNxM 5x9 --doCALO  --doTens4Calib --doVBFH --inTag _lTauPtCut18_uEtacut1.5 --outTag _lTauPtCut18_uEtacut1.5
+python MergerSubmitter.py --v 7 --date 2022_08_31 --caloClNxM 5x9 --doCALO  --doTens4Ident --doVBFH --inTag _lTauPtCut18            --outTag _lTauPtCut18
+
+python MergerSubmitter.py --v 7 --date 2022_08_31                 --doHGCAL --doTens4Calib --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
+python MergerSubmitter.py --v 7 --date 2022_08_31                 --doHGCAL --doTens4Ident --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
 
