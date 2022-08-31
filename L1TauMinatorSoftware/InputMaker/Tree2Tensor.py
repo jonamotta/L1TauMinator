@@ -425,7 +425,6 @@ def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, u
     # split dataframes between signal, qcd and pu
     dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl3d_tauMatchIdx']]
     dfCluJet = dfCluJet[dfCluJet['jet_Idx'] == dfCluJet['cl3d_jetMatchIdx']]
-    dfCluPU = dfCluPU.copy(deep=True)
 
     # put ID label for signal and backgorund
     dfCluTau['targetId'] = 1
@@ -440,7 +439,7 @@ def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, u
     # get roughly the same amount of signal ad background to have a more balanced dataset
     if dfCluTau.shape[0] != 0:
         dfCluJet = dfCluJet.head(dfCluTau.shape[0])
-        dfCluPU  = dfCluPU.head(dfCluTau.shape[0])
+        dfCluPU  = dfCluPU.head(dfCluTau.shape[0]*2)
 
     # concatenate and shuffle
     dfCluTauJetPu = pd.concat([dfCluTau, dfCluJet, dfCluPU], axis=0)
@@ -450,7 +449,7 @@ def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, u
     # dfCluTauJetPu.set_index('uniqueId',inplace=True)
 
     # save .pkl file with formatted datasets
-    dfCluTau.to_pickle(saveTensTo['inputsIdentifierBDT'])
+    dfCluTauJetPu.to_pickle(saveTensTo['inputsIdentifierBDT'])
 
 
 def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut):
