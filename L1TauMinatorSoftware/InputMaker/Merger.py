@@ -215,7 +215,7 @@ if __name__ == "__main__" :
             random.shuffle(mixer)
             X1sToConcatenate, X2sToConcatenate, YsToConcatenate = zip(*mixer)
 
-            dp = int(math.ceil(len(X1sToConcatenate)/5*4))
+            dp = int(math.ceil(len(X1sToConcatenate)/4*3))
 
             # concatenate batches in single tensors
             X1_train = np.concatenate(X1sToConcatenate[:dp])
@@ -236,7 +236,7 @@ if __name__ == "__main__" :
             print('shape Y_valid =', Y_valid.shape)
 
         if options.doHGCAL:
-            dp = int(math.ceil(len(XsToConcatenate)/5*4))
+            dp = int(math.ceil(len(XsToConcatenate)/4*3))
 
             # concatenate batches in single tensors
             X_train = pd.concat(XsToConcatenate[:dp], axis=0)
