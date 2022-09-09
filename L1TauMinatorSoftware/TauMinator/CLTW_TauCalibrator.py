@@ -16,6 +16,35 @@ import mplhep
 plt.style.use(mplhep.style.CMS)
 
 
+def inspectWeights(model):
+    allWeightsByLayer = {}
+    for layer in model.layers:
+        if (layer._name).find("batch")!=-1 or len(layer.get_weights())<1:
+            continue 
+        weights=layer.weights[0].numpy().flatten()
+        allWeightsByLayer[layer._name] = weights
+        print('Layer {}: % of zeros = {}'.format(layer._name,np.sum(weights==0)/np.size(weights)))
+
+    labelsW = []
+    histosW = []
+
+    for key in reversed(sorted(allWeightsByLayer.keys())):
+        labelsW.append(key)
+        histosW.append(allWeightsByLayer[key])
+
+    fig = plt.figure(figsize=(10,10))
+    bins = np.linspace(-0.4, 0.4, 50)
+    plt.hist(histosW,bins,histtype='step',stacked=True,label=labelsW)
+    plt.legend(frameon=False,loc='upper left', fontsize=16)
+    plt.ylabel('Recurrence')
+    plt.xlabel('Weight value')
+    plt.xlim(-0.7,0.5)
+    plt.yscale('log')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/modelSparsity.pdf')
+    plt.close()
+
+
 #######################################################################
 ######################### SCRIPT BODY #################################
 #######################################################################
@@ -64,70 +93,52 @@ if __name__ == "__main__" :
     #    - the custom loss targets the visPt of the tau
 
     # class Custom_LogRectifier(tf.keras.layers.Layer):
-    #     def __init__(self, num_outputs):
-    #         super(Custom_LogRectifier, self).__init__()
+    #     def __init__(self, num_outputs, n_coeff, name):
+    #         super(Custom_LogRectifier, self).__init__(name=name)
     #         self.num_outputs = num_outputs
+    #         self.n_coeff = n_coeff
 
     #     def build(self, input_shape):
-    #         self.k0 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
-    #         self.k1 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
-    #         self.k2 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
-    #         self.k3 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
-    #         self.k4 = self.add_weight(shape=[int(input_shape[-1]), self.num_outputs], initializer = 'random_uniform', trainable=True)
-
+    #         self.k = self.add_weight("kernel", shape=[self.n_coeff], initializer=RN(seed=7), trainable=False)
+            
     #     def call(self, inputs):
-    #         log = tf.math.log(inputs)
-    #         return self.k0 + self.k1*log + self.k2*tf.math.pow(log, 2) + self.k3*tf.math.pow(log, 3) +  self.k4*tf.math.pow(log, 4)
+    #         log = tf.math.log(tf.math.abs(inputs))
+    #         x = tf.math.pow(log, list(range(self.n_coeff)))
+    #         return tf.math.reduce_sum(self.k * x, axis=1, keepdims=True)
 
     if options.train:
         images = keras.Input(shape = (N, M, 3), name='TowerClusterImage')
         positions = keras.Input(shape = 2, name='TowerClusterPosition')
-        CNN = models.Sequential(name="CNNcalibrator")
-        DNN = models.Sequential(name="DNNcalibrator")
 
         wndw = (2,2)
         if N <  5 and M >= 5: wndw = (1,2)
         if N <  5 and M <  5: wndw = (1,1)
 
-        CNN.add( layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer1") )
-        CNN.add( layers.BatchNormalization(name='BNlayer1') )
-        CNN.add( layers.Activation('relu', name='reluCNNlayer1') )
-        CNN.add( layers.MaxPooling2D(wndw, name="CNNlayer2") )
-        CNN.add( layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer3") )
-        CNN.add( layers.BatchNormalization(name='BNlayer2') )
-        CNN.add( layers.Activation('relu', name='reluCNNlayer3') )
-        CNN.add( layers.Flatten(name="CNNflatened") )
-
-        DNN.add( layers.Dense(45, name="DNNlayer1") )
-        DNN.add( layers.Activation('relu', name='reluDNNlayer1') )
-        DNN.add( layers.Dense(16, name="DNNlayer2") )
-        DNN.add( layers.Activation('relu', name='reluDNNlayer2') )
-        DNN.add( layers.Dense(1, name="DNNout") )
-        # DNN.add( Custom_LogRectifier(1) )
-
-        CNNflatened = CNN(layers.Lambda(lambda x : x, name="CNNlayer0")(images))
-        middleMan = layers.Concatenate(axis=1, name='middleMan')([CNNflatened, positions])
-        TauCalibrated = DNN(layers.Lambda(lambda x : x, name="TauCalibrator")(middleMan))
+        x = images
+        x = layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer1")(x)
+        x = layers.BatchNormalization(name='BNlayer1')(x)
+        x = layers.Activation('relu', name='reluCNNlayer1')(x)
+        x = layers.MaxPooling2D(wndw, name="CNNlayer2")(x)
+        x = layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer3")(x)
+        x = layers.BatchNormalization(name='BNlayer2')(x)
+        x = layers.Activation('relu', name='reluCNNlayer3')(x)
+        x = layers.Flatten(name="CNNflatened")(x)
+        x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
+        x = layers.Dense(32, name="DNNlayer1")(x)
+        x = layers.Activation('relu', name='reluDNNlayer1')(x)
+        x = layers.Dense(16, name="DNNlayer2")(x)
+        x = layers.Activation('relu', name='reluDNNlayer2')(x)
+        x = layers.Dense(1, name="DNNout")(x)
+        TauCalibrated = x
 
         TauCalibratorModel = keras.Model([images, positions], TauCalibrated, name='TauCNNCalibrator')
-
-        def custom_loss(y_true, y_pred):
-            return tf.nn.l2_loss( (y_true - y_pred) / (y_true + 0.1) )
-
-        # tf.keras.losses.MeanSquaredError()              # loss = square(y_true - y_pred)
-        # tf.keras.losses.MeanAbsoluteError()             # loss = abs(y_true - y_pred)
-        # tf.keras.losses.MeanAbsolutePercentageError()   # loss = 100 * abs((y_true - y_pred) / y_true)
-        # tf.keras.losses.MeanSquaredLogarithmicError()   # loss = square(log(y_true + 1.) - log(y_pred + 1.))
 
         TauCalibratorModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
                                    loss=tf.keras.losses.MeanAbsolutePercentageError(),
                                    metrics=['RootMeanSquaredError'],
                                    run_eagerly=True)
 
-
         # print(TauCalibrated)
-        # print(CNN.summary())
-        # print(DNN.summary())
         # print(TauCalibratorModel.summary())
         # exit()
 
@@ -149,38 +160,6 @@ if __name__ == "__main__" :
             mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
             plt.savefig(outdir+'/TauCNNCalibrator_plots/'+metric+'.pdf')
             plt.close()
-
-        w = TauCalibratorModel.layers[2].weights[0].numpy()
-        h, b = np.histogram(w, bins=100)
-        props = dict(boxstyle='square', facecolor='white', edgecolor='black')
-        textstr1 = '\n'.join((r'% of zeros = {}'.format(np.sum(w==0)/np.size(w))))
-        plt.figure(figsize=(10,10))
-        plt.bar(b[:-1], h, width=b[1]-b[0])
-        # plt.text(w.min()+0.01, h.max()-1, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        # plt.legend(loc = 'upper left')
-        plt.grid(linestyle=':')
-        plt.yscale('log')
-        plt.xlabel('Weight value')
-        plt.ylabel('Recurrence')
-        mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(outdir+'/TauCNNCalibrator_plots/CNN_sparsity.pdf')
-        plt.close()
-
-        w = TauCalibratorModel.layers[6].weights[0].numpy()
-        h, b = np.histogram(w, bins=100)
-        props = dict(boxstyle='square', facecolor='white', edgecolor='black')
-        textstr1 = '\n'.join((r'% of zeros = {}'.format(np.sum(w==0)/np.size(w))))
-        plt.figure(figsize=(10,10))
-        plt.bar(b[:-1], h, width=b[1]-b[0])
-        # plt.text(w.min()+0.01, h.max()-1, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        # plt.legend(loc = 'upper left')
-        plt.grid(linestyle=':')
-        plt.yscale('log')
-        plt.xlabel('Weight value')
-        plt.ylabel('Recurrence')
-        mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(outdir+'/TauCNNCalibrator_plots/DNN_sparsity.pdf')
-        plt.close()
 
     else:
         TauCalibratorModel = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag+'/TauCNNCalibrator', compile=False)
@@ -210,6 +189,8 @@ if __name__ == "__main__" :
     dfValid['gen_eta']    = Y_valid[:,1].ravel()
     dfValid['gen_phi']    = Y_valid[:,2].ravel()
     dfValid['gen_dm']     = Y_valid[:,3].ravel()
+
+    inspectWeights(TauCalibratorModel)
 
     # PLOTS INCLUSIVE
     plt.figure(figsize=(10,10))

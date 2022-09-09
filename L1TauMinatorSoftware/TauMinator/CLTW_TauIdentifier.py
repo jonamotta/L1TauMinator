@@ -16,6 +16,35 @@ import mplhep
 plt.style.use(mplhep.style.CMS)
 
 
+def inspectWeights(model):
+    allWeightsByLayer = {}
+    for layer in model.layers:
+        if (layer._name).find("batch")!=-1 or len(layer.get_weights())<1:
+            continue 
+        weights=layer.weights[0].numpy().flatten()
+        allWeightsByLayer[layer._name] = weights
+        print('Layer {}: % of zeros = {}'.format(layer._name,np.sum(weights==0)/np.size(weights)))
+
+    labelsW = []
+    histosW = []
+
+    for key in reversed(sorted(allWeightsByLayer.keys())):
+        labelsW.append(key)
+        histosW.append(allWeightsByLayer[key])
+
+    fig = plt.figure(figsize=(10,10))
+    bins = np.linspace(-0.4, 0.4, 50)
+    plt.hist(histosW,bins,histtype='step',stacked=True,label=labelsW)
+    plt.legend(frameon=False,loc='upper left', fontsize=16)
+    plt.ylabel('Recurrence')
+    plt.xlabel('Weight value')
+    plt.xlim(-0.7,0.5)
+    plt.yscale('log')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauCNNIdentifier_plots/modelSparsity.pdf')
+    plt.close()
+
+
 #######################################################################
 ######################### SCRIPT BODY #################################
 #######################################################################
@@ -65,32 +94,28 @@ if __name__ == "__main__" :
     if options.train:
         images = keras.Input(shape = (N, M, 3), name='TowerClusterImage')
         positions = keras.Input(shape = 2, name='TowerClusterPosition')
-        CNN = models.Sequential(name="CNNidentifier")
-        DNN = models.Sequential(name="DNNidentifier")
 
         wndw = (2,2)
         if N <  5 and M >= 5: wndw = (1,2)
         if N <  5 and M <  5: wndw = (1,1)
 
-        CNN.add( layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer1") )
-        CNN.add( layers.BatchNormalization(name='BNlayer1') )
-        CNN.add( layers.Activation('relu', name='reluCNNlayer1') )
-        CNN.add( layers.MaxPooling2D(wndw, name="CNNlayer2") )
-        CNN.add( layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer3") )
-        CNN.add( layers.BatchNormalization(name='BNlayer2') )
-        CNN.add( layers.Activation('relu', name='reluCNNlayer3') )
-        CNN.add( layers.Flatten(name="CNNflatened") )    
-
-        DNN.add( layers.Dense(32, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="DNNlayer1") )
-        DNN.add( layers.Activation('relu', name='reluDNNlayer1') )
-        DNN.add( layers.Dense(16, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="DNNlayer2") )
-        DNN.add( layers.Activation('relu', name='reluDNNlayer2') )
-        DNN.add( layers.Dense(1, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="DNNout") )
-        DNN.add( layers.Activation('sigmoid', name='sigmoidDNNout') )
-
-        CNNflatened = CNN(layers.Lambda(lambda x : x, name="CNNlayer0")(images))
-        middleMan = layers.Concatenate(axis=1, name='middleMan')([CNNflatened, positions])
-        TauIdentified = DNN(layers.Lambda(lambda x : x, name="TauIdentifier")(middleMan))
+        x = images
+        x = layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer1")(x)
+        x = layers.BatchNormalization(name='BNlayer1')(x)
+        x = layers.Activation('relu', name='reluCNNlayer1')(x)
+        x = layers.MaxPooling2D(wndw, name="CNNlayer2")(x)
+        x = layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer3")(x)
+        x = layers.BatchNormalization(name='BNlayer2')(x)
+        x = layers.Activation('relu', name='reluCNNlayer3')(x)
+        x = layers.Flatten(name="CNNflatened")(x)
+        x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
+        x = layers.Dense(32, name="DNNlayer1")(x)
+        x = layers.Activation('relu', name='reluDNNlayer1')(x)
+        x = layers.Dense(16, name="DNNlayer2")(x)
+        x = layers.Activation('relu', name='reluDNNlayer2')(x)
+        x = layers.Dense(1, name="DNNout")(x)
+        x = layers.Activation('sigmoid', name='sigmoidDNNout')(x)
+        TauIdentified = x
 
         TauIdentifierModel = keras.Model([images, positions], TauIdentified, name='TauCNNIdentifier')
 
@@ -99,6 +124,10 @@ if __name__ == "__main__" :
                                    loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
                                    metrics=metrics2follow,
                                    run_eagerly=True)
+
+        # print(TauCalibrated)
+        # print(TauCalibratorModel.summary())
+        # exit()
 
         ############################## Model training ##############################
 
@@ -119,38 +148,6 @@ if __name__ == "__main__" :
             plt.savefig(outdir+'/TauCNNIdentifier_plots/'+metric+'.pdf')
             plt.close()
 
-        w = TauIdentifierModel.layers[2].weights[0].numpy()
-        h, b = np.histogram(w, bins=100)
-        props = dict(boxstyle='square', facecolor='white', edgecolor='black')
-        textstr1 = '\n'.join((r'% of zeros = {}'.format(np.sum(w==0)/np.size(w))))
-        plt.figure(figsize=(10,10))
-        plt.bar(b[:-1], h, width=b[1]-b[0])
-        # plt.text(w.min()+0.01, h.max()-1, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        # plt.legend(loc = 'upper left')
-        plt.grid(linestyle=':')
-        plt.yscale('log')
-        plt.xlabel('Weight value')
-        plt.ylabel('Recurrence')
-        mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(outdir+'/TauCNNIdentifier_plots/CNN_sparsity.pdf')
-        plt.close()
-
-        w = TauIdentifierModel.layers[6].weights[0].numpy()
-        h, b = np.histogram(w, bins=100)
-        props = dict(boxstyle='square', facecolor='white', edgecolor='black')
-        textstr1 = '\n'.join((r'% of zeros = {}'.format(np.sum(w==0)/np.size(w))))
-        plt.figure(figsize=(10,10))
-        plt.bar(b[:-1], h, width=b[1]-b[0])
-        # plt.text(w.min()+0.01, h.max()-1, textstr1, fontsize=14, verticalalignment='top',  bbox=props)
-        # plt.legend(loc = 'upper left')
-        plt.grid(linestyle=':')
-        plt.yscale('log')
-        plt.xlabel('Weight value')
-        plt.ylabel('Recurrence')
-        mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(outdir+'/TauCNNIdentifier_plots/DNN_sparsity.pdf')
-        plt.close()
-
     else:
         TauIdentifierModel = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauCNNIdentifier', compile=False)
 
@@ -167,6 +164,8 @@ if __name__ == "__main__" :
     valid_ident = TauIdentifierModel.predict([X1_valid, X2_valid])
     FPRvalid, TPRvalid, THRvalid = metrics.roc_curve(Y_valid, valid_ident)
     AUCvalid = metrics.roc_auc_score(Y_valid, valid_ident)
+
+    inspectWeights(TauIdentifierModel)
 
     plt.figure(figsize=(10,10))
     plt.plot(TPRtrain, FPRtrain, label='Training ROC, AUC = %.3f' % (AUCtrain),   color='blue',lw=2)
