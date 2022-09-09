@@ -322,6 +322,7 @@ def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPt
         yl.append(dfCluTau.tau_visEta.loc[idx])
         yl.append(dfCluTau.tau_visPhi.loc[idx])
         yl.append(dfCluTau.tau_DM.loc[idx])
+        yl.append(dfCluTau.event.loc[idx])
         y = np.array(yl)
 
         # inputs to the NN
