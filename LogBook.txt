@@ -78,9 +78,13 @@
     * CNN calibration standard in the barrel
     * BDT calibration standard in the endcap
     * pruning is now operational 
-        * calibrator good gives results with 50% of zeros, a bitless good with 75%
-        * identifier good gives results with 50% of zeros
+        * calibrator good gives results with 50%/60% of zeros, a bitless good with 75%
+        * identifier good gives results with 50%/75% of zeros (will try to push it the furthest possible)
 
+2022_09_10_v8
+    * restructuring of the input/output folders to improve workability
+    * first try to go up to the full eta coverage TauMinator algo (use event-eta-pt to match taus between CNN and BDT)
+    
 
 
 

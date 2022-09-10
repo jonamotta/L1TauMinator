@@ -63,9 +63,9 @@ def TensorizeForClNxMRate(dfFlatTowClus, uEtacut, lEtacut, NxM):
         
         # "targets" of the NN
         yl = []
-        yl.append(dfTowClus.event.loc[idx])
         yl.append(dfTowClus.cl_seedEta.loc[idx])
         yl.append(dfTowClus.cl_seedPhi.loc[idx])
+        yl.append(dfTowClus.event.loc[idx])
         y = np.array(yl)
 
         # inputs to the NN
@@ -288,7 +288,8 @@ def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPt
     dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
 
     # make uniqueId the index
-    dfCluTau.set_index('uniqueId',inplace=True)
+    dfCluTau.reset_index(inplace=True)
+    dfCluTau.set_index('uniqueId', inplace=True)
 
     # make the input tensors for the neural network
     X1L = []
