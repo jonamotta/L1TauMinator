@@ -7,6 +7,7 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import shap
+import sys
 import os
 
 np.random.seed(7)
@@ -96,7 +97,7 @@ if __name__ == "__main__" :
 
     X1 = np.load(indir+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
     X2 = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
-    Y = np.load(indir+'/Y'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
+    Y = np.load(indir+'/Y_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
 
 
     ############################## Model definition ##############################
@@ -185,9 +186,9 @@ if __name__ == "__main__" :
 
     ############################## Model validation ##############################
 
-    X1_valid = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/X_Calib_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    X2_valid = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/X_Calib_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    Y_valid  = np.load('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/Y_Calib_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X1_valid = np.load(indir+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X2_valid = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    Y_valid  = np.load(indir+'/Y_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
 
     train_calib = TauCalibratorModel.predict([X1, X2])
     valid_calib = TauCalibratorModel.predict([X1_valid, X2_valid])

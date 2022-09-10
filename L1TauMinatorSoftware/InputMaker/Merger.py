@@ -269,11 +269,11 @@ if __name__ == "__main__" :
         if options.doCALO:
             np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz', X1_train)
             np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz', X2_train)
-            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/Y'+options.caloClNxM+'_forCalibrator.npz', Y_train)
+            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/Y_'+options.caloClNxM+'_forCalibrator.npz', Y_train)
 
-            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/X_Calib_CNN_'+options.caloClNxM+'_forEvaluator.npz', X1_valid)
-            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/X_Calib_Dense_'+options.caloClNxM+'_forEvaluator.npz', X2_valid)
-            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/Y_Calib_'+options.caloClNxM+'_forEvaluator.npz', Y_valid)
+            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz', X1_valid)
+            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz', X2_valid)
+            np.savez_compressed(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.outTag+'/Y_'+options.caloClNxM+'_forEvaluator.npz', Y_valid)
 
         if options.doHGCAL:
             X_train.to_pickle(indir+'/TauBDTCalibratorTraining'+options.outTag+'/X_Calib_BDT_forCalibrator.pkl')
@@ -283,11 +283,11 @@ if __name__ == "__main__" :
         if options.doCALO:
             np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/X_CNN_'+options.caloClNxM+'_forIdentifier.npz', X1_train)
             np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz', X2_train)
-            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/Y'+options.caloClNxM+'_forIdentifier.npz', Y_train)
+            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/Y_'+options.caloClNxM+'_forIdentifier.npz', Y_train)
 
-            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/X_Ident_CNN_'+options.caloClNxM+'_forEvaluator.npz', X1_valid)
-            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/X_Ident_Dense_'+options.caloClNxM+'_forEvaluator.npz', X2_valid)
-            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/Y_Ident_'+options.caloClNxM+'_forEvaluator.npz', Y_valid)
+            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz', X1_valid)
+            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz', X2_valid)
+            np.savez_compressed(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.outTag+'/Y_'+options.caloClNxM+'_forEvaluator.npz', Y_valid)
 
         if options.doHGCAL:
             X_train.to_pickle(indir+'/TauBDTIdentifierTraining'+options.outTag+'/X_Ident_BDT_forIdentifier.pkl')

@@ -171,7 +171,7 @@ if __name__ == "__main__" :
 
     ############################## Model validation ##############################
 
-    dfVal = pd.read_pickle('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauBDTEvaluator'+options.inTag+'/X_Calib_BDT_forEvaluator.pkl')
+    dfVal = pd.read_pickle(indir+'/X_Calib_BDT_forEvaluator.pkl')
     dfVal['cl3d_abseta'] = abs(dfVal['cl3d_eta']).copy(deep=True)
     for i in range(len(features)): dfVal[featuresN[i]] = dfVal[features[i]].copy(deep=True)
 

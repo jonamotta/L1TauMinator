@@ -53,10 +53,13 @@ def sigmoid(x , a, x0, k):
 
 if __name__ == "__main__" :
     parser = OptionParser()
-    parser.add_option("--v",            dest="v",                                 default=None)
-    parser.add_option("--date",         dest="date",                              default=None)
-    parser.add_option("--inTag",        dest="inTag",                             default="")
-    parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="9x9")
+    parser.add_option("--v",             dest="v",                default=None)
+    parser.add_option("--date",          dest="date",             default=None)
+    parser.add_option("--inTagCalib",    dest="inTagCalib",       default="")
+    parser.add_option("--CalibSparsity", dest="CalibSparsity", default=None)
+    parser.add_option("--inTagIdent",    dest="inTagIdent",       default="")
+    parser.add_option("--IdentSparsity", dest="IdentSparsity", default=None)
+    parser.add_option('--caloClNxM',     dest='caloClNxM',        default="5x9")
     (options, args) = parser.parse_args()
     print(options)
 
@@ -65,17 +68,37 @@ if __name__ == "__main__" :
     M = int(options.caloClNxM.split('x')[1])
 
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
+    outdir = indir+'/TauCNNEvaluator'+options.caloClNxM
 
-    TauCalibratorModel = keras.models.load_model(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag+'/TauCNNCalibrator', compile=False)
-    TauIdentifierModel = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauCNNIdentifier', compile=False)
+    if options.CalibSparsity:
+        TauCalibratorModel = keras.models.load_model(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/TauCNNCalibrator'+options.CalibSparsity+'Pruned', compile=False)
+        outdir += '_Calib'+options.inTagCalib+'_'+options.CalibSparsity+'Pruned'
+    else:
+        TauCalibratorModel = keras.models.load_model(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/TauCNNCalibrator', compile=False)
+        outdir += '_Calib'+options.inTagCalib
+    
+    if options.IdentSparsity:
+        TauIdentifierModel = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagIdent+'/TauCNNIdentifier'+options.IdentSparsity+'Pruned', compile=False)
+        outdir += '_Ident'+options.inTagIdent+'_'+options.IdentSparsity+'Pruned'
+    else:
+        TauIdentifierModel = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagIdent+'/TauCNNIdentifier', compile=False)
+        outdir += '_Ident'+options.inTagIdent
+    
+    os.system('mkdir -p '+outdir+'/plots')
 
-    X1_calib = np.load(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/X_Calib_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    X2_calib = np.load(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/X_Calib_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    Y_calib  = np.load(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/Y_Calib_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X1_calib1 = np.load(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X2_calib1 = np.load(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    Y_calib1  = np.load(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/Y_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X1_calib2 = np.load(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
+    X2_calib2 = np.load(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
+    Y_calib2  = np.load(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/Y_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
+    X1_calib  = np.concatenate([X1_calib1, X1_calib2])
+    X2_calib  = np.concatenate([X2_calib1, X2_calib2])
+    Y_calib  = np.concatenate([Y_calib1, Y_calib2])
 
-    X1_ident = np.load(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/X_Ident_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    X2_ident = np.load(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/X_Ident_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    Y_ident  = np.load(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/Y_Ident_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X1_ident = np.load(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagIdent+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X2_ident = np.load(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagIdent+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    Y_ident  = np.load(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagIdent+'/Y_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
 
     Xidentified = TauIdentifierModel.predict([X1_ident, X2_ident])
     FPR, TPR, THR = metrics.roc_curve(Y_ident, Xidentified)
@@ -89,7 +112,7 @@ if __name__ == "__main__" :
         'wp90' : WP90
     }
 
-    save_obj(wp_dict, indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/TauMinatorCNN_WPs.pkl')
+    save_obj(wp_dict, outdir+'/TauMinatorCNN_WPs.pkl')
 
     df = pd.DataFrame()
     df['gen_pt' ] = Y_calib[:,0].ravel()
@@ -103,8 +126,7 @@ if __name__ == "__main__" :
     df['pass90']  = df['score'] > WP90
 
     df['gen_pt_bin'] = pd.cut(df['gen_pt'],
-                              bins=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 2000],
-                              # bins=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 200, 500, 1000, 2000],
+                              bins=[15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 200, 500],
                               labels=False,
                               include_lowest=True)
 
@@ -119,13 +141,9 @@ if __name__ == "__main__" :
     df_dm11 = df[(df['gen_dm'] == 11) | (df['gen_dm'] == 12)].copy(deep=True)
 
     cmap = matplotlib.cm.get_cmap('tab20c'); i=0
-    # pt_bins_centers = np.arange(2.5,157.5,5)
-    pt_bins_centers = np.arange(22.5,157.5,5)
-    # pt_bins_centers = [22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5, 67.5, 72.5, 77.5, 82.5, 87.5, 92.5, 97.5, 102.5, 107.5, 112.5, 117.5, 122.5, 127.5, 132.5, 137.5, 142.5, 147.5, 175, 350, 750, 1500]
+    pt_bins_centers = [17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5, 67.5, 72.5, 77.5, 82.5, 87.5, 92.5, 97.5, 102.5, 107.5, 112.5, 117.5, 122.5, 127.5, 132.5, 137.5, 142.5, 147.5, 175, 350]
     eta_bins_centers = [-3.25, -2.85, -2.55, -2.25, -1.95, -1.65, -1.4025, -1.1525, -0.825, -0.495, -0.165, 0.165, 0.495, 0.825, 1.1525, 1.4025, 1.65, 1.95, 2.25, 2.55, 2.85, 3.25]
-    # online_thresholds = range(1, 175, 1)
     online_thresholds = range(20, 175, 1)
-    # plotting_thresholds = range(10, 110, 10)
     plotting_thresholds = range(20, 110, 10)
     turnons_dm_dict = {}
     turnons_dict = {}
@@ -247,7 +265,7 @@ if __name__ == "__main__" :
         # for eff in grouped: efficiency.append([eff[0], eff[1], eff[2]])
         # etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'] = np.array(efficiency)
 
-    save_obj(mapping_dict, indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/online2offline_mapping.pkl')
+    save_obj(mapping_dict, outdir+'/online2offline_mapping.pkl')
 
 
     ##################################################################################
@@ -273,7 +291,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/turnons_WP99.pdf')
+    plt.savefig(outdir+'/plots/turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -297,7 +315,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/turnons_WP95.pdf')
+    plt.savefig(outdir+'/plots/turnons_WP95.pdf')
     plt.close()
 
     i = 0
@@ -321,7 +339,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/turnons_WP90.pdf')
+    plt.savefig(outdir+'/plots/turnons_WP90.pdf')
     plt.close()
 
 
@@ -337,7 +355,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 110)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/online2offline_WP99.pdf')
+    plt.savefig(outdir+'/plots/online2offline_WP99.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -350,7 +368,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 110)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/online2offline_WP95.pdf')
+    plt.savefig(outdir+'/plots/online2offline_WP95.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -363,7 +381,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 110)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/online2offline_WP90.pdf')
+    plt.savefig(outdir+'/plots/online2offline_WP90.pdf')
     plt.close()
 
 
@@ -389,7 +407,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/dm0_turnons_WP99.pdf')
+    plt.savefig(outdir+'/plots/dm0_turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -412,7 +430,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/dm1_turnons_WP99.pdf')
+    plt.savefig(outdir+'/plots/dm1_turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -435,7 +453,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/dm10_turnons_WP99.pdf')
+    plt.savefig(outdir+'/plots/dm10_turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -458,7 +476,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/dm11_turnons_WP99.pdf')
+    plt.savefig(outdir+'/plots/dm11_turnons_WP99.pdf')
     plt.close()
 
 
@@ -479,7 +497,7 @@ if __name__ == "__main__" :
     # plt.ylabel(r'Efficiency')
     # plt.grid()
     # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/turnons_WP99.pdf')
+    # plt.savefig(outdir+'/plots/turnons_WP99.pdf')
     # plt.close()
 
     # i = 0
@@ -497,7 +515,7 @@ if __name__ == "__main__" :
     # plt.ylabel(r'Efficiency')
     # plt.grid()
     # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/turnons_WP95.pdf')
+    # plt.savefig(outdir+'/plots/turnons_WP95.pdf')
     # plt.close()
 
     # i = 0
@@ -515,5 +533,5 @@ if __name__ == "__main__" :
     # plt.ylabel(r'Efficiency')
     # plt.grid()
     # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(indir+'/TauCNNEvaluator'+options.caloClNxM+options.inTag+'/turnons_WP90.pdf')
+    # plt.savefig(outdir+'/plots/turnons_WP90.pdf')
     # plt.close()
