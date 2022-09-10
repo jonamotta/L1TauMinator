@@ -33,7 +33,6 @@ if __name__ == "__main__" :
     parser.add_option("--v",            dest="v",                              default=None)
     parser.add_option("--date",         dest="date",                           default=None)
     parser.add_option("--inTag",        dest="inTag",                          default="")
-    parser.add_option('--caloClNxM',    dest='caloClNxM',                      default="9x9")
     parser.add_option('--train',        dest='train',     action='store_true', default=False)
     (options, args) = parser.parse_args()
     print(options)

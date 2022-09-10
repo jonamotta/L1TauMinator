@@ -30,31 +30,32 @@ def splitInBlocks (l, n):
 
 parser = OptionParser()
 # GENERAL OPTIONS
-parser.add_option("--v",            dest="v",            help="Version of the iteration",                                        default=None)
-parser.add_option("--date",         dest="date",         help="Date of birth of this version",                                   default=None)
-parser.add_option('--caloClNxM',    dest='caloClNxM',    help='Which shape of CaloCluster to use?',                              default="5x9")
+parser.add_option("--v",              dest="v",            help="Version of the iteration",                                        default=None)
+parser.add_option("--date",           dest="date",         help="Date of birth of this version",                                   default=None)
+parser.add_option('--caloClNxM',      dest='caloClNxM',    help='Which shape of CaloCluster to use?',                              default="5x9")
 # INPUTS PREPARATION OPTIONS
-parser.add_option('--doHGCAL',      dest='doHGCAL',      help='Do HGCAL inputs preparation?',               action='store_true', default=False)
-parser.add_option('--doCALO',       dest='doCALO',       help='Do CALO inputs preparation?',                action='store_true', default=False)
+parser.add_option('--doHGCAL',        dest='doHGCAL',      help='Do HGCAL inputs preparation?',               action='store_true', default=False)
+parser.add_option('--doCALO',         dest='doCALO',       help='Do CALO inputs preparation?',                action='store_true', default=False)
 # TTREE READING OPTIONS
-parser.add_option('--doHH',         dest='doHH',         help='Read the HH samples?',                       action='store_true', default=False)
-parser.add_option('--doQCD',        dest='doQCD',        help='Read the QCD samples?',                      action='store_true', default=False)
-parser.add_option('--doVBFH',       dest='doVBFH',       help='Read the VBF H samples?',                    action='store_true', default=False)
-parser.add_option('--doMinBias',    dest='doMinBias',    help='Read the Minbias samples?',                  action='store_true', default=False)
-parser.add_option('--doZp500',      dest='doZp500',      help='Read the Zp500 samples?',                    action='store_true', default=False)
-parser.add_option('--doZp1500',     dest='doZp1500',     help='Read the Zp1500 samples?',                   action='store_true', default=False)
-parser.add_option('--doTestRun',    dest='doTestRun',    help='Do test run with reduced number of events?', action='store_true', default=False)
+parser.add_option('--doHH',           dest='doHH',         help='Read the HH samples?',                       action='store_true', default=False)
+parser.add_option('--doQCD',          dest='doQCD',        help='Read the QCD samples?',                      action='store_true', default=False)
+parser.add_option('--doVBFH',         dest='doVBFH',       help='Read the VBF H samples?',                    action='store_true', default=False)
+parser.add_option('--doMinBias',      dest='doMinBias',    help='Read the Minbias samples?',                  action='store_true', default=False)
+parser.add_option('--doZp500',        dest='doZp500',      help='Read the Zp500 samples?',                    action='store_true', default=False)
+parser.add_option('--doZp1500',       dest='doZp1500',     help='Read the Zp1500 samples?',                   action='store_true', default=False)
+parser.add_option('--doTestRun',      dest='doTestRun',    help='Do test run with reduced number of events?', action='store_true', default=False)
 # TENSORIZATION OPTIONS
-parser.add_option("--outTag",       dest="outTag",                            default="")
-parser.add_option("--uJetPtCut",    dest="uJetPtCut",                         default=None)
-parser.add_option("--lJetPtCut",    dest="lJetPtCut",                         default=None)
-parser.add_option("--uTauPtCut",    dest="uTauPtCut",                         default=None)
-parser.add_option("--lTauPtCut",    dest="lTauPtCut",                         default=None)
-parser.add_option("--uEtacut",      dest="uEtacut",                           default=None)
-parser.add_option("--lEtacut",      dest="lEtacut",                           default=None)
-parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
-parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
-parser.add_option('--doTens4Rate', dest='doTens4Rate', action='store_true', default=False)
+parser.add_option("--outTag",         dest="outTag",                              default="")
+parser.add_option("--uJetPtCut",      dest="uJetPtCut",                           default=None)
+parser.add_option("--lJetPtCut",      dest="lJetPtCut",                           default=None)
+parser.add_option("--uTauPtCut",      dest="uTauPtCut",                           default=None)
+parser.add_option("--lTauPtCut",      dest="lTauPtCut",                           default=None)
+parser.add_option("--uEtacut",        dest="uEtacut",                             default=None)
+parser.add_option("--lEtacut",        dest="lEtacut",                             default=None)
+parser.add_option('--doTens4Calib',   dest='doTens4Calib',   action='store_true', default=False)
+parser.add_option('--doTens4Ident',   dest='doTens4Ident',   action='store_true', default=False)
+parser.add_option('--doTens4Minator', dest='doTens4Minator', action='store_true', default=False)
+parser.add_option('--doTens4Rate',    dest='doTens4Rate',    action='store_true', default=False)
 (options, args) = parser.parse_args()
 
 if not options.date or not options.v:
@@ -62,12 +63,12 @@ if not options.date or not options.v:
     print('** EXITING')
     exit()
 
-if not options.doHGCAL and not options.doCALO:
+if not options.doHGCAL and not options.doCALO and not options.doTens4Minator:
     print('** ERROR : no detector need specified')
     print('** EXITING')
     exit()
 
-if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Rate:
+if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Minator and not options.doTens4Rate:
     print('** ERROR : no tensorization need specified')
     print('** EXITING')
     exit()
@@ -128,8 +129,9 @@ else:
     if options.uEtacut   : outTag += '_uEtacut'+options.uEtacut
     if options.lEtacut   : outTag += '_lEtacut'+options.lEtacut
 
-if options.doCALO:  jobsdir = outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/jobs/jobs_'+options.caloClNxM+outTag
-if options.doHGCAL: jobsdir = outdir+'/PickledInputs'+outTag+'/jobs/jobs'+outTag
+if options.doCALO:         jobsdir = outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/jobs/jobs_'+options.caloClNxM+outTag
+if options.doHGCAL:        jobsdir = outdir+'/PickledInputs'+outTag+'/jobs/jobs'+outTag
+if options.doTens4Minator: jobsdir = outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/jobs/jobs'+outTag
 os.system('mkdir -p '+jobsdir)
 
 # list Ntuples
@@ -165,16 +167,17 @@ for i, infile in enumerate(InFiles[:]):
     if options.doTestRun: cmsRun += ' --doTestRun'
     # TENSORIZATION OPTIONS
     cmsRun += ' --infileTag ' + tag
-    if outTag != "":         cmsRun += ' --outTag '    + outTag
-    if options.uJetPtCut:    cmsRun += ' --uJetPtCut ' + options.uJetPtCut
-    if options.lJetPtCut:    cmsRun += ' --lJetPtCut ' + options.lJetPtCut
-    if options.uTauPtCut:    cmsRun += ' --uTauPtCut ' + options.uTauPtCut
-    if options.lTauPtCut:    cmsRun += ' --lTauPtCut ' + options.lTauPtCut
-    if options.uEtacut:      cmsRun += ' --uEtacut '   + options.uEtacut
-    if options.lEtacut:      cmsRun += ' --lEtacut '   + options.lEtacut
-    if options.doTens4Calib: cmsRun += ' --doTens4Calib'
-    if options.doTens4Ident: cmsRun += ' --doTens4Ident'
-    if options.doTens4Rate: cmsRun += ' --doTens4Rate'
+    if outTag != "":           cmsRun += ' --outTag '    + outTag
+    if options.uJetPtCut:      cmsRun += ' --uJetPtCut ' + options.uJetPtCut
+    if options.lJetPtCut:      cmsRun += ' --lJetPtCut ' + options.lJetPtCut
+    if options.uTauPtCut:      cmsRun += ' --uTauPtCut ' + options.uTauPtCut
+    if options.lTauPtCut:      cmsRun += ' --lTauPtCut ' + options.lTauPtCut
+    if options.uEtacut:        cmsRun += ' --uEtacut '   + options.uEtacut
+    if options.lEtacut:        cmsRun += ' --lEtacut '   + options.lEtacut
+    if options.doTens4Calib:   cmsRun += ' --doTens4Calib'
+    if options.doTens4Ident:   cmsRun += ' --doTens4Ident'
+    if options.doTens4Minator: cmsRun += ' --doTens4Minator'
+    if options.doTens4Rate:    cmsRun += ' --doTens4Rate'
     cmsRun += ' >& ' + outLogName
 
     skimjob = open(outJobName, 'w')

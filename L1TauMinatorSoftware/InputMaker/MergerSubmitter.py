@@ -30,23 +30,24 @@ def splitInBlocks (l, n):
 
 # read the batched input tensors to the NN and merge them
 parser = OptionParser()
-parser.add_option("--v",            dest="v",                                 default=None)
-parser.add_option("--date",         dest="date",                              default=None)
-parser.add_option("--inTag",        dest="inTag",                             default="")
-parser.add_option("--outTag",       dest="outTag",                            default="")
-parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="9x9")
-parser.add_option('--doHGCAL',      dest='doHGCAL',      action='store_true', default=False)
-parser.add_option('--doCALO',       dest='doCALO',       action='store_true', default=False)
-parser.add_option('--doHH',         dest='doHH',         action='store_true', default=False)
-parser.add_option('--doQCD',        dest='doQCD',        action='store_true', default=False)
-parser.add_option('--doVBFH',       dest='doVBFH',       action='store_true', default=False)
-parser.add_option('--doMinBias',    dest='doMinBias',    action='store_true', default=False)
-parser.add_option('--doZp500',      dest='doZp500',      action='store_true', default=False)
-parser.add_option('--doZp1500',     dest='doZp1500',     action='store_true', default=False)
-parser.add_option('--doTestRun',    dest='doTestRun',    action='store_true', default=False)
-parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
-parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
-parser.add_option('--doTens4Rate',  dest='doTens4Rate',  action='store_true', default=False)
+parser.add_option("--v",              dest="v",                                   default=None)
+parser.add_option("--date",           dest="date",                                default=None)
+parser.add_option("--inTag",          dest="inTag",                               default="")
+parser.add_option("--outTag",         dest="outTag",                              default="")
+parser.add_option('--caloClNxM',      dest='caloClNxM',                           default="5x9")
+parser.add_option('--doHGCAL',        dest='doHGCAL',        action='store_true', default=False)
+parser.add_option('--doCALO',         dest='doCALO',         action='store_true', default=False)
+parser.add_option('--doHH',           dest='doHH',           action='store_true', default=False)
+parser.add_option('--doQCD',          dest='doQCD',          action='store_true', default=False)
+parser.add_option('--doVBFH',         dest='doVBFH',         action='store_true', default=False)
+parser.add_option('--doMinBias',      dest='doMinBias',      action='store_true', default=False)
+parser.add_option('--doZp500',        dest='doZp500',        action='store_true', default=False)
+parser.add_option('--doZp1500',       dest='doZp1500',       action='store_true', default=False)
+parser.add_option('--doTestRun',      dest='doTestRun',      action='store_true', default=False)
+parser.add_option('--doTens4Calib',   dest='doTens4Calib',   action='store_true', default=False)
+parser.add_option('--doTens4Ident',   dest='doTens4Ident',   action='store_true', default=False)
+parser.add_option('--doTens4Minator', dest='doTens4Minator', action='store_true', default=False)
+parser.add_option('--doTens4Rate',    dest='doTens4Rate',  action='store_true', default=False)
 (options, args) = parser.parse_args()
 
 if not options.date or not options.v:
@@ -54,12 +55,12 @@ if not options.date or not options.v:
     print('** EXITING')
     exit()
 
-if not options.doHGCAL and not options.doCALO:
+if not options.doHGCAL and not options.doCALO and not options.doTens4Minator:
     print('** ERROR : no detector need specified')
     print('** EXITING')
     exit()
 
-if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Rate:
+if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Minator and not options.doTens4Rate:
     print('** ERROR : no merging need specified')
     print('** EXITING')
     exit()
@@ -80,7 +81,9 @@ if options.doCALO:
     if options.doTens4Calib: jobsdir += '/TauCNNCalibrator'+options.caloClNxM+'Training'
     if options.doTens4Ident: jobsdir += '/TauCNNIdentifier'+options.caloClNxM+'Training'
 
-if options.doTens4Rate:  jobsdir += 'TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'
+if options.doTens4Rate:  jobsdir += '/TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'
+
+if options.doTens4Minator: jobsdir += '/TauMinatorInputs_'+options.caloClNxM
 
 jobsdir += options.outTag+'/jobs'
 os.system('mkdir -p '+jobsdir)
@@ -94,18 +97,19 @@ cmsRun += ' --date '+options.date
 cmsRun += ' --inTag '+options.inTag
 cmsRun += ' --outTag '+options.outTag
 cmsRun += ' --caloClNxM '+options.caloClNxM
-if options.doHGCAL       : cmsRun += ' --doHGCAL'
-if options.doCALO        : cmsRun += ' --doCALO'
-if options.doHH          : cmsRun += ' --doHH'
-if options.doQCD         : cmsRun += ' --doQCD'
-if options.doVBFH        : cmsRun += ' --doVBFH'
-if options.doMinBias     : cmsRun += ' --doMinBias'
-if options.doZp500       : cmsRun += ' --doZp500'
-if options.doZp1500      : cmsRun += ' --doZp1500'
-if options.doTestRun     : cmsRun += ' --doTestRun'
-if options.doTens4Calib  : cmsRun += ' --doTens4Calib'
-if options.doTens4Ident  : cmsRun += ' --doTens4Ident'
-if options.doTens4Rate   : cmsRun += ' --doTens4Rate'
+if options.doHGCAL         : cmsRun += ' --doHGCAL'
+if options.doCALO          : cmsRun += ' --doCALO'
+if options.doHH            : cmsRun += ' --doHH'
+if options.doQCD           : cmsRun += ' --doQCD'
+if options.doVBFH          : cmsRun += ' --doVBFH'
+if options.doMinBias       : cmsRun += ' --doMinBias'
+if options.doZp500         : cmsRun += ' --doZp500'
+if options.doZp1500        : cmsRun += ' --doZp1500'
+if options.doTestRun       : cmsRun += ' --doTestRun'
+if options.doTens4Calib    : cmsRun += ' --doTens4Calib'
+if options.doTens4Ident    : cmsRun += ' --doTens4Ident'
+if options.doTens4Minator  : cmsRun += ' --doTens4Minator'
+if options.doTens4Rate     : cmsRun += ' --doTens4Rate'
 cmsRun += ' >& ' + outLogName
 
 skimjob = open(outJobName, 'w')

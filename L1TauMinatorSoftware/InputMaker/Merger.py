@@ -14,23 +14,24 @@ if __name__ == "__main__" :
 
     # read the batched input tensors to the NN and merge them
     parser = OptionParser()
-    parser.add_option("--v",            dest="v",                                 default=None)
-    parser.add_option("--date",         dest="date",                              default=None)
-    parser.add_option("--inTag",        dest="inTag",                             default="")
-    parser.add_option("--outTag",       dest="outTag",                            default="")
-    parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="5x9")
-    parser.add_option('--doHGCAL',      dest='doHGCAL',      action='store_true', default=False)
-    parser.add_option('--doCALO',       dest='doCALO',       action='store_true', default=False)
-    parser.add_option('--doHH',         dest='doHH',         action='store_true', default=False)
-    parser.add_option('--doQCD',        dest='doQCD',        action='store_true', default=False)
-    parser.add_option('--doVBFH',       dest='doVBFH',       action='store_true', default=False)
-    parser.add_option('--doMinBias',    dest='doMinBias',    action='store_true', default=False)
-    parser.add_option('--doZp500',      dest='doZp500',      action='store_true', default=False)
-    parser.add_option('--doZp1500',     dest='doZp1500',     action='store_true', default=False)
-    parser.add_option('--doTestRun',    dest='doTestRun',    action='store_true', default=False)
-    parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
-    parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
-    parser.add_option('--doTens4Rate',  dest='doTens4Rate',  action='store_true', default=False)
+    parser.add_option("--v",              dest="v",                                   default=None)
+    parser.add_option("--date",           dest="date",                                default=None)
+    parser.add_option("--inTag",          dest="inTag",                               default="")
+    parser.add_option("--outTag",         dest="outTag",                              default="")
+    parser.add_option('--caloClNxM',      dest='caloClNxM',                           default="5x9")
+    parser.add_option('--doHGCAL',        dest='doHGCAL',        action='store_true', default=False)
+    parser.add_option('--doCALO',         dest='doCALO',         action='store_true', default=False)
+    parser.add_option('--doHH',           dest='doHH',           action='store_true', default=False)
+    parser.add_option('--doQCD',          dest='doQCD',          action='store_true', default=False)
+    parser.add_option('--doVBFH',         dest='doVBFH',         action='store_true', default=False)
+    parser.add_option('--doMinBias',      dest='doMinBias',      action='store_true', default=False)
+    parser.add_option('--doZp500',        dest='doZp500',        action='store_true', default=False)
+    parser.add_option('--doZp1500',       dest='doZp1500',       action='store_true', default=False)
+    parser.add_option('--doTestRun',      dest='doTestRun',      action='store_true', default=False)
+    parser.add_option('--doTens4Calib',   dest='doTens4Calib',   action='store_true', default=False)
+    parser.add_option('--doTens4Ident',   dest='doTens4Ident',   action='store_true', default=False)
+    parser.add_option('--doTens4Minator', dest='doTens4Minator', action='store_true', default=False)
+    parser.add_option('--doTens4Rate',    dest='doTens4Rate',    action='store_true', default=False)
     (options, args) = parser.parse_args()
 
 
@@ -41,16 +42,20 @@ if __name__ == "__main__" :
     taglists = []
 
     if options.doCALO:
-        if options.doTens4Calib: splitter = 'X_CNN_Calibrator'
-        if options.doTens4Ident: splitter = 'X_CNN_Identifier'
-        if options.doTens4Rate:  splitter = 'X_CNN_Rate'
+        if options.doTens4Calib:   splitter = 'X_CNN_Calibrator'
+        if options.doTens4Ident:   splitter = 'X_CNN_Identifier'
+        if options.doTens4Rate:    splitter = 'X_CNN_Rate'
+        if options.doTens4Minator: splitter = 'X_CNN_Minator'
         tensorsFolder = '/TensorizedInputs_'+options.caloClNxM+options.inTag
 
     if options.doHGCAL:
-        if options.doTens4Calib: splitter = 'X_BDT_Calibrator'
-        if options.doTens4Ident: splitter = 'X_BDT_Identifier'
-        if options.doTens4Rate:  splitter = 'X_BDT_Rate'
+        if options.doTens4Calib:   splitter = 'X_BDT_Calibrator'
+        if options.doTens4Ident:   splitter = 'X_BDT_Identifier'
+        if options.doTens4Rate:    splitter = 'X_BDT_Rate'
+        if options.doTens4Minator: splitter = 'X_BDT_Minator'
         tensorsFolder = '/PickledInputs'+options.inTag
+
+    if options.doTens4Minator: tensorsFolder = '/MinatorInputs_'+options.caloClNxM+options.inTag
 
     if options.doHH:
         tmp = indir+'/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches/'+tensorsFolder
@@ -147,10 +152,15 @@ if __name__ == "__main__" :
         'targetsCalibrator'      : '/Y_Calibrator'+options.caloClNxM,
         'targetsIdentifier'      : '/Y_Identifier'+options.caloClNxM,
         'targetsRate'            : '/Y_Rate'+options.caloClNxM,
-        # -----------------------
+        # ---------------------------------------------------------------------
         'inputsCalibratorBDT'    : '/X_BDT_Calibrator',
         'inputsIdentifierBDT'    : '/X_BDT_Identifier',
-        'inputsRateBDT'          : '/X_BDT_Rate'
+        'inputsRateBDT'          : '/X_BDT_Rate',
+        # ---------------------------------------------------------------------
+        'inputsMinatorCNN'      : '/X_CNN_Minator'+options.caloClNxM,
+        'inputsMinatorDense'    : '/X_Dense_Minator'+options.caloClNxM,
+        'targetsMinator'        : '/Y_Minator'+options.caloClNxM,
+        'inputsMinatorBDT'      : '/X_BDT_Minator',
     }
 
     X1sToConcatenate = []
@@ -189,6 +199,13 @@ if __name__ == "__main__" :
                     if options.doHGCAL:
                         XsToConcatenate.append(pd.read_pickle(indirs[i_fold]+readFrom['inputsIdentifierBDT']+tag+'.pkl'))
 
+                elif options.doTens4Minator:
+                    if options.doCALO:
+                        X1sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsMinatorCNN']+tag+'.npz', allow_pickle=True)['arr_0'])
+                        X2sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsMinatorDense']+tag+'.npz', allow_pickle=True)['arr_0'])
+                        YsToConcatenate.append(np.load(indirs[i_fold]+readFrom['targetsMinator']+tag+'.npz', allow_pickle=True)['arr_0'])
+                    if options.doHGCAL:
+                        XsToConcatenate.append(pd.read_pickle(indirs[i_fold]+readFrom['inputsMinatorBDT']+tag+'.pkl'))
 
                 elif options.doTens4Rate:
                     if options.doCALO:
@@ -201,7 +218,7 @@ if __name__ == "__main__" :
 
             except FileNotFoundError:
                 # DEBUG
-                print('** INFO: towers'+tag+' not found --> skipping')
+                print('** INFO: '+tag+' not found --> skipping')
                 continue
 
             # uncomment if you wnat to have a smaller dataset tha the full one
@@ -245,6 +262,23 @@ if __name__ == "__main__" :
             ## DEBUG
             print('shape X_train =', X_train.shape)
             print('shape X_valid =', X_valid.shape)
+
+    elif options.doTens4Minator:
+        if options.doCALO:
+            X1 = np.concatenate(X1sToConcatenate)
+            X2 = np.concatenate(X2sToConcatenate)
+            Y  = np.concatenate(YsToConcatenate)
+
+            ## DEBUG
+            print('shape X1 =', X1.shape)
+            print('shape X2 =', X2.shape)
+            print('shape Y =', Y.shape)
+        
+        if options.doHGCAL:
+            X  = pd.concat(XsToConcatenate, axis=0)
+
+            ## DEBUG
+            print('shape X =', X.shape)
 
     else:
         if options.doCALO:
@@ -292,6 +326,15 @@ if __name__ == "__main__" :
         if options.doHGCAL:
             X_train.to_pickle(indir+'/TauBDTIdentifierTraining'+options.outTag+'/X_Ident_BDT_forIdentifier.pkl')
             X_valid.to_pickle(indir+'/TauBDTIdentifierTraining'+options.outTag+'/X_Ident_BDT_forEvaluator.pkl')
+
+    elif options.doTens4Minator:
+        if options.doCALO:
+            np.savez_compressed(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/X_CNN_'+options.caloClNxM+'.npz', X1_train)
+            np.savez_compressed(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/X_Dense_'+options.caloClNxM+'.npz', X2_train)
+            np.savez_compressed(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/Y_'+options.caloClNxM+'.npz', Y_train)
+
+        if options.doHGCAL:
+            X_train.to_pickle(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/X_BDT.pkl')
 
     elif options.doTens4Rate:
         if options.doCALO:

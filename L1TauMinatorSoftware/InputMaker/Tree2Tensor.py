@@ -239,7 +239,7 @@ def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPt
     dfGenTaus = dfFlatGenTaus.copy(deep=True)
     dfTowClus = dfFlatTowClus.copy(deep=True)
 
-    # compute absolute eta of teh seeds
+    # compute absolute eta of the seeds
     dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta']).astype(int)
 
     # get clusters' shape dimensions
@@ -366,7 +366,7 @@ def TensorizeForCl3dRate(dfFlatHGClus, uEtacut, lEtacut):
     dfHGClus = dfHGClus.sample(frac=1).copy(deep=True)
 
     # make uniqueId the index
-    # dfHGClus.set_index('uniqueId',inplace=True)
+    dfHGClus.set_index('uniqueId',inplace=True)
 
     # save .pkl file with formatted datasets
     dfHGClus.to_pickle(saveTensTo['inputsRateBDT'])
@@ -448,7 +448,7 @@ def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, u
     dfCluTauJetPu  = dfCluTauJetPu.sample(frac=1).copy(deep=True)
 
     # make uniqueId the index
-    # dfCluTauJetPu.set_index('uniqueId',inplace=True)
+    dfCluTauJetPu.set_index('uniqueId',inplace=True)
 
     # save .pkl file with formatted datasets
     dfCluTauJetPu.to_pickle(saveTensTo['inputsIdentifierBDT'])
@@ -502,11 +502,129 @@ def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCu
 
     # make uniqueId the index
     dfCluTau.reset_index(inplace=True)
-    # dfCluTau.set_index('uniqueId',inplace=True)
+    dfCluTau.set_index('uniqueId',inplace=True)
 
     # save .pkl file with formatted datasets
     dfCluTau.to_pickle(saveTensTo['inputsCalibratorBDT'])
 
+
+def TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut,  NxM):
+    if len(dfFlatTowClus) == 0 or len(dfFlatHGClus) == 0 or len(dfFlatGenTaus) == 0:
+        print('** WARNING : no data to be tensorized for calibration here')
+        return
+
+    dfGenTaus = dfFlatGenTaus.copy(deep=True)
+    dfTowClus = dfFlatTowClus.copy(deep=True)
+    dfHGClus  = dfFlatHGClus.copy(deep=True)
+
+    # compute absolute eta of the seeds
+    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta']).astype(int)
+
+    # get clusters' shape dimensions
+    N = int(NxM.split('x')[0])
+    M = int(NxM.split('x')[1])
+
+    # Apply cut on tau pt
+    if uTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] <= float(uTauPtCut)]
+    if lTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] >= float(lTauPtCut)]
+
+    # Apply cut on tau eta
+    if uEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) <= float(uEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) <= float(uEtacut)]
+        dfHGClus  = dfHGClus[abs(dfHGClus['cl3d_eta']) <= float(uEtacut)]
+    if lEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) >= float(lEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) >= float(lEtacut)]
+        dfHGClus  = dfHGClus[abs(dfHGClus['cl3d_eta']) >= float(lEtacut)]
+
+    # save unique identifier
+    dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
+
+    # keep only the clusters that are matched to a tau
+    dfTowClus = dfTowClus[dfTowClus['cl_tauMatchIdx'] >= 0]
+    dfHGClus = dfHGClus[dfHGClus['cl3d_tauMatchIdx'] >= 0]
+
+    # join the taus and the clusters datasets -> this creates all the possible combination of clusters and taus for each event
+    # important that dfHGClus is joined to dfGenTaus and not viceversa --> this because dfGenTaus contains the safe jets to be used and the safe event numbers
+    dfGenTaus.set_index('event', inplace=True)
+    dfTowClus.set_index('event', inplace=True)
+    dfHGClus.set_index('event', inplace=True)
+    dfCLTWTau = dfGenTaus.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
+    dfCL3DTau = dfGenTaus.join(dfHGClus, on='event', how='left', rsuffix='_joined', sort=False)
+
+    # remove NaN entries due to missing tau/jet-clu matches
+    dfCLTWTau.dropna(axis=0, how='any', inplace=True)
+    dfCL3DTau.dropna(axis=0, how='any', inplace=True)
+
+    # keep only the good matches between taus and clusters
+    dfCLTWTau = dfCLTWTau[dfCLTWTau['tau_Idx'] == dfCLTWTau['cl_tauMatchIdx']]
+    dfCL3DTau = dfCL3DTau[dfCL3DTau['tau_Idx'] == dfCL3DTau['cl3d_tauMatchIdx']]
+
+    # make uniqueId the index
+    dfCLTWTau.reset_index(inplace=True)
+    dfCL3DTau.reset_index(inplace=True)
+    dfCLTWTau.set_index('uniqueId',inplace=True)
+    dfCL3DTau.set_index('uniqueId',inplace=True)
+
+    # make the input tensors for the neural network
+    X1L = []
+    X2L = []
+    YL = []
+    for i, idx in enumerate(dfCLTWTau.index):
+        # progress
+        if i%100 == 0:
+            print(i/len(dfCLTWTau.index)*100, '%')
+
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfCLTWTau.cl_towerHad.loc[idx]) != N*M: continue
+
+        # features of the Dense NN
+        x2l = []
+        x2l.append(dfCLTWTau.cl_seedEta.loc[idx])
+        x2l.append(dfCLTWTau.cl_seedPhi.loc[idx])
+        x2 = np.array(x2l)
+
+        # features for the CNN
+        x1l = []
+        for j in range(N*M):
+            x1l.append(dfCLTWTau.cl_towerEgEt.loc[idx][j])
+            x1l.append(dfCLTWTau.cl_towerEm.loc[idx][j])
+            x1l.append(dfCLTWTau.cl_towerHad.loc[idx][j])
+        x1 = np.array(x1l).reshape(N,M,3)
+        
+        # targets of the NN
+        yl = []
+        yl.append(dfCLTWTau.tau_visPt.loc[idx])
+        yl.append(dfCLTWTau.tau_visEta.loc[idx])
+        yl.append(dfCLTWTau.tau_visPhi.loc[idx])
+        yl.append(dfCLTWTau.tau_DM.loc[idx])
+        yl.append(dfCLTWTau.event.loc[idx])
+        y = np.array(yl)
+
+        # inputs to the NN
+        X1L.append(x1)
+        X2L.append(x2)
+        YL.append(y)
+
+    # tensorize the lists
+    X1 = np.array(X1L)
+    X2 = np.array(X2L)
+    Y = np.array(YL)
+
+    print(X1.shape)
+    print(X2.shape)
+    print(Y.shape)
+
+    # save .npz files with tensor formatted datasets
+    np.savez_compressed(saveTensTo['inputsMinatorCNN'], X1)
+    np.savez_compressed(saveTensTo['inputsMinatorDense'], X2)
+    np.savez_compressed(saveTensTo['targetsMinator'], Y)
+
+    # save .pkl file with formatted datasets
+    dfCL3DTau.to_pickle(saveTensTo['inputsMinatorBDT'])
 
 #######################################################################
 ######################### SCRIPT BODY #################################
@@ -516,32 +634,33 @@ if __name__ == "__main__" :
 
     parser = OptionParser()
     # GENERAL OPTIONS
-    parser.add_option("--infile",       dest="infile",                                                                               default=None)
-    parser.add_option("--outdir",       dest="outdir",                                                                               default=None)
-    parser.add_option('--caloClNxM',    dest='caloClNxM',    help='Which shape of CaloCluster to use?',                              default="9x9")
+    parser.add_option("--infile",         dest="infile",                                                                               default=None)
+    parser.add_option("--outdir",         dest="outdir",                                                                               default=None)
+    parser.add_option('--caloClNxM',      dest='caloClNxM',    help='Which shape of CaloCluster to use?',                              default="5x9")
     # INPUTS PREPARATION OPTIONS
-    parser.add_option('--doHGCAL',      dest='doHGCAL',      help='Do HGCAL inputs preparation?',               action='store_true', default=False)
-    parser.add_option('--doCALO',       dest='doCALO',       help='Do CALO inputs preparation?',                action='store_true', default=False)
+    parser.add_option('--doHGCAL',        dest='doHGCAL',      help='Do HGCAL inputs preparation?',               action='store_true', default=False)
+    parser.add_option('--doCALO',         dest='doCALO',       help='Do CALO inputs preparation?',                action='store_true', default=False)
     # TTREE READING OPTIONS
-    parser.add_option('--doHH',         dest='doHH',         help='Read the HH samples?',                       action='store_true', default=False)
-    parser.add_option('--doQCD',        dest='doQCD',        help='Read the QCD samples?',                      action='store_true', default=False)
-    parser.add_option('--doVBFH',       dest='doVBFH',       help='Read the VBF H samples?',                    action='store_true', default=False)
-    parser.add_option('--doMinBias',    dest='doMinBias',    help='Read the Minbias samples?',                  action='store_true', default=False)
-    parser.add_option('--doZp500',      dest='doZp500',      help='Read the Minbias samples?',                  action='store_true', default=False)
-    parser.add_option('--doZp1500',     dest='doZp1500',     help='Read the Minbias samples?',                  action='store_true', default=False)
-    parser.add_option('--doTestRun',    dest='doTestRun',    help='Do test run with reduced number of events?', action='store_true', default=False)
+    parser.add_option('--doHH',           dest='doHH',         help='Read the HH samples?',                       action='store_true', default=False)
+    parser.add_option('--doQCD',          dest='doQCD',        help='Read the QCD samples?',                      action='store_true', default=False)
+    parser.add_option('--doVBFH',         dest='doVBFH',       help='Read the VBF H samples?',                    action='store_true', default=False)
+    parser.add_option('--doMinBias',      dest='doMinBias',    help='Read the Minbias samples?',                  action='store_true', default=False)
+    parser.add_option('--doZp500',        dest='doZp500',      help='Read the Minbias samples?',                  action='store_true', default=False)
+    parser.add_option('--doZp1500',       dest='doZp1500',     help='Read the Minbias samples?',                  action='store_true', default=False)
+    parser.add_option('--doTestRun',      dest='doTestRun',    help='Do test run with reduced number of events?', action='store_true', default=False)
     # TENSORIZATION OPTIONS
-    parser.add_option("--infileTag",    dest="infileTag",                         default=None)
-    parser.add_option("--outTag",       dest="outTag",                            default="")
-    parser.add_option("--uJetPtCut",    dest="uJetPtCut",                         default=None)
-    parser.add_option("--lJetPtCut",    dest="lJetPtCut",                         default=None)
-    parser.add_option("--uTauPtCut",    dest="uTauPtCut",                         default=None)
-    parser.add_option("--lTauPtCut",    dest="lTauPtCut",                         default=None)
-    parser.add_option("--uEtacut",      dest="uEtacut",                           default=None)
-    parser.add_option("--lEtacut",      dest="lEtacut",                           default=None)
-    parser.add_option('--doTens4Calib', dest='doTens4Calib', action='store_true', default=False)
-    parser.add_option('--doTens4Ident', dest='doTens4Ident', action='store_true', default=False)
-    parser.add_option('--doTens4Rate',  dest='doTens4Rate',  action='store_true', default=False)
+    parser.add_option("--infileTag",      dest="infileTag",                           default=None)
+    parser.add_option("--outTag",         dest="outTag",                              default="")
+    parser.add_option("--uJetPtCut",      dest="uJetPtCut",                           default=None)
+    parser.add_option("--lJetPtCut",      dest="lJetPtCut",                           default=None)
+    parser.add_option("--uTauPtCut",      dest="uTauPtCut",                           default=None)
+    parser.add_option("--lTauPtCut",      dest="lTauPtCut",                           default=None)
+    parser.add_option("--uEtacut",        dest="uEtacut",                             default=None)
+    parser.add_option("--lEtacut",        dest="lEtacut",                             default=None)
+    parser.add_option('--doTens4Calib',   dest='doTens4Calib',   action='store_true', default=False)
+    parser.add_option('--doTens4Ident',   dest='doTens4Ident',   action='store_true', default=False)
+    parser.add_option('--doTens4Minator', dest='doTens4Minator', action='store_true', default=False)
+    parser.add_option('--doTens4Rate',    dest='doTens4Rate',    action='store_true', default=False)
     (options, args) = parser.parse_args()
 
     print(options)
@@ -822,10 +941,15 @@ if __name__ == "__main__" :
         'targetsCalibrator'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
         'targetsIdentifier'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz',
         'targetsRate'           : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz',
-        # -----------------------
+        # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
         'inputsCalibratorBDT'   : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Calibrator'+options.infileTag+'.pkl',
         'inputsIdentifierBDT'   : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Identifier'+options.infileTag+'.pkl',
-        'inputsRateBDT'         : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl'
+        'inputsRateBDT'         : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl',
+        # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+        'inputsMinatorCNN'      : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/X_CNN_Minator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsMinatorDense'    : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/X_Dense_Minator'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsMinator'        : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/Y_Minator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsMinatorBDT'      : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/X_BDT_Minator'+options.infileTag+'.pkl',
     }
 
     if options.doTens4Calib:
@@ -837,6 +961,10 @@ if __name__ == "__main__" :
         print('** INFO : doing tensorization for identification')
         if options.doCALO:  TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
         if options.doHGCAL: TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut)
+
+    if options.doTens4Minator:
+        print('** INFO : doing tensorization for TauMinator performance evaluation')
+        TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
 
     if options.doTens4Rate:
         print('** INFO : doing tensorization for rate evaluation')
