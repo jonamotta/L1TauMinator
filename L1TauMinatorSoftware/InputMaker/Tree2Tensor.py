@@ -501,6 +501,7 @@ def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCu
     dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
 
     # make uniqueId the index
+    dfCluTau.reset_index(inplace=True)
     # dfCluTau.set_index('uniqueId',inplace=True)
 
     # save .pkl file with formatted datasets
