@@ -74,7 +74,7 @@ if __name__ == "__main__" :
 
     dfCalib1 = pd.read_pickle(indir+'/TauBDTCalibratorTraining'+options.inTagCalib+'/X_Calib_BDT_forEvaluator.pkl')
     dfCalib2 = pd.read_pickle(indir+'/TauBDTCalibratorTraining'+options.inTagCalib+'/X_Calib_BDT_forCalibrator.pkl')
-    dfCalib = pd.concat([dfCalib1, dfCalib2], axis=0, sort=False)
+    dfCalib  = pd.concat([dfCalib1, dfCalib2], axis=0, sort=False)
     dfCalib['cl3d_abseta'] = abs(dfCalib['cl3d_eta']).copy(deep=True)
 
     featuresCalib = ['cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_abseta', 'cl3d_spptot', 'cl3d_srrmean', 'cl3d_meanz']

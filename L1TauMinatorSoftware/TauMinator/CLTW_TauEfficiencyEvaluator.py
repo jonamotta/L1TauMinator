@@ -94,7 +94,7 @@ if __name__ == "__main__" :
     Y_calib2  = np.load(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCalib+'/Y_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
     X1_calib  = np.concatenate([X1_calib1, X1_calib2])
     X2_calib  = np.concatenate([X2_calib1, X2_calib2])
-    Y_calib  = np.concatenate([Y_calib1, Y_calib2])
+    Y_calib   = np.concatenate([Y_calib1, Y_calib2])
 
     X1_ident = np.load(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagIdent+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
     X2_ident = np.load(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagIdent+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
