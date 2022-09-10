@@ -15,6 +15,20 @@ import matplotlib.pyplot as plt
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
+class Logger(object):
+    def __init__(self,file):
+        self.terminal = sys.stdout
+        self.log = open(file, "w")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)  
+
+    def flush(self):
+        #this flush method is needed for python 3 compatibility.
+        #this handles the flush command by doing nothing.
+        #you might want to specify some extra behavior here.
+        pass
 
 def inspectWeights(model):
     allWeightsByLayer = {}
@@ -58,7 +72,6 @@ if __name__ == "__main__" :
     parser.add_option('--caloClNxM',    dest='caloClNxM',                      default="5x9")
     parser.add_option('--train',        dest='train',     action='store_true', default=False)
     (options, args) = parser.parse_args()
-    print(options)
 
     # get clusters' shape dimensions
     N = int(options.caloClNxM.split('x')[0])
@@ -69,6 +82,10 @@ if __name__ == "__main__" :
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNIdentifier_plots')
+
+    # set output to go both to terminal and to file
+    sys.stdout = Logger(outdir+'/TauCNNIdentifier_plots/training.log')
+    print(options)
 
     # X1 is (None, N, M, 3)
     #       N runs over eta, M runs over phi
@@ -225,3 +242,5 @@ if __name__ == "__main__" :
 #    plt.savefig(outdir+'/TauCNNIdentifier_plots/shap1.pdf')
 #    plt.close()
 
+# restore normal output
+sys.stdout = sys.__stdout__

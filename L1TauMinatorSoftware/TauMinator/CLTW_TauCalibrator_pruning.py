@@ -1,10 +1,7 @@
-import tensorflow_model_optimization as tfmot
-from tensorflow_model_optimization.sparsity import keras as sparsity
 from tensorflow_model_optimization.python.core.sparsity.keras import pruning_callbacks
-
-# from tensorflow_model_optimization.python.core.sparsity.keras import prune, pruning_schedule
-# from tensorflow_model_optimization.sparsity.keras import strip_pruning
+from tensorflow_model_optimization.sparsity import keras as sparsity
 from tensorflow.keras.initializers import RandomNormal as RN
+import tensorflow_model_optimization as tfmot
 from tensorflow.keras import layers, models
 from optparse import OptionParser
 import matplotlib.pyplot as plt
@@ -21,6 +18,20 @@ import matplotlib.pyplot as plt
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
+class Logger(object):
+    def __init__(self,file):
+        self.terminal = sys.stdout
+        self.log = open(file, "w")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)  
+
+    def flush(self):
+        #this flush method is needed for python 3 compatibility.
+        #this handles the flush command by doing nothing.
+        #you might want to specify some extra behavior here.
+        pass
 
 def inspectWeights(model, sparsityPerc):
     allWeightsByLayer = {}
@@ -48,7 +59,7 @@ def inspectWeights(model, sparsityPerc):
     plt.yscale('log')
     plt.figtext(0.65, 0.82, "{0}% of zeros".format(int(sparsityPerc*100)), wrap=True, horizontalalignment='left',verticalalignment='center', weight='semibold')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/modelSparsity.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/modelSparsity.pdf')
     plt.close()
 
 
@@ -63,10 +74,9 @@ if __name__ == "__main__" :
     parser.add_option("--date",         dest="date",                              default=None)
     parser.add_option("--inTag",        dest="inTag",                             default="")
     parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="5x9")
-    parser.add_option('--sparsity',     dest='sparsity',                          default=0.5)
+    parser.add_option('--sparsity',     dest='sparsity',     type=float,          default=0.5)
     parser.add_option('--train',        dest='train',        action='store_true', default=False)
     (options, args) = parser.parse_args()
-    print(options)
 
     # get clusters' shape dimensions
     N = int(options.caloClNxM.split('x')[0])
@@ -76,7 +86,12 @@ if __name__ == "__main__" :
 
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
-    os.system('mkdir -p '+outdir+'/TauCNNCalibratorPruning_plots')
+    sparsityTag = str(options.sparsity).split('.')[0]+'p'+str(options.sparsity).split('.')[1]
+    os.system('mkdir -p '+outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots')
+
+    # set output to go both to terminal and to file
+    sys.stdout = Logger(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/training.log')
+    print(options)
 
     # X1 is (None, N, M, 3)
     #       N runs over eta, M runs over phi
@@ -131,7 +146,7 @@ if __name__ == "__main__" :
 
         # Prune all convolutional and dense layers gradually from 0 to 50% sparsity every 2 epochs, ending by the 15th epoch
         batch_size = 1024
-        NSTEPS = int(X1.shape[0]*0.9)  // batch_size
+        NSTEPS = int(X1.shape[0]*0.8)  // batch_size
         def pruneFunction(layer):
             pruning_params = {'pruning_schedule': sparsity.PolynomialDecay(initial_sparsity = 0.0,
                                                                            final_sparsity = options.sparsity, 
@@ -159,9 +174,9 @@ if __name__ == "__main__" :
     
         ############################## Model training ##############################
 
-        history = TauCalibratorModelPruned.fit([X1, X2], Y[:,0].reshape(-1,1), epochs=20, batch_size=batch_size, verbose=1, validation_split=0.1, callbacks=callbacks)
+        history = TauCalibratorModelPruned.fit([X1, X2], Y[:,0].reshape(-1,1), epochs=20, batch_size=batch_size, verbose=1, validation_split=0.2, callbacks=callbacks)
 
-        TauCalibratorModelPruned.save(outdir + '/TauCNNCalibratorPruned')
+        TauCalibratorModelPruned.save(outdir + '/TauCNNCalibrator'+sparsityTag+'Pruned')
 
         for metric in history.history.keys():
             if 'val_' in metric: continue
@@ -173,11 +188,11 @@ if __name__ == "__main__" :
             if metric=='loss': plt.legend(loc='upper right')
             else:              plt.legend(loc='lower right')
             mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-            plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/'+metric+'.pdf')
+            plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/'+metric+'.pdf')
             plt.close()
 
     else:
-        TauCalibratorModelPruned = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag+'/TauCNNCalibratorPruned', compile=False)
+        TauCalibratorModelPruned = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag+'/TauCNNCalibrator'+sparsityTag+'Pruned', compile=False)
 
 
     ############################## Model validation ##############################
@@ -218,14 +233,14 @@ if __name__ == "__main__" :
     # PLOTS INCLUSIVE
     plt.figure(figsize=(10,10))
     plt.hist(dfValid['uncalib_pt']/dfValid['gen_pt'], bins=np.arange(0,5,0.1), label=r'Uncalibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['uncalib_pt']/dfValid['gen_pt']), np.std(dfValid['uncalib_pt']/dfValid['gen_pt'])),  color='red',  lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(dfTrain['calib_pt']/dfTrain['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Train. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['calib_pt']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt']/dfTrain['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(dfValid['calib_pt']/dfValid['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['calib_pt']/dfValid['gen_pt']), np.std(dfValid['calib_pt']/dfValid['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfTrain['calib_pt_pruned']/dfTrain['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Train. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['calib_pt_pruned']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt_pruned']/dfTrain['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfValid['calib_pt_pruned']/dfValid['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['calib_pt_pruned']/dfValid['gen_pt']), np.std(dfValid['calib_pt_pruned']/dfValid['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'a.u.')
     plt.legend(loc = 'upper right', fontsize=16)
     plt.grid(linestyle='dotted')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/responses_comparison.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/responses_comparison.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -240,7 +255,7 @@ if __name__ == "__main__" :
     plt.legend(loc = 'upper right', fontsize=16)
     plt.grid(linestyle='dotted')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/responses_comparison_pruning.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/responses_comparison_pruning.pdf')
     plt.close()
 
     # PLOTS PER DM
@@ -265,7 +280,7 @@ if __name__ == "__main__" :
     plt.legend(loc = 'upper right', fontsize=16)
     plt.grid(linestyle='dotted')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/uncalibrated_DM_responses_comparison.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/uncalibrated_DM_responses_comparison.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -278,7 +293,7 @@ if __name__ == "__main__" :
     plt.legend(loc = 'upper right', fontsize=16)
     plt.grid(linestyle='dotted')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/calibrated_DM_responses_comparison.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/calibrated_DM_responses_comparison.pdf')
     plt.close()
 
 
@@ -292,7 +307,7 @@ if __name__ == "__main__" :
     plt.grid(linestyle='dotted')
     plt.xlim(-0.1,5)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/response_vs_eta_comparison.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/response_vs_eta_comparison.pdf')
     plt.close()
 
     # 2D REPOSNSE VS PHI
@@ -305,7 +320,7 @@ if __name__ == "__main__" :
     plt.grid(linestyle='dotted')
     plt.xlim(-0.1,5)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/response_vs_phi_comparison.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/response_vs_phi_comparison.pdf')
     plt.close()
 
     # 2D REPOSNSE VS PT
@@ -319,7 +334,7 @@ if __name__ == "__main__" :
     # plt.xlim(-0.1,5)
     plt.xlim(0.0,2.0)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/response_vs_pt_comparison.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/response_vs_pt_comparison.pdf')
     plt.close()
 
 
@@ -353,7 +368,7 @@ if __name__ == "__main__" :
     plt.ylim(0, 150)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNCalibratorPruning_plots/GenToCalibL1_pt.pdf')
+    plt.savefig(indir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/GenToCalibL1_pt.pdf')
     plt.close()
 
     trainL1 = dfTrain.groupby('gen_pt_bin')['uncalib_pt'].mean()
@@ -371,7 +386,7 @@ if __name__ == "__main__" :
     plt.ylim(0, 150)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNCalibratorPruning_plots/GenToUncalinL1_pt.pdf')
+    plt.savefig(indir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/GenToUncalinL1_pt.pdf')
     plt.close()
 
 
@@ -392,11 +407,14 @@ if __name__ == "__main__" :
 #    plt.figure(figsize=(10,10))
 #    # here we plot the explanations for all classes for the first input (this is the feed forward input)
 #    shap.image_plot([shap_values[i][0] for i in range(len(shap_values))], X1_valid[:3], show=False)
-#    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/shap0.pdf')
+#    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/shap0.pdf')
 #    plt.close()
 #
 #    plt.figure(figsize=(10,10))
 #    # here we plot the explanations for all classes for the second input (this is the conv-net input)
 #    shap.image_plot([shap_values[i][1] for i in range(len(shap_values))], X2_valid[:3], show=False)
-#    plt.savefig(outdir+'/TauCNNCalibratorPruning_plots/shap1.pdf')
+#    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/shap1.pdf')
 #    plt.close()
+
+# restore normal output
+sys.stdout = sys.__stdout__

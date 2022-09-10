@@ -18,6 +18,20 @@ import matplotlib.pyplot as plt
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
+class Logger(object):
+    def __init__(self,file):
+        self.terminal = sys.stdout
+        self.log = open(file, "w")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)  
+
+    def flush(self):
+        #this flush method is needed for python 3 compatibility.
+        #this handles the flush command by doing nothing.
+        #you might want to specify some extra behavior here.
+        pass
 
 def inspectWeights(model, sparsityPerc):
     allWeightsByLayer = {}
@@ -45,7 +59,7 @@ def inspectWeights(model, sparsityPerc):
     plt.yscale('log')
     plt.figtext(0.65, 0.82, "{0}% of zeros".format(int(sparsityPerc*100)), wrap=True, horizontalalignment='left',verticalalignment='center', weight='semibold')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNIdentifierPruning_plots/modelSparsity.pdf')
+    plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/modelSparsity.pdf')
     plt.close()
 
 
@@ -60,10 +74,9 @@ if __name__ == "__main__" :
     parser.add_option("--date",         dest="date",                              default=None)
     parser.add_option("--inTag",        dest="inTag",                             default="")
     parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="5x9")
-    parser.add_option('--sparsity',     dest='sparsity',                          default=0.5)
+    parser.add_option('--sparsity',     dest='sparsity',     type=float,          default=0.5)
     parser.add_option('--train',        dest='train',        action='store_true', default=False)
     (options, args) = parser.parse_args()
-    print(options)
 
     # get clusters' shape dimensions
     N = int(options.caloClNxM.split('x')[0])
@@ -73,7 +86,12 @@ if __name__ == "__main__" :
 
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
-    os.system('mkdir -p '+outdir+'/TauCNNIdentifierPruning_plots')
+    sparsityTag = str(options.sparsity).split('.')[0]+'p'+str(options.sparsity).split('.')[1]
+    os.system('mkdir -p '+outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots')
+
+    # set output to go both to terminal and to file
+    sys.stdout = Logger(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/training.log')
+    print(options)
 
     # X1 is (None, N, M, 3)
     #       N runs over eta, M runs over phi
@@ -128,7 +146,7 @@ if __name__ == "__main__" :
 
         # Prune all convolutional and dense layers gradually from 0 to 50% sparsity every 2 epochs, ending by the 15th epoch
         batch_size = 1024
-        NSTEPS = int(X1.shape[0]*0.9)  // batch_size
+        NSTEPS = int(X1.shape[0]*0.8)  // batch_size
         def pruneFunction(layer):
             pruning_params = {'pruning_schedule': sparsity.PolynomialDecay(initial_sparsity = 0.0,
                                                                            final_sparsity = options.sparsity, 
@@ -154,8 +172,8 @@ if __name__ == "__main__" :
 
         ############################## Model training ##############################
         
-        history = TauIdentifierModelPruned.fit([X1, X2], Y, epochs=30, batch_size=batch_size, verbose=1, validation_split=0.1, callbacks=callbacks)
-        TauIdentifierModelPruned.save(outdir + '/TauCNNIdentifierPruned')
+        history = TauIdentifierModelPruned.fit([X1, X2], Y, epochs=30, batch_size=batch_size, verbose=1, validation_split=0.2, callbacks=callbacks)
+        TauIdentifierModelPruned.save(outdir + '/TauCNNIdentifier'+sparsityTag+'Pruned')
 
         for metric in history.history.keys():
             if 'val_' in metric: continue
@@ -169,11 +187,11 @@ if __name__ == "__main__" :
             if metric!='loss': plt.legend(loc='lower right')
             else:              plt.legend(loc='upper right')
             mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-            plt.savefig(outdir+'/TauCNNIdentifierPruning_plots/'+metric+'.pdf')
+            plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/'+metric+'.pdf')
             plt.close()
 
     else:
-        TauIdentifierModelPruned = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauCNNIdentifierPruned', compile=False)
+        TauIdentifierModelPruned = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauCNNIdentifier'+sparsityTag+'Pruned', compile=False)
 
     ############################## Model validation ##############################
 
@@ -215,7 +233,7 @@ if __name__ == "__main__" :
     plt.xlabel('Signal Efficiency')
     plt.ylabel('Background Efficiency')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNIdentifierPruning_plots/validation_roc.pdf')
+    plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/validation_roc.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -231,7 +249,7 @@ if __name__ == "__main__" :
     plt.xlabel('Signal Efficiency')
     plt.ylabel('Background Efficiency')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNIdentifierPruning_plots/validation_roc_zoomed.pdf')
+    plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/validation_roc_zoomed.pdf')
     plt.close()
 
     df = pd.DataFrame()
@@ -251,7 +269,7 @@ if __name__ == "__main__" :
     plt.xlabel(r'CNN score')
     plt.ylabel(r'a.u.')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNIdentifierPruning_plots/CNN_score.pdf')
+    plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/CNN_score.pdf')
     plt.close()
 
 
@@ -273,13 +291,15 @@ if __name__ == "__main__" :
 #    # here we plot the explanations for all classes for the first input (this is the feed forward input)
 #    shap.image_plot([shap_values[i][0] for i in range(len(shap_values))], X1_valid[:3], show=False)
 #    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-#    plt.savefig(outdir+'/TauCNNIdentifierPruning_plots/shap0.pdf')
+#    plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/shap0.pdf')
 #    plt.close()
 #
 #    plt.figure(figsize=(10,10))
 #    # here we plot the explanations for all classes for the second input (this is the conv-net input)
 #    shap.image_plot([shap_values[i][1] for i in range(len(shap_values))], X2_valid[:3], show=False)
 #    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-#    plt.savefig(outdir+'/TauCNNIdentifierPruning_plots/shap1.pdf')
+#    plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/shap1.pdf')
 #    plt.close()
 
+# restore normal output
+sys.stdout = sys.__stdout__
