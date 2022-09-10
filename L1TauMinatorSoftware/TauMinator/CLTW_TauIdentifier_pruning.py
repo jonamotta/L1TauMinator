@@ -77,6 +77,7 @@ if __name__ == "__main__" :
     parser.add_option('--sparsity',     dest='sparsity',     type=float,          default=0.5)
     parser.add_option('--train',        dest='train',        action='store_true', default=False)
     (options, args) = parser.parse_args()
+    print(options)
 
     # get clusters' shape dimensions
     N = int(options.caloClNxM.split('x')[0])
@@ -88,10 +89,6 @@ if __name__ == "__main__" :
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
     sparsityTag = str(options.sparsity).split('.')[0]+'p'+str(options.sparsity).split('.')[1]
     os.system('mkdir -p '+outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots')
-
-    # set output to go both to terminal and to file
-    sys.stdout = Logger(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/training.log')
-    print(options)
 
     # X1 is (None, N, M, 3)
     #       N runs over eta, M runs over phi
@@ -115,6 +112,10 @@ if __name__ == "__main__" :
     #    - one DNN that takes the flat output of the the CNN and the cluster position 
 
     if options.train:
+        # set output to go both to terminal and to file
+        sys.stdout = Logger(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/training.log')
+        print(options)
+
         images = keras.Input(shape = (N, M, 3), name='TowerClusterImage')
         positions = keras.Input(shape = 2, name='TowerClusterPosition')
         CNN = models.Sequential(name="CNNidentifier")

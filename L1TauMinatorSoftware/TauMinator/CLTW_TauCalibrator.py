@@ -72,6 +72,7 @@ if __name__ == "__main__" :
     parser.add_option('--caloClNxM',    dest='caloClNxM',                      default="5x9")
     parser.add_option('--train',        dest='train',     action='store_true', default=False)
     (options, args) = parser.parse_args()
+    print(options)
 
     # get clusters' shape dimensions
     N = int(options.caloClNxM.split('x')[0])
@@ -82,10 +83,6 @@ if __name__ == "__main__" :
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNCalibrator_plots')
-
-    # set output to go both to terminal and to file
-    sys.stdout = Logger(outdir+'/TauCNNCalibrator_plots/training.log')
-    print(options)
 
     # X1 is (None, N, M, 3)
     #       N runs over eta, M runs over phi
@@ -124,6 +121,10 @@ if __name__ == "__main__" :
     #         return tf.math.reduce_sum(self.k * x, axis=1, keepdims=True)
 
     if options.train:
+        # set output to go both to terminal and to file
+        sys.stdout = Logger(outdir+'/TauCNNCalibrator_plots/training.log')
+        print(options)
+
         images = keras.Input(shape = (N, M, 3), name='TowerClusterImage')
         positions = keras.Input(shape = 2, name='TowerClusterPosition')
 
