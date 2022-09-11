@@ -34,12 +34,15 @@ class Logger(object):
         #you might want to specify some extra behavior here.
         pass
 
-def inspectWeights(model, sparsityPerc):
+def inspectWeights(model, sparsityPerc, which):
+    if which=='kernel': idx=0
+    if which=='bias':   idx=1
+
     allWeightsByLayer = {}
     for layer in model.layers:
         if (layer._name).find("batch")!=-1 or len(layer.get_weights())<1:
             continue 
-        weights=layer.weights[0].numpy().flatten()
+        weights=layer.weights[idx].numpy().flatten()
         allWeightsByLayer[layer._name] = weights
         print('Layer {}: % of zeros = {}'.format(layer._name,np.sum(weights==0)/np.size(weights)))
 
@@ -60,7 +63,7 @@ def inspectWeights(model, sparsityPerc):
     plt.yscale('log')
     plt.figtext(0.65, 0.82, "{0}% of zeros".format(int(sparsityPerc*100)), wrap=True, horizontalalignment='left',verticalalignment='center', weight='semibold')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/modelSparsity.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator'+sparsityTag+'Pruning_plots/modelSparsity_'+which+'.pdf')
     plt.close()
 
 
@@ -230,13 +233,14 @@ if __name__ == "__main__" :
     dfValid['gen_phi']    = Y_valid[:,2].ravel()
     dfValid['gen_dm']     = Y_valid[:,3].ravel()
 
-    inspectWeights(TauCalibratorModelPruned, options.sparsity)
+    inspectWeights(TauCalibratorModel, options.sparsity, 'kernel')
+    inspectWeights(TauCalibratorModel, options.sparsity, 'bias')
 
     # PLOTS INCLUSIVE
     plt.figure(figsize=(10,10))
     plt.hist(dfValid['uncalib_pt']/dfValid['gen_pt'], bins=np.arange(0,5,0.1), label=r'Uncalibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['uncalib_pt']/dfValid['gen_pt']), np.std(dfValid['uncalib_pt']/dfValid['gen_pt'])),  color='red',  lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(dfTrain['calib_pt_pruned']/dfTrain['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Train. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['calib_pt_pruned']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt_pruned']/dfTrain['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(dfValid['calib_pt_pruned']/dfValid['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['calib_pt_pruned']/dfValid['gen_pt']), np.std(dfValid['calib_pt_pruned']/dfValid['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfTrain['calib_pt_pruned']/dfTrain['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Train. Pruned Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['calib_pt_pruned']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt_pruned']/dfTrain['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfValid['calib_pt_pruned']/dfValid['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Pruned Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['calib_pt_pruned']/dfValid['gen_pt']), np.std(dfValid['calib_pt_pruned']/dfValid['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'a.u.')
     plt.legend(loc = 'upper right', fontsize=16)

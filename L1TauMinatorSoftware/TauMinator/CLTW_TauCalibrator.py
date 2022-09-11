@@ -31,14 +31,20 @@ class Logger(object):
         #you might want to specify some extra behavior here.
         pass
 
-def inspectWeights(model):
+def inspectWeights(model, which):
+    if which=='kernel': idx=0
+    if which=='bias':   idx=1
+
     allWeightsByLayer = {}
     for layer in model.layers:
         if (layer._name).find("batch")!=-1 or len(layer.get_weights())<1:
             continue 
-        weights=layer.weights[0].numpy().flatten()
+        weights=layer.weights[idx].numpy().flatten()
         allWeightsByLayer[layer._name] = weights
         print('Layer {}: % of zeros = {}'.format(layer._name,np.sum(weights==0)/np.size(weights)))
+
+    print(weights.min())
+    print(weights.max())
 
     labelsW = []
     histosW = []
@@ -56,7 +62,7 @@ def inspectWeights(model):
     plt.xlim(-0.7,0.5)
     plt.yscale('log')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNCalibrator_plots/modelSparsity.pdf')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/modelSparsity'+which+'.pdf')
     plt.close()
 
 
@@ -209,7 +215,8 @@ if __name__ == "__main__" :
     dfValid['gen_phi']    = Y_valid[:,2].ravel()
     dfValid['gen_dm']     = Y_valid[:,3].ravel()
 
-    inspectWeights(TauCalibratorModel)
+    inspectWeights(TauCalibratorModel, 'kernel')
+    inspectWeights(TauCalibratorModel, 'bias')
 
     # PLOTS INCLUSIVE
     plt.figure(figsize=(10,10))

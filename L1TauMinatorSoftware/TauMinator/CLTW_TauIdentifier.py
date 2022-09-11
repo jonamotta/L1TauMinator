@@ -31,12 +31,15 @@ class Logger(object):
         #you might want to specify some extra behavior here.
         pass
 
-def inspectWeights(model):
+def inspectWeights(model, which):
+    if which=='kernel': idx=0
+    if which=='bias':   idx=1
+
     allWeightsByLayer = {}
     for layer in model.layers:
         if (layer._name).find("batch")!=-1 or len(layer.get_weights())<1:
             continue 
-        weights=layer.weights[0].numpy().flatten()
+        weights=layer.weights[idx].numpy().flatten()
         allWeightsByLayer[layer._name] = weights
         print('Layer {}: % of zeros = {}'.format(layer._name,np.sum(weights==0)/np.size(weights)))
 
@@ -56,7 +59,7 @@ def inspectWeights(model):
     plt.xlim(-0.7,0.5)
     plt.yscale('log')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauCNNIdentifier_plots/modelSparsity.pdf')
+    plt.savefig(outdir+'/TauCNNIdentifier_plots/modelSparsity'+which+'.pdf')
     plt.close()
 
 
@@ -184,7 +187,8 @@ if __name__ == "__main__" :
     FPRvalid, TPRvalid, THRvalid = metrics.roc_curve(Y_valid, valid_ident)
     AUCvalid = metrics.roc_auc_score(Y_valid, valid_ident)
 
-    inspectWeights(TauIdentifierModel)
+    inspectWeights(TauIdentifierModel, 'kernel')
+    inspectWeights(TauIdentifierModel, 'bias')
 
     plt.figure(figsize=(10,10))
     plt.plot(TPRtrain, FPRtrain, label='Training ROC, AUC = %.3f' % (AUCtrain),   color='blue',lw=2)
