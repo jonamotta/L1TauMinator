@@ -140,21 +140,21 @@ if __name__ == "__main__" :
 
         x = images
         x = QConv2DBatchnorm(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros',
-                                                                     kernel_quantizer='quantized_bits(30,10,alpha=1)',  bias_quantizer='quantized_bits(30,10,alpha=1)',
+                                                                     kernel_quantizer='quantized_bits(6,0,alpha=1)',  bias_quantizer='quantized_bits(6,0,alpha=1)',
                                                                      name='CNNpBNlayer1')(x)
-        x = QActivation('quantized_relu(30,10)', name='reluCNNlayer1')(x)
-        x = layers.MaxPooling2D(wndw, name='CNNlayer2')(x)
+        x = QActivation('quantized_relu(16,6)', name='reluCNNlayer1')(x)
+        x = layers.MaxPooling2D(wndw, name="CNNlayer2")(x)
         x = QConv2DBatchnorm(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros',
-                                              kernel_quantizer='quantized_bits(30,10,alpha=1)',  bias_quantizer='quantized_bits(30,10,alpha=1)',
+                                              kernel_quantizer='quantized_bits(6,0,alpha=1)',  bias_quantizer='quantized_bits(6,0,alpha=1)',
                                               name='CNNpBNlayer3')(x)
-        x = QActivation('quantized_relu(30,10)', name='reluCNNlayer3')(x)
+        x = QActivation('quantized_relu(16,6)', name='reluCNNlayer3')(x)
         x = layers.Flatten(name="CNNflatened")(x)
         x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
-        x = QDense(32, kernel_quantizer='quantized_bits(30,10,alpha=1)', name='DNNlayer1')(x)
-        x = QActivation('quantized_relu(30,10)', name='reluDNNlayer1')(x)
-        x = QDense(16, kernel_quantizer='quantized_bits(30,10,alpha=1)', name='DNNlayer2')(x)
-        x = QActivation('quantized_relu(30,10)', name='reluDNNlayer2')(x)
-        x = QDense(1, kernel_quantizer='quantized_bits(30,10,alpha=1)', name="DNNout")(x)
+        x = QDense(32, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
+        x = QActivation('quantized_relu(16,6)', name='reluDNNlayer1')(x)
+        x = QDense(16, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
+        x = QActivation('quantized_relu(16,6)', name='reluDNNlayer2')(x)
+        x = QDense(1, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
         TauCalibrated = x
 
         TauQCalibratorModel = keras.Model([images, positions], TauCalibrated, name='TauCNNCalibrator')
@@ -282,10 +282,10 @@ if __name__ == "__main__" :
     plt.close()
 
     plt.figure(figsize=(10,10))
-    plt.hist(tmp0['calib_pt']/tmp0['gen_pt'],   bins=np.arange(0,5,0.1), label=DMdict[0]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp0['calib_pt']/tmp0['gen_pt']), np.std(tmp0['calib_pt']/tmp0['gen_pt'])),      color='lime',  lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp1['calib_pt']/tmp1['gen_pt'],   bins=np.arange(0,5,0.1), label=DMdict[1]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp1['calib_pt']/tmp1['gen_pt']), np.std(tmp1['calib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp10['calib_pt']/tmp10['gen_pt'], bins=np.arange(0,5,0.1), label=DMdict[10]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp10['calib_pt']/tmp10['gen_pt']), np.std(tmp10['calib_pt']/tmp10['gen_pt'])), color='orange',lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp11['calib_pt']/tmp11['gen_pt'], bins=np.arange(0,5,0.1), label=DMdict[11]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp11['calib_pt']/tmp11['gen_pt']), np.std(tmp11['calib_pt']/tmp11['gen_pt'])), color='fuchsia',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp0['Qcalib_pt']/tmp0['gen_pt'],   bins=np.arange(0,5,0.1), label=DMdict[0]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp0['Qcalib_pt']/tmp0['gen_pt']), np.std(tmp0['Qcalib_pt']/tmp0['gen_pt'])),      color='lime',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp1['Qcalib_pt']/tmp1['gen_pt'],   bins=np.arange(0,5,0.1), label=DMdict[1]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp1['Qcalib_pt']/tmp1['gen_pt']), np.std(tmp1['Qcalib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp10['Qcalib_pt']/tmp10['gen_pt'], bins=np.arange(0,5,0.1), label=DMdict[10]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp10['Qcalib_pt']/tmp10['gen_pt']), np.std(tmp10['Qcalib_pt']/tmp10['gen_pt'])), color='orange',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp11['Qcalib_pt']/tmp11['gen_pt'], bins=np.arange(0,5,0.1), label=DMdict[11]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp11['Qcalib_pt']/tmp11['gen_pt']), np.std(tmp11['Qcalib_pt']/tmp11['gen_pt'])), color='fuchsia',lw=2, density=True, histtype='step', alpha=0.7)
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'a.u.')
     plt.legend(loc = 'upper right', fontsize=16)
@@ -298,7 +298,7 @@ if __name__ == "__main__" :
     # 2D REPOSNSE VS ETA
     plt.figure(figsize=(10,10))
     plt.scatter(dfValid['uncalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_eta'].head(1000), label=r'Uncalibrated', alpha=0.2, color='red')
-    plt.scatter(dfValid['calib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_eta'].head(1000), label=r'Calibrated', alpha=0.2, color='green')
+    plt.scatter(dfValid['Qcalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_eta'].head(1000), label=r'Calibrated', alpha=0.2, color='green')
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'$|\eta^{Gen \tau}|$')
     plt.legend(loc = 'upper right', fontsize=16)
@@ -311,7 +311,7 @@ if __name__ == "__main__" :
     # 2D REPOSNSE VS PHI
     plt.figure(figsize=(10,10))
     plt.scatter(dfValid['uncalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_phi'].head(1000), label=r'Uncalibrated', alpha=0.2, color='red')
-    plt.scatter(dfValid['calib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_phi'].head(1000), label=r'Calibrated', alpha=0.2, color='green')
+    plt.scatter(dfValid['Qcalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_phi'].head(1000), label=r'Calibrated', alpha=0.2, color='green')
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'$\phi^{Gen \tau}$')
     plt.legend(loc = 'upper right', fontsize=16)
@@ -324,7 +324,7 @@ if __name__ == "__main__" :
     # 2D REPOSNSE VS PT
     plt.figure(figsize=(10,10))
     plt.scatter(dfValid['uncalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_pt'].head(1000), label=r'Uncalibrated', alpha=0.2, color='red')
-    plt.scatter(dfValid['calib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_pt'].head(1000), label=r'Calibrated', alpha=0.2, color='green')
+    plt.scatter(dfValid['Qcalib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_pt'].head(1000), label=r'Calibrated', alpha=0.2, color='green')
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'$p_{T}^{Gen \tau}$')
     plt.legend(loc = 'upper right', fontsize=16)
@@ -351,15 +351,15 @@ if __name__ == "__main__" :
 
     pt_bins_centers = np.arange(17.5,157.5,5)
 
-    trainL1 = dfTrain.groupby('gen_pt_bin')['calib_pt'].mean()
-    validL1 = dfValid.groupby('gen_pt_bin')['calib_pt'].mean()
-    trainL1std = dfTrain.groupby('gen_pt_bin')['calib_pt'].std()
-    validL1std = dfValid.groupby('gen_pt_bin')['calib_pt'].std()
+    trainL1 = dfTrain.groupby('gen_pt_bin')['Qcalib_pt'].mean()
+    validL1 = dfValid.groupby('gen_pt_bin')['Qcalib_pt'].mean()
+    trainL1std = dfTrain.groupby('gen_pt_bin')['Qcalib_pt'].std()
+    validL1std = dfValid.groupby('gen_pt_bin')['Qcalib_pt'].std()
 
     plt.figure(figsize=(10,10))
     plt.errorbar(pt_bins_centers, trainL1, yerr=trainL1std, label='Train. dataset', color='blue', ls='None', lw=2, marker='o')
     plt.errorbar(pt_bins_centers, validL1, yerr=validL1std, label='Valid. dataset', color='green', ls='None', lw=2, marker='o')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylabel(r'L1 calibrated $p_{T}$ [GeV]')
     plt.xlabel(r'Gen $p_{T}$ [GeV]')
     plt.xlim(0, 150)
@@ -377,7 +377,7 @@ if __name__ == "__main__" :
     plt.figure(figsize=(10,10))
     plt.errorbar(pt_bins_centers, trainL1, yerr=trainL1std, label='Train. dataset', color='blue', ls='None', lw=2, marker='o')
     plt.errorbar(pt_bins_centers, validL1, yerr=validL1std, label='Valid. dataset', color='green', ls='None', lw=2, marker='o')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylabel(r'L1 uncalibrated $p_{T}$ [GeV]')
     plt.xlabel(r'Gen $p_{T}$ [GeV]')
     plt.xlim(0, 150)

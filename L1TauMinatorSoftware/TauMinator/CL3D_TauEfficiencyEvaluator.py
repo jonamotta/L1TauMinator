@@ -289,7 +289,7 @@ if __name__ == "__main__" :
             i+=1 
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
     plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylim(0., 1.05)
     plt.xlim(0., 150.)
     # plt.xscale('log')
@@ -313,7 +313,7 @@ if __name__ == "__main__" :
             i+=1 
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
     plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylim(0., 1.05)
     plt.xlim(0., 150.)
     # plt.xscale('log')
@@ -337,7 +337,7 @@ if __name__ == "__main__" :
             i+=1 
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
     plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylim(0., 1.05)
     plt.xlim(0., 150.)
     # plt.xscale('log')
@@ -355,7 +355,7 @@ if __name__ == "__main__" :
     plt.plot(online_thresholds, mapping_dict['wp99_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
     plt.plot(online_thresholds, mapping_dict['wp99_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
     plt.plot(online_thresholds, mapping_dict['wp99_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.xlabel('L1 Threshold [GeV]')
     plt.ylabel('Offline threshold [GeV]')
     plt.xlim(0, 110)
@@ -368,7 +368,7 @@ if __name__ == "__main__" :
     plt.plot(online_thresholds, mapping_dict['wp95_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
     plt.plot(online_thresholds, mapping_dict['wp95_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
     plt.plot(online_thresholds, mapping_dict['wp95_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.xlabel('L1 Threshold [GeV]')
     plt.ylabel('Offline threshold [GeV]')
     plt.xlim(0, 110)
@@ -381,7 +381,7 @@ if __name__ == "__main__" :
     plt.plot(online_thresholds, mapping_dict['wp90_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
     plt.plot(online_thresholds, mapping_dict['wp90_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
     plt.plot(online_thresholds, mapping_dict['wp90_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.xlabel('L1 Threshold [GeV]')
     plt.ylabel('Offline threshold [GeV]')
     plt.xlim(0, 110)
@@ -406,7 +406,7 @@ if __name__ == "__main__" :
             i+=1 
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
     plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylim(0., 1.05)
     plt.xlim(0., 150.)
     plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
@@ -429,7 +429,7 @@ if __name__ == "__main__" :
             i+=1 
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
     plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylim(0., 1.05)
     plt.xlim(0., 150.)
     plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
@@ -452,7 +452,7 @@ if __name__ == "__main__" :
             i+=1 
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
     plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylim(0., 1.05)
     plt.xlim(0., 150.)
     plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
@@ -475,7 +475,7 @@ if __name__ == "__main__" :
             i+=1 
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
     plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
+    plt.legend(loc = 'lower right', fontsize=16)
     plt.ylim(0., 1.05)
     plt.xlim(0., 150.)
     plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
@@ -496,7 +496,7 @@ if __name__ == "__main__" :
     #         i+=1 
     # plt.hlines(0.90, 0, eta_bins_centers.max(), lw=2, color='dimgray', label='0.90 Eff.')
     # plt.hlines(0.95, 0, eta_bins_centers.max(), lw=2, color='black', label='0.95 Eff.')
-    # plt.legend(loc = 'lower right', fontsize=14)
+    # plt.legend(loc = 'lower right', fontsize=16)
     # plt.ylim(0., 1.05)
     # plt.xlim(0., 150.)
     # plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
@@ -514,7 +514,7 @@ if __name__ == "__main__" :
     #         i+=1 
     # plt.hlines(0.90, 0, eta_bins_centers.max(), lw=2, color='dimgray', label='0.90 Eff.')
     # plt.hlines(0.95, 0, eta_bins_centers.max(), lw=2, color='black', label='0.95 Eff.')
-    # plt.legend(loc = 'lower right', fontsize=14)
+    # plt.legend(loc = 'lower right', fontsize=16)
     # plt.ylim(0., 1.05)
     # plt.xlim(0., 150.)
     # plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
@@ -532,7 +532,7 @@ if __name__ == "__main__" :
     #         i+=1 
     # plt.hlines(0.90, 0, eta_bins_centers.max(), lw=2, color='dimgray', label='0.90 Eff.')
     # plt.hlines(0.95, 0, eta_bins_centers.max(), lw=2, color='black', label='0.95 Eff.')
-    # plt.legend(loc = 'lower right', fontsize=14)
+    # plt.legend(loc = 'lower right', fontsize=16)
     # plt.ylim(0., 1.05)
     # plt.xlim(0., 150.)
     # plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
