@@ -176,7 +176,7 @@ if __name__ == "__main__" :
                              }
             if isinstance(layer, tf.keras.layers.Conv2D):
                 return tfmot.sparsity.keras.prune_low_magnitude(layer, **pruning_params)
-            if isinstance(layer, tf.keras.layers.Dense) and layer.name!='output_dense':
+            if isinstance(layer, tf.keras.layers.Dense) and layer.name!='DNNout':
                 return tfmot.sparsity.keras.prune_low_magnitude(layer, **pruning_params)  
             return layer
 
