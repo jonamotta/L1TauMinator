@@ -140,3 +140,4 @@ python Tree2TensorSubmitter.py --v 8 --date 2022_09_10                          
 
 # python Tree2TensorSubmitter.py --v 7 --date 2022_08_31 --caloClNxM 5x9 --doCALO  --doMinBias --doTens4Rate
 # python Tree2TensorSubmitter.py --v 7 --date 2022_08_31                 --doHGCAL --doMinBias --doTens4Rate
+python Tree2TensorSubmitter.py --v 8 --date 2022_09_10                           --doMinBias --doTens4Rate

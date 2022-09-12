@@ -55,7 +55,7 @@ if not options.date or not options.v:
     print('** EXITING')
     exit()
 
-if not options.doHGCAL and not options.doCALO and not options.doTens4Minator:
+if not options.doHGCAL and not options.doCALO and not options.doTens4Minator and not options.doTens4Rate:
     print('** ERROR : no detector need specified')
     print('** EXITING')
     exit()
@@ -81,9 +81,9 @@ if options.doCALO:
     if options.doTens4Calib: jobsdir += '/TauCNNCalibrator'+options.caloClNxM+'Training'
     if options.doTens4Ident: jobsdir += '/TauCNNIdentifier'+options.caloClNxM+'Training'
 
-if options.doTens4Rate:  jobsdir += '/TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'
+if options.doTens4Minator: jobsdir += '/TauMinatorPerfromanceInputs_'+options.caloClNxM
 
-if options.doTens4Minator: jobsdir += '/TauMinatorInputs_'+options.caloClNxM
+if options.doTens4Rate: jobsdir += '/TauMinatorRateInputs_'+options.caloClNxM
 
 jobsdir += options.outTag+'/jobs'
 os.system('mkdir -p '+jobsdir)
@@ -94,9 +94,9 @@ outLogName  = jobsdir + '/log.txt'
 cmsRun = 'python Merger.py'
 cmsRun += ' --v '+options.v
 cmsRun += ' --date '+options.date
-cmsRun += ' --inTag '+options.inTag
-cmsRun += ' --outTag '+options.outTag
 cmsRun += ' --caloClNxM '+options.caloClNxM
+if options.inTag           : cmsRun += ' --inTag '+options.inTag
+if options.outTag          : cmsRun += ' --outTag '+options.outTag
 if options.doHGCAL         : cmsRun += ' --doHGCAL'
 if options.doCALO          : cmsRun += ' --doCALO'
 if options.doHH            : cmsRun += ' --doHH'

@@ -55,7 +55,8 @@ if __name__ == "__main__" :
         if options.doTens4Minator: splitter = 'X_BDT_Minator'
         tensorsFolder = '/PickledInputs'+options.inTag
 
-    if options.doTens4Minator: tensorsFolder = '/MinatorInputs_'+options.caloClNxM+options.inTag
+    if options.doTens4Minator: tensorsFolder = '/MinatorPerformanceInputs_'+options.caloClNxM+options.inTag
+    if options.doTens4Rate:    tensorsFolder = '/MinatorRateInputs_'+options.caloClNxM+options.inTag
 
     if options.doHH:
         tmp = indir+'/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD__batches/'+tensorsFolder
@@ -97,6 +98,8 @@ if __name__ == "__main__" :
         # tmp = indir+'/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT__batches/'+tensorsFolder
         tmp = indir+'/tmpRate__batches/'+tensorsFolder
         indirs.append(tmp)
+
+        print(indirs)
 
         taglist = []
         if options.doCALO:  files = glob.glob(tmp+'/'+splitter+'*.npz')
@@ -157,10 +160,14 @@ if __name__ == "__main__" :
         'inputsIdentifierBDT'    : '/X_BDT_Identifier',
         'inputsRateBDT'          : '/X_BDT_Rate',
         # ---------------------------------------------------------------------
-        'inputsMinatorCNN'      : '/X_CNN_Minator'+options.caloClNxM,
-        'inputsMinatorDense'    : '/X_Dense_Minator'+options.caloClNxM,
-        'targetsMinator'        : '/Y_Minator'+options.caloClNxM,
-        'inputsMinatorBDT'      : '/X_BDT_Minator',
+        'inputsMinatorCNN'       : '/X_CNN_Minator'+options.caloClNxM,
+        'inputsMinatorDense'     : '/X_Dense_Minator'+options.caloClNxM,
+        'targetsMinator'         : '/Y_Minator'+options.caloClNxM,
+        'inputsMinatorBDT'       : '/X_BDT_Minator',
+        'inputsMinatorRateCNN'   : '/X_CNN_Rate'+options.caloClNxM,
+        'inputsMinatorRateDense' : '/X_Dense_Rate'+options.caloClNxM,
+        'targetsMinatorRate'     : '/Y_Rate'+options.caloClNxM,
+        'inputsMinatorRateBDT'   : '/X_BDT_Rate'
     }
 
     X1sToConcatenate = []
@@ -329,18 +336,18 @@ if __name__ == "__main__" :
 
     elif options.doTens4Minator:
         if options.doCALO:
-            np.savez_compressed(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/X_CNN_'+options.caloClNxM+'.npz', X1_train)
-            np.savez_compressed(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/X_Dense_'+options.caloClNxM+'.npz', X2_train)
-            np.savez_compressed(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/Y_'+options.caloClNxM+'.npz', Y_train)
+            np.savez_compressed(indir+'/TauMinatorPerfromanceInputs_'+options.caloClNxM+options.outTag+'/X_CNN_'+options.caloClNxM+'.npz', X1_train)
+            np.savez_compressed(indir+'/TauMinatorPerfromanceInputs_'+options.caloClNxM+options.outTag+'/X_Dense_'+options.caloClNxM+'.npz', X2_train)
+            np.savez_compressed(indir+'/TauMinatorPerfromanceInputs_'+options.caloClNxM+options.outTag+'/Y_'+options.caloClNxM+'.npz', Y_train)
 
         if options.doHGCAL:
-            X_train.to_pickle(indir+'/TauMinatorInputs_'+options.caloClNxM+options.outTag+'/X_BDT.pkl')
+            X_train.to_pickle(indir+'/TauMinatorPerfromanceInputs_'+options.caloClNxM+options.outTag+'/X_BDT.pkl')
 
     elif options.doTens4Rate:
         if options.doCALO:
-            np.savez_compressed(indir+'/TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'+options.outTag+'/X_Rate_CNN_'+options.caloClNxM+'.npz', X1)
-            np.savez_compressed(indir+'/TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'+options.outTag+'/X_Rate_Dense_'+options.caloClNxM+'.npz', X2)
-            np.savez_compressed(indir+'/TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'+options.outTag+'/Y_Rate_'+options.caloClNxM+'.npz', Y)
+            np.savez_compressed(indir+'/TauMinatorRateInputs_'+options.caloClNxM+options.outTag+'/X_CNN_'+options.caloClNxM+'.npz', X1)
+            np.savez_compressed(indir+'/TauMinatorRateInputs_'+options.caloClNxM+options.outTag+'/X_Dense_'+options.caloClNxM+'.npz', X2)
+            np.savez_compressed(indir+'/TauMinatorRateInputs_'+options.caloClNxM+options.outTag+'/Y_'+options.caloClNxM+'.npz', Y)
 
         if options.doHGCAL:
-            X.to_pickle(indir+'/TauMinatorRateEvaluator_'+options.caloClNxM+'_CL3D'+options.outTag+'/X_Rate_BDT.pkl')
+            X.to_pickle(indir+'/TauMinatorRateInputs_'+options.caloClNxM+options.outTag+'/X_BDT.pkl')

@@ -626,6 +626,90 @@ def TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus
     # save .pkl file with formatted datasets
     dfCL3DTau.to_pickle(saveTensTo['inputsMinatorBDT'])
 
+
+def TensorizeForTauMinatorRate(dfFlatTowClus, dfFlatHGClus, uEtacut, lEtacut,  NxM):
+    if len(dfFlatTowClus) == 0 or len(dfFlatHGClus) == 0:
+        print('** WARNING : no data to be tensorized for calibration here')
+        return
+
+    dfTowClus = dfFlatTowClus.copy(deep=True)
+    dfHGClus = dfFlatHGClus.copy(deep=True)
+
+    # get clusters' shape dimensions
+    N = int(NxM.split('x')[0])
+    M = int(NxM.split('x')[1])
+
+    # Apply cut on tau eta
+    if uEtacut:
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) <= float(uEtacut)]
+        dfHGClus = dfHGClus[abs(dfHGClus['cl3d_eta']) <= float(uEtacut)]
+    if lEtacut:
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) >= float(lEtacut)]
+        dfHGClus = dfHGClus[abs(dfHGClus['cl3d_eta']) >= float(lEtacut)]
+
+    # save unique identifier
+    dfTowClus['uniqueId'] = dfTowClus['event'].astype(str)+'_'+dfTowClus.index.astype(str)
+    dfHGClus['uniqueId'] = dfHGClus['event'].astype(str)+'_'+dfHGClus.index.astype(str)
+
+    # make uniqueId the index
+    dfTowClus.set_index('uniqueId',inplace=True)
+    dfHGClus.set_index('uniqueId',inplace=True)
+
+    # make the input tensors for the neural network
+    X1L = []
+    X2L = []
+    YL = []
+    for i, idx in enumerate(dfTowClus.index):
+        # progress
+        if i%100 == 0:
+            print(i/len(dfTowClus.index)*100, '%')
+
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfTowClus.cl_towerHad.loc[idx]) != N*M: continue
+
+        # features of the Dense NN
+        x2l = []
+        x2l.append(dfTowClus.cl_seedEta.loc[idx])
+        x2l.append(dfTowClus.cl_seedPhi.loc[idx])
+        x2 = np.array(x2l)
+
+        # features for the CNN
+        x1l = []
+        for j in range(N*M):
+            x1l.append(dfTowClus.cl_towerEgEt.loc[idx][j])
+            x1l.append(dfTowClus.cl_towerEm.loc[idx][j])
+            x1l.append(dfTowClus.cl_towerHad.loc[idx][j])
+        x1 = np.array(x1l).reshape(N,M,3)
+        
+        # "targets" of the NN
+        yl = []
+        yl.append(dfTowClus.cl_seedEta.loc[idx])
+        yl.append(dfTowClus.cl_seedPhi.loc[idx])
+        yl.append(dfTowClus.event.loc[idx])
+        y = np.array(yl)
+
+        # inputs to the NN
+        X1L.append(x1)
+        X2L.append(x2)
+        YL.append(y)
+
+    # tensorize the lists
+    X1 = np.array(X1L)
+    X2 = np.array(X2L)
+    Y = np.array(YL)
+
+    print(X1.shape)
+    print(X2.shape)
+    print(Y.shape)
+
+    # save .npz files with tensor formatted datasets
+    np.savez_compressed(saveTensTo['inputsMinatorRateCNN'], X1)
+    np.savez_compressed(saveTensTo['inputsMinatorRateDense'], X2)
+    np.savez_compressed(saveTensTo['targetsMinatorRate'], Y)
+
+    # save .pkl file with formatted datasets
+    dfHGClus.to_pickle(saveTensTo['inputsMinatorRateBDT'])
+
 #######################################################################
 ######################### SCRIPT BODY #################################
 #######################################################################
@@ -932,24 +1016,28 @@ if __name__ == "__main__" :
         if options.lEtacut   : outTag += '_lEtacut'+options.lEtacut
 
     saveTensTo = {
-        'inputsCalibratorCNN'   : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsCalibratorDense' : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsIdentifierCNN'   : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsIdentifierDense' : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsRateCNN'         : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Rate'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsRateDense'       : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Rate'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsCalibrator'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsIdentifier'     : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsRate'           : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsCalibratorCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsCalibratorDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsIdentifierDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsRateCNN'          : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsRateDense'        : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsCalibrator'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Calibrator'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsIdentifier'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsRate'            : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz',
         # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        'inputsCalibratorBDT'   : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Calibrator'+options.infileTag+'.pkl',
-        'inputsIdentifierBDT'   : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Identifier'+options.infileTag+'.pkl',
-        'inputsRateBDT'         : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl',
+        'inputsCalibratorBDT'    : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Calibrator'+options.infileTag+'.pkl',
+        'inputsIdentifierBDT'    : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Identifier'+options.infileTag+'.pkl',
+        'inputsRateBDT'          : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl',
         # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        'inputsMinatorCNN'      : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/X_CNN_Minator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsMinatorDense'    : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/X_Dense_Minator'+options.caloClNxM+options.infileTag+'.npz',
-        'targetsMinator'        : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/Y_Minator'+options.caloClNxM+options.infileTag+'.npz',
-        'inputsMinatorBDT'      : options.outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/X_BDT_Minator'+options.infileTag+'.pkl',
+        'inputsMinatorCNN'       : options.outdir+'/MinatorPerformanceInputs_'+options.caloClNxM+outTag+'/X_CNN_Minator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsMinatorDense'     : options.outdir+'/MinatorPerformanceInputs_'+options.caloClNxM+outTag+'/X_Dense_Minator'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsMinator'         : options.outdir+'/MinatorPerformanceInputs_'+options.caloClNxM+outTag+'/Y_Minator'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsMinatorBDT'       : options.outdir+'/MinatorPerformanceInputs_'+options.caloClNxM+outTag+'/X_BDT_Minator'+options.infileTag+'.pkl',
+        'inputsMinatorRateCNN'   : options.outdir+'/MinatorRateInputs_'+options.caloClNxM+outTag+'/X_CNN_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsMinatorRateDense' : options.outdir+'/MinatorRateInputs_'+options.caloClNxM+outTag+'/X_Dense_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsMinatorRate'     : options.outdir+'/MinatorRateInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsMinatorRateBDT'   : options.outdir+'/MinatorRateInputs_'+options.caloClNxM+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl',
     }
 
     if options.doTens4Calib:
@@ -968,7 +1056,8 @@ if __name__ == "__main__" :
 
     if options.doTens4Rate:
         print('** INFO : doing tensorization for rate evaluation')
-        if options.doCALO:  TensorizeForClNxMRate(dfFlatTowClus, options.uEtacut, options.lEtacut, options.caloClNxM)
-        if options.doHGCAL: TensorizeForCl3dRate(dfFlatHGClus, options.uEtacut, options.lEtacut)
+        if options.doCALO:    TensorizeForClNxMRate(dfFlatTowClus, options.uEtacut, options.lEtacut, options.caloClNxM)
+        elif options.doHGCAL: TensorizeForCl3dRate(dfFlatHGClus, options.uEtacut, options.lEtacut)
+        else:                 TensorizeForTauMinatorRate(dfFlatTowClus, dfFlatHGClus, options.uEtacut, options.lEtacut, options.caloClNxM)
 
     print('** INFO : ALL DONE!')

@@ -63,7 +63,7 @@ if not options.date or not options.v:
     print('** EXITING')
     exit()
 
-if not options.doHGCAL and not options.doCALO and not options.doTens4Minator:
+if not options.doHGCAL and not options.doCALO and not options.doTens4Minator and not options.doTens4Rate:
     print('** ERROR : no detector need specified')
     print('** EXITING')
     exit()
@@ -131,7 +131,8 @@ else:
 
 if options.doCALO:         jobsdir = outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/jobs/jobs_'+options.caloClNxM+outTag
 if options.doHGCAL:        jobsdir = outdir+'/PickledInputs'+outTag+'/jobs/jobs'+outTag
-if options.doTens4Minator: jobsdir = outdir+'/MinatorInputs_'+options.caloClNxM+outTag+'/jobs/jobs'+outTag
+if options.doTens4Minator: jobsdir = outdir+'/MinatorPerformanceInputs_'+options.caloClNxM+outTag+'/jobs/jobs'+outTag
+if options.doTens4Rate and not (options.doCALO or options.doHGCAL): jobsdir = outdir+'/MinatorRateInputs_'+options.caloClNxM+outTag+'/jobs/jobs'+outTag
 os.system('mkdir -p '+jobsdir)
 
 # list Ntuples

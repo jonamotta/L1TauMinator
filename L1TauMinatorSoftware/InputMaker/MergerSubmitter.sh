@@ -90,3 +90,6 @@ python MergerSubmitter.py --v 8 --date 2022_09_10                 --doHGCAL --do
 python MergerSubmitter.py --v 8 --date 2022_09_10                 --doCALO  --doTens4Minator --doVBFH --inTag _lTauPtCut18 --outTag _lTauPtCut18
 python MergerSubmitter.py --v 8 --date 2022_09_10                 --doHGCAL --doTens4Minator --doVBFH --inTag _lTauPtCut18 --outTag _lTauPtCut18
 
+python MergerSubmitter.py --v 8 --date 2022_09_10                 --doCALO  --doTens4Rate    --doMinBias
+python MergerSubmitter.py --v 8 --date 2022_09_10                 --doHGCAL --doTens4Rate    --doMinBias
+
