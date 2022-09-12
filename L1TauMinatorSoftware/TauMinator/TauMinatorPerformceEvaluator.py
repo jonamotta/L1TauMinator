@@ -111,11 +111,11 @@ if __name__ == "__main__" :
 
     os.system('mkdir -p '+perfdir+'/plots')
 
-    X1CNN = np.load(indir+'/TauMinatorInputs_'+options.caloClNxM+options.inTag+'/X_CNN_'+options.caloClNxM+'.npz')['arr_0']
-    X2CNN = np.load(indir+'/TauMinatorInputs_'+options.caloClNxM+options.inTag+'/X_Dense_'+options.caloClNxM+'.npz')['arr_0']
-    YCNN  = np.load(indir+'/TauMinatorInputs_'+options.caloClNxM+options.inTag+'/Y_'+options.caloClNxM+'.npz')['arr_0']
+    X1CNN = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_CNN_'+options.caloClNxM+'.npz')['arr_0']
+    X2CNN = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_Dense_'+options.caloClNxM+'.npz')['arr_0']
+    YCNN  = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/Y_'+options.caloClNxM+'.npz')['arr_0']
 
-    XBDT = pd.read_pickle(indir+'/TauMinatorInputs_'+options.caloClNxM+options.inTag+'/X_BDT.pkl')
+    XBDT = pd.read_pickle(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_BDT.pkl')
     XBDT['cl3d_abseta'] = abs(XBDT['cl3d_eta']).copy(deep=True)
 
     ############################## Apply CNN models to inputs ##############################
@@ -220,7 +220,7 @@ if __name__ == "__main__" :
 
     # geometrically missed tau to be investigated
     dfTauMissed = dfTauMinated[dfTauMinated['L1_pt'].isna()]
-    # dfTauMinated.dropna(axis=0, how='any', inplace=True)
+    dfTauMinated.dropna(axis=0, how='any', inplace=True)
 
     del dfTOT, dfTauMinated_CB, dfTauMinated_CE, dfCNN, dfBDT, dfCNN_CE, X1CNN, X2CNN, YCNN, XBDT
 
