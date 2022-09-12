@@ -9,3 +9,4 @@ __pycache__
 *.root
 __init__.py
 L1TauMinatorSoftware/TauMinator/old
+L1TauMinatorSoftware/TauMinator_hls4ml/*/
