@@ -32,6 +32,7 @@ if __name__ == "__main__" :
     parser.add_option('--doTens4Ident',   dest='doTens4Ident',   action='store_true', default=False)
     parser.add_option('--doTens4Minator', dest='doTens4Minator', action='store_true', default=False)
     parser.add_option('--doTens4Rate',    dest='doTens4Rate',    action='store_true', default=False)
+    parser.add_option('--doTens4Cotraining', dest='doTens4Cotraining', action='store_true', default=False)
     (options, args) = parser.parse_args()
 
 
@@ -46,6 +47,7 @@ if __name__ == "__main__" :
         if options.doTens4Ident:   splitter = 'X_CNN_Identifier'
         if options.doTens4Rate:    splitter = 'X_CNN_Rate'
         if options.doTens4Minator: splitter = 'X_CNN_Minator'
+        if options.doTens4Cotraining: splitter = 'X_CNN_CoTraining'
         tensorsFolder = '/TensorizedInputs_'+options.caloClNxM+options.inTag
 
     if options.doHGCAL:
@@ -145,6 +147,8 @@ if __name__ == "__main__" :
             taglist.append(tag)
         taglists.append(taglist)
 
+    print(taglists)
+
     readFrom = {
         'inputsCalibratorCNN'    : '/X_CNN_Calibrator'+options.caloClNxM,
         'inputsCalibratorDense'  : '/X_Dense_Calibrator'+options.caloClNxM,
@@ -155,6 +159,10 @@ if __name__ == "__main__" :
         'targetsCalibrator'      : '/Y_Calibrator'+options.caloClNxM,
         'targetsIdentifier'      : '/Y_Identifier'+options.caloClNxM,
         'targetsRate'            : '/Y_Rate'+options.caloClNxM,
+        # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+        'inputsCoTrainingCNN'    : '/X_CNN_CoTraining'+options.caloClNxM,
+        'inputsCoTrainingDense'  : '/X_Dense_CoTraining'+options.caloClNxM,
+        'targetsCoTraining'      : '/Y_CoTraining'+options.caloClNxM,
         # ---------------------------------------------------------------------
         'inputsCalibratorBDT'    : '/X_BDT_Calibrator',
         'inputsIdentifierBDT'    : '/X_BDT_Identifier',
@@ -196,7 +204,6 @@ if __name__ == "__main__" :
                     if options.doHGCAL:
                         XsToConcatenate.append(pd.read_pickle(indirs[i_fold]+readFrom['inputsCalibratorBDT']+tag+'.pkl'))
 
-
                 elif options.doTens4Ident:
                     if options.doCALO:
                         X1sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsIdentifierCNN']+tag+'.npz', allow_pickle=True)['arr_0'])
@@ -205,6 +212,11 @@ if __name__ == "__main__" :
 
                     if options.doHGCAL:
                         XsToConcatenate.append(pd.read_pickle(indirs[i_fold]+readFrom['inputsIdentifierBDT']+tag+'.pkl'))
+
+                elif options.doTens4Cotraining:
+                    X1sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsCoTrainingCNN']+tag+'.npz', allow_pickle=True)['arr_0'])
+                    X2sToConcatenate.append(np.load(indirs[i_fold]+readFrom['inputsCoTrainingDense']+tag+'.npz', allow_pickle=True)['arr_0'])
+                    YsToConcatenate.append(np.load(indirs[i_fold]+readFrom['targetsCoTraining']+tag+'.npz', allow_pickle=True)['arr_0'])
 
                 elif options.doTens4Minator:
                     if options.doCALO:
@@ -333,6 +345,15 @@ if __name__ == "__main__" :
         if options.doHGCAL:
             X_train.to_pickle(indir+'/TauBDTIdentifierTraining'+options.outTag+'/X_Ident_BDT_forIdentifier.pkl')
             X_valid.to_pickle(indir+'/TauBDTIdentifierTraining'+options.outTag+'/X_Ident_BDT_forEvaluator.pkl')
+
+    elif options.doTens4Cotraining:
+        np.savez_compressed(indir+'/TauCNN'+options.caloClNxM+'CoTraining'+options.outTag+'/X_CNN_'+options.caloClNxM+'_forTrainer.npz', X1_train)
+        np.savez_compressed(indir+'/TauCNN'+options.caloClNxM+'CoTraining'+options.outTag+'/X_Dense_'+options.caloClNxM+'_forTrainer.npz', X2_train)
+        np.savez_compressed(indir+'/TauCNN'+options.caloClNxM+'CoTraining'+options.outTag+'/Y_'+options.caloClNxM+'_forTrainer.npz', Y_train)
+
+        np.savez_compressed(indir+'/TauCNN'+options.caloClNxM+'CoTraining'+options.outTag+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz', X1_valid)
+        np.savez_compressed(indir+'/TauCNN'+options.caloClNxM+'CoTraining'+options.outTag+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz', X2_valid)
+        np.savez_compressed(indir+'/TauCNN'+options.caloClNxM+'CoTraining'+options.outTag+'/Y_'+options.caloClNxM+'_forEvaluator.npz', Y_valid)
 
     elif options.doTens4Minator:
         if options.doCALO:

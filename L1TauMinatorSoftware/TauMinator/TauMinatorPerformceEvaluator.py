@@ -109,7 +109,7 @@ if __name__ == "__main__" :
     CNN_WP_dict = load_obj(CNNWPdir+'/TauMinatorCNN_WPs.pkl')
     BDT_WP_dict = load_obj(BDTWPdir+'/TauMinatorBDT_WPs.pkl')
 
-    os.system('mkdir -p '+perfdir+'/plots')
+    os.system('mkdir -p '+perfdir+'/turnons')
 
     X1CNN = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_CNN_'+options.caloClNxM+'.npz')['arr_0']
     X2CNN = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_Dense_'+options.caloClNxM+'.npz')['arr_0']
@@ -392,7 +392,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/turnons_WP99.pdf')
+    plt.savefig(perfdir+'/turnons/turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -416,7 +416,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/turnons_WP95.pdf')
+    plt.savefig(perfdir+'/turnons/turnons_WP95.pdf')
     plt.close()
 
     i = 0
@@ -440,7 +440,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/turnons_WP90.pdf')
+    plt.savefig(perfdir+'/turnons/turnons_WP90.pdf')
     plt.close()
 
 
@@ -457,7 +457,7 @@ if __name__ == "__main__" :
     # plt.ylim(0, 200)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/online2offline_WP99.pdf')
+    plt.savefig(perfdir+'/turnons/online2offline_WP99.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -471,7 +471,7 @@ if __name__ == "__main__" :
     # plt.ylim(0, 200)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/online2offline_WP95.pdf')
+    plt.savefig(perfdir+'/turnons/online2offline_WP95.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -485,7 +485,7 @@ if __name__ == "__main__" :
     # plt.ylim(0, 200)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/online2offline_WP90.pdf')
+    plt.savefig(perfdir+'/turnons/online2offline_WP90.pdf')
     plt.close()
 
 
@@ -511,7 +511,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/dm0_turnons_WP99.pdf')
+    plt.savefig(perfdir+'/turnons/dm0_turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -534,7 +534,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/dm1_turnons_WP99.pdf')
+    plt.savefig(perfdir+'/turnons/dm1_turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -557,7 +557,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/dm10_turnons_WP99.pdf')
+    plt.savefig(perfdir+'/turnons/dm10_turnons_WP99.pdf')
     plt.close()
 
     i = 0
@@ -580,7 +580,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'Efficiency')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/dm11_turnons_WP99.pdf')
+    plt.savefig(perfdir+'/turnons/dm11_turnons_WP99.pdf')
     plt.close()
 
 
@@ -601,7 +601,7 @@ if __name__ == "__main__" :
     # plt.ylabel(r'Efficiency')
     # plt.grid()
     # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(perfdir+'/plots/turnons_WP99.pdf')
+    # plt.savefig(perfdir+'/turnons/turnons_WP99.pdf')
     # plt.close()
 
     # i = 0
@@ -619,7 +619,7 @@ if __name__ == "__main__" :
     # plt.ylabel(r'Efficiency')
     # plt.grid()
     # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(perfdir+'/plots/turnons_WP95.pdf')
+    # plt.savefig(perfdir+'/turnons/turnons_WP95.pdf')
     # plt.close()
 
     # i = 0
@@ -637,7 +637,7 @@ if __name__ == "__main__" :
     # plt.ylabel(r'Efficiency')
     # plt.grid()
     # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(perfdir+'/plots/turnons_WP90.pdf')
+    # plt.savefig(perfdir+'/turnons/turnons_WP90.pdf')
     # plt.close()
 
 
@@ -651,7 +651,7 @@ if __name__ == "__main__" :
     plt.yscale('log')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/missed_pt.pdf')
+    plt.savefig(perfdir+'/turnons/missed_pt.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -662,7 +662,7 @@ if __name__ == "__main__" :
     # plt.xlim(0, 110)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/missed_eta.pdf')
+    plt.savefig(perfdir+'/turnons/missed_eta.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -673,7 +673,7 @@ if __name__ == "__main__" :
     # plt.xlim(0, 110)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/missed_phi.pdf')
+    plt.savefig(perfdir+'/turnons/missed_phi.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -684,7 +684,7 @@ if __name__ == "__main__" :
     # plt.xlim(0, 110)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/plots/missed_dm.pdf')
+    plt.savefig(perfdir+'/turnons/missed_dm.pdf')
     plt.close()
 
 

@@ -231,6 +231,160 @@ def TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets,
     np.savez_compressed(saveTensTo['targetsIdentifier'], Y)
 
 
+def TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
+    if len(dfFlatTowClus) == 0:
+        print('** WARNING : no data to be tensorized for identification here')
+        return
+
+    dfGenTaus = dfFlatGenTaus.copy(deep=True)
+    dfGenJets = dfFlatGenJets.copy(deep=True)
+    dfTowClus = dfFlatTowClus.copy(deep=True)
+
+    # compute absolute eta of teh seeds
+    dfTowClus['cl_absSeedIeta'] =  abs(dfTowClus['cl_seedIeta']).astype(int)
+
+    # get clusters' shape dimensions
+    N = int(NxM.split('x')[0])
+    M = int(NxM.split('x')[1])
+
+    # Select only hadronic taus
+    dfGenTaus = dfGenTaus[dfGenTaus['tau_DM'] >= 0]
+
+    # Apply cut on jet pt
+    if uJetPtCut:
+        dfGenJets = dfGenJets[dfGenJets['jet_pt'] <= float(uJetPtCut)]
+    if lJetPtCut:
+        dfGenJets = dfGenJets[dfGenJets['jet_pt'] >= float(lJetPtCut)]
+
+    # Apply cut on tau pt
+    if uTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] <= float(uTauPtCut)]
+    if lTauPtCut:
+        dfGenTaus = dfGenTaus[dfGenTaus['tau_visPt'] >= float(lTauPtCut)]
+
+    # Apply cut on tau eta
+    if uEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) <= float(uEtacut)]
+        dfGenJets = dfGenJets[abs(dfGenJets['jet_eta']) <= float(uEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) <= float(uEtacut)]
+    if lEtacut:
+        dfGenTaus = dfGenTaus[abs(dfGenTaus['tau_eta']) >= float(lEtacut)]
+        dfGenJets = dfGenJets[abs(dfGenJets['jet_eta']) >= float(lEtacut)]
+        dfTowClus = dfTowClus[abs(dfTowClus['cl_seedEta']) >= float(lEtacut)]
+
+    # save unique identifier
+    dfGenTaus['uniqueId'] = 'tau_'+dfGenTaus['event'].astype(str)+'_'+dfGenTaus['tau_Idx'].astype(str)
+    dfGenJets['uniqueId'] = 'jet_'+dfGenJets['event'].astype(str)+'_'+dfGenJets['jet_Idx'].astype(str)
+    dfCluPU  = dfTowClus[(dfTowClus['cl_tauMatchIdx']==-99) & (dfTowClus['cl_jetMatchIdx']==-99)].copy(deep=True)
+    dfCluPU['uniqueId'] = 'pu_'+dfCluPU['event'].astype(str)+'_'+dfCluPU.index.astype(str)
+
+    # join the taus and the clusters datasets -> this creates all the possible combination of clusters and jets/taus for each event
+    # important that dfTowClus is joined to dfGen* and not viceversa --> this because dfGen* contains the safe jets to be used and the safe event numbers
+    dfGenTaus.set_index('event', inplace=True)
+    dfGenJets.set_index('event', inplace=True)
+    dfTowClus.set_index('event', inplace=True)
+    dfCluTau = dfGenTaus.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
+    dfCluJet = dfGenJets.join(dfTowClus, on='event', how='left', rsuffix='_joined', sort=False)
+
+    # remove NaN entries due to missing tau/jet-clu matches
+    dfCluTau.dropna(axis=0, how='any', inplace=True)
+    dfCluJet.dropna(axis=0, how='any', inplace=True)
+
+    # create fake taus columns to facilitate concatenation and target tensorization
+    dfCluPU['tau_visPt'] = -99.9 ; dfCluPU['tau_visEta'] = -99.9 ; dfCluPU['tau_visPhi'] = -99.9 ; dfCluPU['tau_DM'] = -99.9
+    dfCluJet['tau_visPt'] = -99.9 ; dfCluJet['tau_visEta'] = -99.9 ; dfCluJet['tau_visPhi'] = -99.9 ; dfCluJet['tau_DM'] = -99.9
+
+    # make sure these columns are ints and not floats
+    dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluTau[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
+    dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']] = dfCluJet[['cl_absSeedIeta', 'cl_seedIeta', 'cl_seedIphi']].astype(int)
+
+    # split dataframes between signal, qcd and pu
+    # features = ['uniqueId', 'cl_absSeedIeta', 'cl_seedIphi', 'cl_towerEgEt', 'cl_towerEm', 'cl_towerHad']
+    dfCluTau.reset_index(inplace=True)
+    dfCluJet.reset_index(inplace=True)
+    features = ['uniqueId', 'event', 'cl_seedEta', 'cl_seedPhi', 'cl_towerEgEt', 'cl_towerEm', 'cl_towerHad', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM']
+    dfCluTau = dfCluTau[dfCluTau['tau_Idx'] == dfCluTau['cl_tauMatchIdx']][features]
+    dfCluJet = dfCluJet[dfCluJet['jet_Idx'] == dfCluJet['cl_jetMatchIdx']][features]
+    dfCluPU = dfCluPU[features].copy(deep=True)
+
+    # put ID label for signal and backgorund
+    dfCluTau['targetId'] = 1
+    dfCluJet['targetId'] = 0
+    dfCluPU['targetId']  = 0
+
+    # shuffle the rows so that no possible order gets learned
+    dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
+    dfCluJet = dfCluJet.sample(frac=1).copy(deep=True)
+    dfCluPU  = dfCluPU.sample(frac=1).copy(deep=True)
+
+    # get roughly the same amount of signal ad background to have a more balanced dataset
+    if dfCluTau.shape[0] != 0:
+        dfCluJet = dfCluJet.head(dfCluTau.shape[0])
+        dfCluPU  = dfCluPU.head(dfCluTau.shape[0])
+
+    # concatenate and shuffle
+    dfCluTauJetPu = pd.concat([dfCluTau, dfCluJet, dfCluPU], axis=0)
+    dfCluTauJetPu  = dfCluTauJetPu.sample(frac=1).copy(deep=True)
+
+    # make uniqueId the index
+    dfCluTauJetPu.set_index('uniqueId',inplace=True)
+
+    # make the input tensors for the neural network
+    X1L = []
+    X2L = []
+    YL = []
+    for i, idx in enumerate(dfCluTauJetPu.index):
+        # progress
+        if i%100 == 0:
+            print(i/len(dfCluTauJetPu.index)*100, '%')
+
+        # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
+        if len(dfCluTauJetPu.cl_towerHad.loc[idx]) != N*M: continue
+
+        # features of the Dense NN
+        x2l = []
+        x2l.append(dfCluTauJetPu.cl_seedEta.loc[idx])
+        x2l.append(dfCluTauJetPu.cl_seedPhi.loc[idx])
+        x2 = np.array(x2l)
+
+        # features for the CNN
+        x1l = []
+        for j in range(N*M):
+            x1l.append(dfCluTauJetPu.cl_towerEgEt.loc[idx][j])
+            x1l.append(dfCluTauJetPu.cl_towerEm.loc[idx][j])
+            x1l.append(dfCluTauJetPu.cl_towerHad.loc[idx][j])
+        x1 = np.array(x1l).reshape(N,M,3)
+        
+        # target of the NN
+        yl = []
+        yl.append(dfCluTauJetPu.targetId.loc[idx])
+        yl.append(dfCluTauJetPu.tau_visPt.loc[idx])
+        yl.append(dfCluTauJetPu.tau_visEta.loc[idx])
+        yl.append(dfCluTauJetPu.tau_visPhi.loc[idx])
+        yl.append(dfCluTauJetPu.tau_DM.loc[idx])
+        yl.append(dfCluTauJetPu.event.loc[idx])
+        y = np.array(yl)
+
+        # inputs to the NN
+        X1L.append(x1)
+        X2L.append(x2)
+        YL.append(y)
+
+    # tensorize the lists
+    X1 = np.array(X1L)
+    X2 = np.array(X2L)
+    Y = np.array(YL)
+    
+    print(X1.shape)
+    print(X2.shape)
+    print(Y.shape)
+
+    # save .npz files with tensor formatted datasets
+    np.savez_compressed(saveTensTo['inputsCoTrainingCNN'], X1)
+    np.savez_compressed(saveTensTo['inputsCoTrainingDense'], X2)
+    np.savez_compressed(saveTensTo['targetsCoTraining'], Y)
+
+
 def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0 or len(dfFlatGenTaus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
@@ -745,6 +899,7 @@ if __name__ == "__main__" :
     parser.add_option('--doTens4Ident',   dest='doTens4Ident',   action='store_true', default=False)
     parser.add_option('--doTens4Minator', dest='doTens4Minator', action='store_true', default=False)
     parser.add_option('--doTens4Rate',    dest='doTens4Rate',    action='store_true', default=False)
+    parser.add_option('--doTens4Cotraining', dest='doTens4Cotraining', action='store_true', default=False)
     (options, args) = parser.parse_args()
 
     print(options)
@@ -1026,6 +1181,10 @@ if __name__ == "__main__" :
         'targetsIdentifier'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Identifier'+options.caloClNxM+options.infileTag+'.npz',
         'targetsRate'            : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz',
         # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+        'inputsCoTrainingCNN'    : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_CNN_CoTraining'+options.caloClNxM+options.infileTag+'.npz',
+        'inputsCoTrainingDense'  : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/X_Dense_CoTraining'+options.caloClNxM+options.infileTag+'.npz',
+        'targetsCoTraining'      : options.outdir+'/TensorizedInputs_'+options.caloClNxM+outTag+'/Y_CoTraining'+options.caloClNxM+options.infileTag+'.npz',
+        # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
         'inputsCalibratorBDT'    : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Calibrator'+options.infileTag+'.pkl',
         'inputsIdentifierBDT'    : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Identifier'+options.infileTag+'.pkl',
         'inputsRateBDT'          : options.outdir+'/PickledInputs'+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl',
@@ -1039,6 +1198,10 @@ if __name__ == "__main__" :
         'targetsMinatorRate'     : options.outdir+'/MinatorRateInputs_'+options.caloClNxM+outTag+'/Y_Rate'+options.caloClNxM+options.infileTag+'.npz',
         'inputsMinatorRateBDT'   : options.outdir+'/MinatorRateInputs_'+options.caloClNxM+outTag+'/X_BDT_Rate'+options.infileTag+'.pkl',
     }
+
+    if options.doTens4Cotraining:
+        print('** INFO : doing tensorization for co-training')
+        TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
 
     if options.doTens4Calib:
         print('** INFO : doing tensorization for calibration')

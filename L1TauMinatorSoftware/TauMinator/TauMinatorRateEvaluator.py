@@ -96,7 +96,7 @@ if __name__ == "__main__" :
     CNN_WP_dict = load_obj(CNNWPdir+'/TauMinatorCNN_WPs.pkl')
     BDT_WP_dict = load_obj(BDTWPdir+'/TauMinatorBDT_WPs.pkl')
 
-    os.system('mkdir -p '+perfdir+'/plots')
+    os.system('mkdir -p '+perfdir+'/rates')
 
     X1CNN = np.load(indir+'/TauMinatorRateInputs_'+options.caloClNxM+options.inTag+'/X_CNN_'+options.caloClNxM+'.npz')['arr_0']
     X2CNN = np.load(indir+'/TauMinatorRateInputs_'+options.caloClNxM+options.inTag+'/X_Dense_'+options.caloClNxM+'.npz')['arr_0']
@@ -252,7 +252,7 @@ if __name__ == "__main__" :
     for WP in ['99', '95', '90']:
         print('    - WP = '+WP)
 
-        plt.figure(figsize=(8,8))
+        plt.figure(figsize=(10,10))
         plt.plot(rates_offline['singleTau']['wp'+WP+'_pt95'][0], rates_offline['singleTau']['wp'+WP+'_pt95'][1], linewidth=2, color='blue', label='Offline threshold @ 95%')
         plt.plot(rates_offline['singleTau']['wp'+WP+'_pt90'][0], rates_offline['singleTau']['wp'+WP+'_pt90'][1], linewidth=2, color='red', label='Offline threshold @ 90%')
         plt.plot(rates_offline['singleTau']['wp'+WP+'_pt50'][0], rates_offline['singleTau']['wp'+WP+'_pt50'][1], linewidth=2, color='green', label='Offline threshold @ 50%')
@@ -263,14 +263,14 @@ if __name__ == "__main__" :
         plt.xlabel('Offline threshold [GeV]')
         plt.ylabel('Rate [kHz]')
         mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(perfdir+'/plots/rate_singleTau_offline_wp'+WP+'.pdf')
+        plt.savefig(perfdir+'/rates/rate_singleTau_offline_wp'+WP+'.pdf')
         plt.close()
 
         print('        - single tau offline threshold for 25kHz rate @ 95% efficiency = {0}'.format( round(np.interp(25, np.flip(rates_offline['singleTau']['wp'+WP+'_pt95'][1]), np.flip(rates_offline['singleTau']['wp'+WP+'_pt95'][0]), left=0.0, right=0.0),0) ))
         print('        - single tau offline threshold for 25kHz rate @ 90% efficiency = {0}'.format( round(np.interp(25, np.flip(rates_offline['singleTau']['wp'+WP+'_pt90'][1]), np.flip(rates_offline['singleTau']['wp'+WP+'_pt90'][0]), left=0.0, right=0.0),0) ))
         print('        - single tau offline threshold for 25kHz rate @ 50% efficiency = {0}'.format( round(np.interp(25, np.flip(rates_offline['singleTau']['wp'+WP+'_pt50'][1]), np.flip(rates_offline['singleTau']['wp'+WP+'_pt50'][0]), left=0.0, right=0.0),0) ))
 
-        plt.figure(figsize=(8,8))
+        plt.figure(figsize=(10,10))
         plt.plot(rates_offline['doubleTau']['wp'+WP+'_pt95'][0], rates_offline['doubleTau']['wp'+WP+'_pt95'][1], linewidth=2, color='blue', label='Offline threshold @ 95%')
         plt.plot(rates_offline['doubleTau']['wp'+WP+'_pt90'][0], rates_offline['doubleTau']['wp'+WP+'_pt90'][1], linewidth=2, color='red', label='Offline threshold @ 90%')
         plt.plot(rates_offline['doubleTau']['wp'+WP+'_pt50'][0], rates_offline['doubleTau']['wp'+WP+'_pt50'][1], linewidth=2, color='green', label='Offline threshold @ 50%')
@@ -281,7 +281,7 @@ if __name__ == "__main__" :
         plt.xlabel('Offline threshold [GeV]')
         plt.ylabel('Rate [kHz]')
         mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(perfdir+'/plots/rate_doubleTau_offline_wp'+WP+'.pdf')
+        plt.savefig(perfdir+'/rates/rate_doubleTau_offline_wp'+WP+'.pdf')
         plt.close()
 
         print('        - double tau offline threshold for 25kHz rate @ 95% efficiency = {0},{0}'.format( round(np.interp(25, np.flip(rates_offline['doubleTau']['wp'+WP+'_pt95'][1]), np.flip(rates_offline['doubleTau']['wp'+WP+'_pt95'][0]), left=0.0, right=0.0),0) ))

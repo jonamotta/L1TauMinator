@@ -56,6 +56,7 @@ parser.add_option('--doTens4Calib',   dest='doTens4Calib',   action='store_true'
 parser.add_option('--doTens4Ident',   dest='doTens4Ident',   action='store_true', default=False)
 parser.add_option('--doTens4Minator', dest='doTens4Minator', action='store_true', default=False)
 parser.add_option('--doTens4Rate',    dest='doTens4Rate',    action='store_true', default=False)
+parser.add_option('--doTens4Cotraining', dest='doTens4Cotraining', action='store_true', default=False)
 (options, args) = parser.parse_args()
 
 if not options.date or not options.v:
@@ -68,7 +69,7 @@ if not options.doHGCAL and not options.doCALO and not options.doTens4Minator and
     print('** EXITING')
     exit()
 
-if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Minator and not options.doTens4Rate:
+if not options.doTens4Calib and not options.doTens4Ident and not options.doTens4Minator and not options.doTens4Rate and not options.doTens4Cotraining:
     print('** ERROR : no tensorization need specified')
     print('** EXITING')
     exit()
@@ -179,6 +180,7 @@ for i, infile in enumerate(InFiles[:]):
     if options.doTens4Ident:   cmsRun += ' --doTens4Ident'
     if options.doTens4Minator: cmsRun += ' --doTens4Minator'
     if options.doTens4Rate:    cmsRun += ' --doTens4Rate'
+    if options.doTens4Cotraining: cmsRun += ' --doTens4Cotraining'
     cmsRun += ' >& ' + outLogName
 
     skimjob = open(outJobName, 'w')
