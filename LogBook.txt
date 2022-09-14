@@ -84,7 +84,26 @@
 2022_09_10_v8
     * restructuring of the input/output folders to improve workability
     * first try to go up to the full eta coverage TauMinator algo (use event-eta-pt to match taus between CNN and BDT)
+    * full work up to quantization
+    * full work up to rate estimation
+    * still 2 seoarate CNNs for identification and calibration
     
+2022_09_14_v9
+    * first try to have one single CNN shared between identification and calibration
+        * successful, very slight loss in performance of calibration -> should recover that in some other way
+    * first try at making CoTraining of the calibrator and the identifier
+        * identifier benefits form the presence of the calibration loss
+        * calibrator highly degraded from the presence of the identifier loss
+
+
+
+
+
+
+
+
+
+
 
 
 
