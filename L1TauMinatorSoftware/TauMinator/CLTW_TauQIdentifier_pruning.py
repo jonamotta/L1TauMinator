@@ -131,22 +131,22 @@ if __name__ == "__main__" :
         if N <  5 and M <  5: wndw = (1,1)
 
         x = images
-        x = QConv2DBatchnorm(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros',
+        x = QConv2DBatchnorm(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), use_bias=False,
                                                                      kernel_quantizer='quantized_bits(6,0,alpha=1)',  bias_quantizer='quantized_bits(6,0,alpha=1)',
                                                                      name='CNNpBNlayer1')(x)
         x = QActivation('quantized_relu(6,0)', name='reluCNNlayer1')(x)
         x = layers.MaxPooling2D(wndw, name='CNNlayer2')(x)
-        x = QConv2DBatchnorm(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros',
+        x = QConv2DBatchnorm(24, wndw, kernel_initializer=RN(seed=7), use_bias=False,
                                               kernel_quantizer='quantized_bits(6,0,alpha=1)',  bias_quantizer='quantized_bits(6,0,alpha=1)',
                                               name='CNNpBNlayer3')(x)
         x = QActivation('quantized_relu(6,0)', name='reluCNNlayer3')(x)
         x = layers.Flatten(name="CNNflatened")(x)
         x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
-        x = QDense(32, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
+        x = QDense(32, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
         x = QActivation('quantized_relu(6,0)', name='reluDNNlayer1')(x)
-        x = QDense(16, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
+        x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
         x = QActivation('quantized_relu(6,0)', name='reluDNNlayer2')(x)
-        x = QDense(1, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
+        x = QDense(1, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
         x = layers.Activation('sigmoid', name='sigmoidDNNout')(x)
         TauIdentified = x
 
@@ -183,7 +183,7 @@ if __name__ == "__main__" :
 
         ############################## Model training ##############################
 
-        history = TauQIdentifierModelPruned.fit([X1, X2], Y, epochs=30, batch_size=1024, verbose=1, validation_split=0.1, callbacks=callbacks)
+        history = TauQIdentifierModelPruned.fit([X1, X2], Y, epochs=30, batch_size=1024, verbose=1, validation_split=0.2, callbacks=callbacks)
         TauQIdentifierModelPruned.save(outdir + '/TauQCNNIdentifier'+sparsityTag+'Pruned')
 
         for metric in history.history.keys():
@@ -198,6 +198,18 @@ if __name__ == "__main__" :
             mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
             plt.savefig(outdir+'/TauQCNNIdentifier'+sparsityTag+'Pruning_plots/'+metric+'.pdf')
             plt.close()
+
+        ############################## Make split CNN and DNN models ##############################
+
+        image_in = TauQIdentifierModel.get_layer(index=0).get_output_at(0)
+        flat_out = TauQIdentifierModel.get_layer(name='middleMan').get_output_at(0)
+        QCNNmodel = tf.keras.Model([image_in, positions], flat_out)
+        QCNNmodel.save(outdir + '/QCNNmodel'+sparsityTag+'Pruned', include_optimizer=False)
+
+        # flat_in = TauIdentifierModel.get_layer(name='middleMan').get_output_at(0)
+        # id_out  = TauIdentifierModel.get_layer(name='sigmoidDNNout').get_output_at(0)
+        # QDNNmodel = tf.keras.Model(flat_in.inputs, id_out)
+        # DNNmodel.save(outdir + '/QDNNmodel'+sparsityTag+'Pruned', include_optimizer=False)
 
     else:
         TauQIdentifierModelPruned = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauQCNNIdentifier'+sparsityTag+'Pruned', compile=False)
@@ -228,7 +240,7 @@ if __name__ == "__main__" :
     QAUCvalid_pruned = metrics.roc_auc_score(Y_valid, valid_Qident_pruned)
 
     inspectWeights(TauQIdentifierModelPruned, options.sparsity, 'kernel')
-    inspectWeights(TauQIdentifierModelPruned, options.sparsity, 'bias')
+    # inspectWeights(TauQIdentifierModelPruned, options.sparsity, 'bias')
 
     plt.figure(figsize=(10,10))
     plt.plot(QTPRtrain, QFPRtrain, label='Training ROC - Quantized, AUC = %.3f' % (QAUCtrain),   color='blue',lw=2)

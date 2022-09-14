@@ -130,20 +130,20 @@ if __name__ == "__main__" :
         if N <  5 and M <  5: wndw = (1,1)
 
         x = images
-        x = layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer1")(x)
+        x = layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), use_bias=False, name="CNNlayer1")(x)
         x = layers.BatchNormalization(name='BNlayer1')(x)
         x = layers.Activation('relu', name='reluCNNlayer1')(x)
         x = layers.MaxPooling2D(wndw, name="CNNlayer2")(x)
-        x = layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros', name="CNNlayer3")(x)
+        x = layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), use_bias=False, name="CNNlayer3")(x)
         x = layers.BatchNormalization(name='BNlayer2')(x)
         x = layers.Activation('relu', name='reluCNNlayer3')(x)
         x = layers.Flatten(name="CNNflatened")(x)
         x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
-        x = layers.Dense(32, name="DNNlayer1")(x)
+        x = layers.Dense(32, use_bias=False, name="DNNlayer1")(x)
         x = layers.Activation('relu', name='reluDNNlayer1')(x)
-        x = layers.Dense(16, name="DNNlayer2")(x)
+        x = layers.Dense(16, use_bias=False, name="DNNlayer2")(x)
         x = layers.Activation('relu', name='reluDNNlayer2')(x)
-        x = layers.Dense(1, name="DNNout")(x)
+        x = layers.Dense(1, use_bias=False, name="DNNout")(x)
         x = layers.Activation('sigmoid', name='sigmoidDNNout')(x)
         TauIdentified = x
 
@@ -195,6 +195,18 @@ if __name__ == "__main__" :
             plt.savefig(outdir+'/TauCNNIdentifier'+sparsityTag+'Pruning_plots/'+metric+'.pdf')
             plt.close()
 
+        ############################## Make split CNN and DNN models ##############################
+
+        image_in = TauIdentifierModel.get_layer(index=0).get_output_at(0)
+        flat_out = TauIdentifierModel.get_layer(name='middleMan').get_output_at(0)
+        CNNmodel = tf.keras.Model([image_in, positions], flat_out)
+        CNNmodel.save(outdir + '/CNNmodel'+sparsityTag+'Pruned', include_optimizer=False)
+
+        # flat_in = TauIdentifierModel.get_layer(name='middleMan').get_output_at(0)
+        # id_out  = TauIdentifierModel.get_layer(name='sigmoidDNNout').get_output_at(0)
+        # DNNmodel = tf.keras.Model(flat_in.inputs, id_out)
+        # DNNmodel.save(outdir + '/DNNmodel'+sparsityTag+'Pruned', include_optimizer=False)
+
     else:
         TauIdentifierModelPruned = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauCNNIdentifier'+sparsityTag+'Pruned', compile=False)
 
@@ -224,7 +236,7 @@ if __name__ == "__main__" :
     AUCvalid_pruned = metrics.roc_auc_score(Y_valid, valid_ident_pruned)
 
     inspectWeights(TauIdentifierModelPruned, options.sparsity, 'kernel')
-    inspectWeights(TauIdentifierModelPruned, options.sparsity, 'bias')
+    # inspectWeights(TauIdentifierModelPruned, options.sparsity, 'bias')
 
     plt.figure(figsize=(10,10))
     plt.plot(TPRtrain, FPRtrain, label='Training ROC, AUC = %.3f' % (AUCtrain), color='blue', lw=2)

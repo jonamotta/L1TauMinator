@@ -75,6 +75,7 @@ if __name__ == "__main__" :
     parser.add_option("--v",            dest="v",                              default=None)
     parser.add_option("--date",         dest="date",                           default=None)
     parser.add_option("--inTag",        dest="inTag",                          default="")
+    parser.add_option("--inTagCNN",     dest="inTagCNN",                       default="")
     parser.add_option('--caloClNxM',    dest='caloClNxM',                      default="5x9")
     parser.add_option('--train',        dest='train',     action='store_true', default=False)
     (options, args) = parser.parse_args()
@@ -86,7 +87,7 @@ if __name__ == "__main__" :
 
     ############################## Get model inputs ##############################
 
-    indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
+    indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNQCalibrator_plots')
 
@@ -100,9 +101,9 @@ if __name__ == "__main__" :
     # Y is (None, 4)
     #       target: visPt, visEta, visPhi, DM
 
-    X1 = np.load(indir+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
-    X2 = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
-    Y = np.load(indir+'/Y_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
+    X1 = np.load(outdir+'/X_CNN_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
+    X2 = np.load(outdir+'/X_Dense_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
+    Y = np.load(outdir+'/Y_'+options.caloClNxM+'_forCalibrator.npz')['arr_0']
 
 
     ############################## Model definition ##############################
@@ -131,33 +132,21 @@ if __name__ == "__main__" :
         sys.stdout = Logger(outdir+'/TauCNNQCalibrator_plots/training.log')
         print(options)
 
-        images = keras.Input(shape = (N, M, 3), name='TowerClusterImage')
-        positions = keras.Input(shape = 2, name='TowerClusterPosition')
+        CNNflattened = keras.Input(shape=74, name='CNNflattened')
 
         wndw = (2,2)
         if N <  5 and M >= 5: wndw = (1,2)
         if N <  5 and M <  5: wndw = (1,1)
 
-        x = images
-        x = QConv2DBatchnorm(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), bias_initializer='zeros',
-                                                                     kernel_quantizer='quantized_bits(6,0,alpha=1)',  bias_quantizer='quantized_bits(6,0,alpha=1)',
-                                                                     name='CNNpBNlayer1')(x)
-        x = QActivation('quantized_relu(16,6)', name='reluCNNlayer1')(x)
-        x = layers.MaxPooling2D(wndw, name="CNNlayer2")(x)
-        x = QConv2DBatchnorm(24, wndw, kernel_initializer=RN(seed=7), bias_initializer='zeros',
-                                              kernel_quantizer='quantized_bits(6,0,alpha=1)',  bias_quantizer='quantized_bits(6,0,alpha=1)',
-                                              name='CNNpBNlayer3')(x)
-        x = QActivation('quantized_relu(16,6)', name='reluCNNlayer3')(x)
-        x = layers.Flatten(name="CNNflatened")(x)
-        x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
-        x = QDense(32, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
+        x = CNNflattened
+        x = QDense(32, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
         x = QActivation('quantized_relu(16,6)', name='reluDNNlayer1')(x)
-        x = QDense(16, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
+        x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
         x = QActivation('quantized_relu(16,6)', name='reluDNNlayer2')(x)
-        x = QDense(1, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
+        x = QDense(1, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
         TauCalibrated = x
 
-        TauQCalibratorModel = keras.Model([images, positions], TauCalibrated, name='TauCNNCalibrator')
+        TauQCalibratorModel = keras.Model(CNNflattened, TauCalibrated, name='TauCNNCalibrator')
 
         TauQCalibratorModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
                                    loss=tf.keras.losses.MeanAbsolutePercentageError(),
@@ -171,7 +160,10 @@ if __name__ == "__main__" :
 
         ############################## Model training ##############################
 
-        history = TauQCalibratorModel.fit([X1, X2], Y[:,0].reshape(-1,1), epochs=20, batch_size=1024, verbose=1, validation_split=0.1)
+        QCNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/QCNNmodel', compile=False)
+        QCNNprediction = QCNN([X1,X2])
+
+        history = TauQCalibratorModel.fit(QCNNprediction, Y[:,0].reshape(-1,1), epochs=20, batch_size=1024, verbose=1, validation_split=0.2)
 
         TauQCalibratorModel.save(outdir + '/TauCNNQCalibrator')
 
@@ -189,23 +181,25 @@ if __name__ == "__main__" :
             plt.close()
 
     else:
-        TauQCalibratorModel = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag+'/TauCNNQCalibrator', compile=False)
+        QCNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/QCNNmodel', compile=False)
+        TauQCalibratorModel = keras.models.load_model(outdir+'/TauCNNQCalibrator', compile=False)
 
 
     ############################## Model validation ##############################
 
     # load non-quantized model
-    TauCalibratorModel = keras.models.load_model(indir+'/TauCNNCalibrator', compile=False)
+    CNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/CNNmodel', compile=False)
+    TauCalibratorModel = keras.models.load_model(outdir+'/TauCNNCalibrator', compile=False)
 
-    X1_valid = np.load(indir+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    X2_valid = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    Y_valid  = np.load(indir+'/Y_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X1_valid = np.load(outdir+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X2_valid = np.load(outdir+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    Y_valid  = np.load(outdir+'/Y_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
 
-    train_Qcalib = TauQCalibratorModel.predict([X1, X2])
-    valid_Qcalib = TauQCalibratorModel.predict([X1_valid, X2_valid])
+    train_Qcalib = TauQCalibratorModel.predict(QCNN([X1, X2]))
+    valid_Qcalib = TauQCalibratorModel.predict(QCNN([X1_valid, X2_valid]))
 
-    train_calib = TauCalibratorModel.predict([X1, X2])
-    valid_calib = TauCalibratorModel.predict([X1_valid, X2_valid])
+    train_calib = TauCalibratorModel.predict(CNN([X1, X2]))
+    valid_calib = TauCalibratorModel.predict(CNN([X1_valid, X2_valid]))
     
     dfTrain = pd.DataFrame()
     dfTrain['uncalib_pt'] = np.sum(np.sum(np.sum(X1, axis=3), axis=2), axis=1).ravel()
@@ -226,7 +220,7 @@ if __name__ == "__main__" :
     dfValid['gen_dm']     = Y_valid[:,3].ravel()
 
     inspectWeights(TauQCalibratorModel, 'kernel')
-    inspectWeights(TauQCalibratorModel, 'bias')
+    # inspectWeights(TauQCalibratorModel, 'bias')
 
     # PLOTS INCLUSIVE
     plt.figure(figsize=(10,10))
@@ -366,7 +360,7 @@ if __name__ == "__main__" :
     plt.ylim(0, 150)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNQCalibrator_plots/GenToCalibL1_pt.pdf')
+    plt.savefig(outdir+'/TauCNNQCalibrator_plots/GenToCalibL1_pt.pdf')
     plt.close()
 
     trainL1 = dfTrain.groupby('gen_pt_bin')['uncalib_pt'].mean()
@@ -384,7 +378,7 @@ if __name__ == "__main__" :
     plt.ylim(0, 150)
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauCNNQCalibrator_plots/GenToUncalinL1_pt.pdf')
+    plt.savefig(outdir+'/TauCNNQCalibrator_plots/GenToUncalinL1_pt.pdf')
     plt.close()
 
 
