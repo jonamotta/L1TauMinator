@@ -197,15 +197,28 @@ if __name__ == "__main__" :
 
         ############################## Make split CNN and DNN models ##############################
 
-        image_in = TauIdentifierModel.get_layer(index=0).get_output_at(0)
-        flat_out = TauIdentifierModel.get_layer(name='middleMan').get_output_at(0)
+        image_in = TauIdentifierModelPruned.get_layer(index=0).get_output_at(0)
+        flat_out = TauIdentifierModelPruned.get_layer(name='middleMan').get_output_at(0)
         CNNmodel = tf.keras.Model([image_in, positions], flat_out)
         CNNmodel.save(outdir + '/CNNmodel'+sparsityTag+'Pruned', include_optimizer=False)
 
-        # flat_in = TauIdentifierModel.get_layer(name='middleMan').get_output_at(0)
-        # id_out  = TauIdentifierModel.get_layer(name='sigmoidDNNout').get_output_at(0)
-        # DNNmodel = tf.keras.Model(flat_in.inputs, id_out)
-        # DNNmodel.save(outdir + '/DNNmodel'+sparsityTag+'Pruned', include_optimizer=False)
+        input_shape = TauIdentifierModelPruned.layers[11].get_input_shape_at(0)
+        CNNflattened = keras.Input(shape=input_shape, name='CNNflattened')
+        # create the new nodes for each layer in the path
+        x_dnn = CNNflattened
+        for layer in TauIdentifierModelPruned.layers[11:]:
+            x_dnn = layer(x_dnn)
+        DNNmodel = tf.keras.Model(CNNflattened, x_dnn)
+        DNNmodel.save(outdir + '/DNNmodel'+sparsityTag+'Pruned', include_optimizer=False)
+
+        # validate the full model against the two split models
+        y_full  = np.array( TauIdentifierModelPruned.predict([X1, X2]) )
+        y_split = np.array( DNNmodel(CNNmodel([X1, X2])) )
+        if not np.array_equal(y_full, y_split):
+        print('\n\n************************************************************')
+        print(" WARNING : Full model and split model outputs do not match")
+        print("           Output of np.allclose() = "+str(np.allclose(y_full, y_split)))
+        print('************************************************************\n\n')
 
     else:
         TauIdentifierModelPruned = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauCNNIdentifier'+sparsityTag+'Pruned', compile=False)
