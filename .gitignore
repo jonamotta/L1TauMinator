@@ -4,7 +4,6 @@
 __pycache__
 */._*
 */.DS_Store
-*.ipynb
 *.pyc
 *.root
 __init__.py
