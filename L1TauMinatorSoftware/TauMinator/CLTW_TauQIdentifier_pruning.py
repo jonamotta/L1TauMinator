@@ -137,12 +137,12 @@ if __name__ == "__main__" :
 
         x = images
         x = QConv2DBatchnorm(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), use_bias=True,
-                                                                     kernel_quantizer='quantized_bits(6,0,alpha=1)',
+                                                                     kernel_quantizer='quantized_bits(6,0,alpha=1)', bias_quantizer="quantized_bits(6,0,alpha=1)",
                                                                      name='CNNpBNlayer1')(x)
         x = QActivation('quantized_relu(10,7)', name='RELU_CNNpBNlayer1')(x)
         x = layers.MaxPooling2D(wndw, name='MP_CNNpBNlayer1')(x)
         x = QConv2DBatchnorm(24, wndw, kernel_initializer=RN(seed=7), use_bias=True,
-                                              kernel_quantizer='quantized_bits(6,0,alpha=1)',
+                                              kernel_quantizer='quantized_bits(6,0,alpha=1)', bias_quantizer="quantized_bits(6,0,alpha=1)",
                                               name='CNNpBNlayer2')(x)
         x = QActivation('quantized_relu(9,6)', name='RELU_CNNpBNlayer2')(x)
         x = layers.Flatten(name="CNNflatened")(x)

@@ -135,11 +135,11 @@ if __name__ == "__main__" :
 
         x = images
         x = layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), use_bias=False, name="CNNlayer1")(x)
-        x = layers.BatchNormalization(name='BN_CNNlayer1', use_bias=False)(x)
+        x = layers.BatchNormalization(name='BN_CNNlayer1')(x)
         x = layers.Activation('relu', name='RELU_CNNlayer1')(x)
         x = layers.MaxPooling2D(wndw, name="MP_CNNlayer1")(x)
         x = layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), use_bias=False, name="CNNlayer2")(x)
-        x = layers.BatchNormalization(name='BN_CNNlayer2', use_bias=False)(x)
+        x = layers.BatchNormalization(name='BN_CNNlayer2')(x)
         x = layers.Activation('relu', name='RELU_CNNlayer2')(x)
         x = layers.Flatten(name="CNNflatened")(x)
         x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
