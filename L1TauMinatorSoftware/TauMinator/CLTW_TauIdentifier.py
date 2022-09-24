@@ -11,7 +11,8 @@ import numpy as np
 import sys
 import os
 
-np.random.seed(77)
+np.random.seed(7)
+tf.random.set_seed(7)
 
 import matplotlib.pyplot as plt
 import mplhep
@@ -124,27 +125,27 @@ if __name__ == "__main__" :
 
         x = images
         x = layers.Conv2D(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), use_bias=False, name="CNNlayer1")(x)
-        x = layers.BatchNormalization(name='BNlayer1')(x)
-        x = layers.Activation('relu', name='reluCNNlayer1')(x)
-        x = layers.MaxPooling2D(wndw, name="CNNlayer2")(x)
-        x = layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), use_bias=False, name="CNNlayer3")(x)
-        x = layers.BatchNormalization(name='BNlayer2')(x)
-        x = layers.Activation('relu', name='reluCNNlayer3')(x)
+        x = layers.BatchNormalization(name='BN_CNNlayer1')(x)
+        x = layers.Activation('relu', name='RELU_CNNlayer1')(x)
+        x = layers.MaxPooling2D(wndw, name="MP_CNNlayer1")(x)
+        x = layers.Conv2D(24, wndw, kernel_initializer=RN(seed=7), use_bias=False, name="CNNlayer2")(x)
+        x = layers.BatchNormalization(name='BN_CNNlayer2')(x)
+        x = layers.Activation('relu', name='RELU_CNNlayer2')(x)
         x = layers.Flatten(name="CNNflatened")(x)
         x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
         x = layers.Dense(32, use_bias=False, name="DNNlayer1")(x)
-        x = layers.Activation('relu', name='reluDNNlayer1')(x)
+        x = layers.Activation('relu', name='RELU_DNNlayer1')(x)
         x = layers.Dense(16, use_bias=False, name="DNNlayer2")(x)
-        x = layers.Activation('relu', name='reluDNNlayer2')(x)
+        x = layers.Activation('relu', name='RELU_DNNlayer2')(x)
         x = layers.Dense(1, use_bias=False, name="DNNout")(x)
-        x = layers.Activation('sigmoid', name='sigmoidDNNout')(x)
+        x = layers.Activation('sigmoid', name='sigmoid_DNNout')(x)
         TauIdentified = x
 
         TauIdentifierModel = keras.Model([images, positions], TauIdentified, name='TauCNNIdentifier')
 
-        metrics2follow = [tf.keras.metrics.BinaryAccuracy(), tf.keras.metrics.FalseNegatives(), tf.keras.metrics.FalsePositives(), tf.keras.metrics.TrueNegatives(), tf.keras.metrics.TruePositives(), tf.keras.metrics.AUC()]
+        metrics2follow = [tf.keras.metrics.BinaryAccuracy(), tf.keras.metrics.AUC()]
         TauIdentifierModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
-                                   loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                                   loss=tf.keras.losses.BinaryCrossentropy(),
                                    metrics=metrics2follow,
                                    run_eagerly=True)
 
@@ -153,22 +154,41 @@ if __name__ == "__main__" :
 
         ############################## Model training ##############################
 
-        history = TauIdentifierModel.fit([X1, X2], Y, epochs=30, batch_size=1024, verbose=1, validation_split=0.2)
+        callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, mode='min', patience=10, verbose=1, restore_best_weights=True),
+                     tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)]
+
+        history = TauIdentifierModel.fit([X1, X2], Y, epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
 
         TauIdentifierModel.save(outdir + '/TauCNNIdentifier')
 
         for metric in history.history.keys():
-            if 'val_' in metric: continue
+            if metric == 'lr':
+                plt.plot(history.history[metric], lw=2)
+                plt.ylabel('Learning rate')
+                plt.xlabel('Epoch')
+                plt.yscale('log')
+                mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+                plt.savefig(outdir+'/TauCNNIdentifier_plots/'+metric+'.pdf')
+                plt.close()
 
-            plt.plot(history.history[metric], label='Training dataset', lw=2)
-            plt.plot(history.history['val_'+metric], label='Testing dataset', lw=2)
-            plt.ylabel(metric)
-            plt.xlabel('Epoch')
-            if metric=='loss': plt.legend(loc='upper right')
-            else:              plt.legend(loc='lower right')
-            mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-            plt.savefig(outdir+'/TauCNNIdentifier_plots/'+metric+'.pdf')
-            plt.close()
+            else:
+                if 'val_' in metric: continue
+
+                plt.plot(history.history[metric], label='Training dataset', lw=2)
+                plt.plot(history.history['val_'+metric], label='Testing dataset', lw=2)
+                plt.xlabel('Epoch')
+                if metric=='loss':
+                    plt.ylabel('Loss')
+                    plt.legend(loc='upper right')
+                elif metric=='auc':
+                    plt.ylabel('AUC')
+                    plt.legend(loc='lower right')
+                elif metric=='binary_accuracy':
+                    plt.ylabel('Binary accuracy')
+                    plt.legend(loc='lower right')
+                mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+                plt.savefig(outdir+'/TauCNNIdentifier_plots/'+metric+'.pdf')
+                plt.close()
 
         ############################## Make split CNN and DNN models ##############################
 
@@ -177,11 +197,15 @@ if __name__ == "__main__" :
         CNNmodel = tf.keras.Model([image_in, positions], flat_out)
         CNNmodel.save(outdir + '/CNNmodel', include_optimizer=False)
 
-        input_shape = TauIdentifierModel.layers[11].get_input_shape_at(0)
+        idx = 0
+        for layer in TauIdentifierModel.layers:
+            if layer._name == 'middleMan': idx += 1; break
+            idx += 1
+        input_shape = TauIdentifierModel.layers[idx].get_input_shape_at(0)[1]
         CNNflattened = keras.Input(shape=input_shape, name='CNNflattened')
         # create the new nodes for each layer in the path
         x_dnn = CNNflattened
-        for layer in TauIdentifierModel.layers[11:]:
+        for layer in TauIdentifierModel.layers[idx:]:
             x_dnn = layer(x_dnn)
         DNNmodel = tf.keras.Model(CNNflattened, x_dnn)
         DNNmodel.save(outdir + '/DNNmodel', include_optimizer=False)
@@ -190,10 +214,10 @@ if __name__ == "__main__" :
         y_full  = np.array( TauIdentifierModel.predict([X1, X2]) )
         y_split = np.array( DNNmodel(CNNmodel([X1, X2])) )
         if not np.array_equal(y_full, y_split):
-        print('\n\n************************************************************')
-        print(" WARNING : Full model and split model outputs do not match")
-        print("           Output of np.allclose() = "+str(np.allclose(y_full, y_split)))
-        print('************************************************************\n\n')
+            print('\n\n************************************************************')
+            print(" WARNING : Full model and split model outputs do not match")
+            print("           Output of np.allclose() = "+str(np.allclose(y_full, y_split)))
+            print('************************************************************\n\n')
 
     else:
         TauIdentifierModel = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag+'/TauCNNIdentifier', compile=False)

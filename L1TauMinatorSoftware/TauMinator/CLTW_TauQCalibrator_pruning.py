@@ -1,4 +1,5 @@
 from tensorflow_model_optimization.python.core.sparsity.keras import pruning_callbacks
+from tensorflow_model_optimization.sparsity.keras import strip_pruning
 from tensorflow_model_optimization.sparsity import keras as sparsity
 from tensorflow.keras.initializers import RandomNormal as RN
 from qkeras.quantizers import quantized_bits, quantized_relu
@@ -16,6 +17,7 @@ import sys
 import os
 
 np.random.seed(7)
+tf.random.set_seed(7)
 
 import matplotlib.pyplot as plt
 import mplhep
@@ -40,6 +42,7 @@ def inspectWeights(model, sparsityPerc, which):
     if which=='kernel': idx=0
     if which=='bias':   idx=1
 
+    perc = 0 ; cnt = 0
     allWeightsByLayer = {}
     for layer in model.layers:
         if (layer._name).find("batch")!=-1 or len(layer.get_weights())<1:
@@ -47,6 +50,7 @@ def inspectWeights(model, sparsityPerc, which):
         weights=layer.weights[idx].numpy().flatten()
         allWeightsByLayer[layer._name] = weights
         print('Layer {}: % of zeros = {}'.format(layer._name,np.sum(weights==0)/np.size(weights)))
+        if np.sum(weights==0)/np.size(weights) != 0: perc += np.sum(weights==0)/np.size(weights) ; cnt += 1
 
     labelsW = []
     histosW = []
@@ -63,6 +67,7 @@ def inspectWeights(model, sparsityPerc, which):
     plt.xlabel('Weight value')
     plt.xlim(-0.7,0.5)
     plt.yscale('log')
+    plt.figtext(0.65, 0.82, "~{0}% of zeros".format(int(perc/cnt*100)), wrap=True, horizontalalignment='left',verticalalignment='center', fontsize=18)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauCNNQCalibrator'+sparsityTag+'Pruning_plots/modelSparsity_'+which+'.pdf')
     plt.close()
@@ -139,15 +144,11 @@ if __name__ == "__main__" :
 
         CNNflattened = keras.Input(shape=74, name='CNNflattened')
 
-        wndw = (2,2)
-        if N <  5 and M >= 5: wndw = (1,2)
-        if N <  5 and M <  5: wndw = (1,1)
-
         x = CNNflattened
         x = QDense(32, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
-        x = QActivation('quantized_relu(16,6)', name='reluDNNlayer1')(x)
+        x = QActivation('quantized_relu(9,6)', name='RELU_DNNlayer1')(x)
         x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
-        x = QActivation('quantized_relu(16,6)', name='reluDNNlayer2')(x)
+        x = QActivation('quantized_relu(9,6)', name='RELU_DNNlayer2')(x)
         x = QDense(1, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
         TauCalibrated = x
 
@@ -155,12 +156,12 @@ if __name__ == "__main__" :
 
         # Prune all convolutional and dense layers gradually from 0 to 50% sparsity every 2 epochs, ending by the 15th epoch
         batch_size = 1024
-        NSTEPS = int(X1.shape[0]*0.8)  // batch_size
+        NSTEPS = int(X1.shape[0]*0.75)  // batch_size
         def pruneFunction(layer):
             pruning_params = {'pruning_schedule': sparsity.PolynomialDecay(initial_sparsity = 0.0,
                                                                            final_sparsity = options.sparsity, 
                                                                            begin_step = NSTEPS*2, 
-                                                                           end_step = NSTEPS*20, 
+                                                                           end_step = NSTEPS*30, 
                                                                            frequency = NSTEPS)
                              }
             if isinstance(layer, tf.keras.layers.Conv2D):
@@ -170,7 +171,6 @@ if __name__ == "__main__" :
             return layer
 
         TauQCalibratorModelPruned = tf.keras.models.clone_model(TauQCalibratorModel_base, clone_function=pruneFunction)
-        callbacks = [pruning_callbacks.UpdatePruningStep()]
 
         TauQCalibratorModelPruned.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
                                    loss=tf.keras.losses.MeanAbsolutePercentageError(),
@@ -187,21 +187,38 @@ if __name__ == "__main__" :
         QCNNPruned = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/QCNNmodel'+sparsityTag+'Pruned', compile=False)
         QCNNprediction = QCNNPruned([X1,X2])
 
-        history = TauQCalibratorModelPruned.fit([X1, X2], Y[:,0].reshape(-1,1), epochs=20, batch_size=1024, verbose=1, validation_split=0.2, callbacks=callbacks)
+        callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.1, mode='min', patience=10, verbose=1, restore_best_weights=True),
+                     tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1),
+                     pruning_callbacks.UpdatePruningStep()]
+
+        history = TauQCalibratorModelPruned.fit(QCNNprediction, Y[:,0].reshape(-1,1), epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
+        
+        TauQCalibratorModelPruned = strip_pruning(TauQCalibratorModelPruned)
+        
         TauQCalibratorModelPruned.save(outdir + '/TauCNNQCalibrator'+sparsityTag+'Pruned')
 
         for metric in history.history.keys():
-            if 'val_' in metric: continue
+            if metric == 'lr':
+                plt.plot(history.history[metric], lw=2)
+                plt.ylabel('Learning rate')
+                plt.xlabel('Epoch')
+                plt.yscale('log')
+                mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+                plt.savefig(outdir+'/TauCNNQCalibrator'+sparsityTag+'Pruning_plots/'+metric+'.pdf')
+                plt.close()
 
-            plt.plot(history.history[metric], label='Training dataset', lw=2)
-            plt.plot(history.history['val_'+metric], label='Testing dataset', lw=2)
-            plt.ylabel(metric)
-            plt.xlabel('Epoch')
-            if metric=='loss': plt.legend(loc='upper right')
-            else:              plt.legend(loc='lower right')
-            mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-            plt.savefig(outdir+'/TauCNNQCalibrator'+sparsityTag+'Pruning_plots/'+metric+'.pdf')
-            plt.close()
+            else:
+                if 'val_' in metric: continue
+
+                plt.plot(history.history[metric], label='Training dataset', lw=2)
+                plt.plot(history.history['val_'+metric], label='Testing dataset', lw=2)
+                plt.xlabel('Epoch')
+                if metric=='loss': plt.ylabel('Loss')
+                elif metric=='root_mean_squared_error': plt.ylabel('Root Mean Squared Error')
+                plt.legend(loc='upper right')
+                mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+                plt.savefig(outdir+'/TauCNNQCalibrator'+sparsityTag+'Pruning_plots/'+metric+'.pdf')
+                plt.close()
 
     else:
         QCNNPruned = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/QCNNmodel'+sparsityTag+'Pruned', compile=False)
@@ -212,7 +229,7 @@ if __name__ == "__main__" :
 
     # load non-pruned model
     QCNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/QCNNmodel', compile=False)
-    TauQCalibratorModel = keras.models.load_model(outdir+'/TauQCNNCalibrator', compile=False)
+    TauQCalibratorModel = keras.models.load_model(outdir+'/TauCNNQCalibrator', compile=False)
 
     X1_valid = np.load(outdir+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
     X2_valid = np.load(outdir+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']

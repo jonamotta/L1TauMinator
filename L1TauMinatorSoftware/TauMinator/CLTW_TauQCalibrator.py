@@ -13,6 +13,7 @@ import sys
 import os
 
 np.random.seed(7)
+tf.random.set_seed(7)
 
 import matplotlib.pyplot as plt
 import mplhep
@@ -134,15 +135,11 @@ if __name__ == "__main__" :
 
         CNNflattened = keras.Input(shape=74, name='CNNflattened')
 
-        wndw = (2,2)
-        if N <  5 and M >= 5: wndw = (1,2)
-        if N <  5 and M <  5: wndw = (1,1)
-
         x = CNNflattened
         x = QDense(32, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
-        x = QActivation('quantized_relu(16,6)', name='reluDNNlayer1')(x)
+        x = QActivation('quantized_relu(9,6)', name='RELU_DNNlayer1')(x)
         x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
-        x = QActivation('quantized_relu(16,6)', name='reluDNNlayer2')(x)
+        x = QActivation('quantized_relu(9,6)', name='RELU_DNNlayer2')(x)
         x = QDense(1, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
         TauCalibrated = x
 
@@ -163,22 +160,35 @@ if __name__ == "__main__" :
         QCNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/QCNNmodel', compile=False)
         QCNNprediction = QCNN([X1,X2])
 
-        history = TauQCalibratorModel.fit(QCNNprediction, Y[:,0].reshape(-1,1), epochs=20, batch_size=1024, verbose=1, validation_split=0.2)
+        callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.1, mode='min', patience=10, verbose=1, restore_best_weights=True),
+                     tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)]
+
+        history = TauQCalibratorModel.fit(QCNNprediction, Y[:,0].reshape(-1,1), epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
 
         TauQCalibratorModel.save(outdir + '/TauCNNQCalibrator')
 
         for metric in history.history.keys():
-            if 'val_' in metric: continue
+            if metric == 'lr':
+                plt.plot(history.history[metric], lw=2)
+                plt.ylabel('Learning rate')
+                plt.xlabel('Epoch')
+                plt.yscale('log')
+                mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+                plt.savefig(outdir+'/TauCNNQCalibrator_plots/'+metric+'.pdf')
+                plt.close()
 
-            plt.plot(history.history[metric], label='Training dataset', lw=2)
-            plt.plot(history.history['val_'+metric], label='Testing dataset', lw=2)
-            plt.ylabel(metric)
-            plt.xlabel('Epoch')
-            if metric=='loss': plt.legend(loc='upper right')
-            else:              plt.legend(loc='lower right')
-            mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-            plt.savefig(outdir+'/TauCNNQCalibrator_plots/'+metric+'.pdf')
-            plt.close()
+            else:
+                if 'val_' in metric: continue
+
+                plt.plot(history.history[metric], label='Training dataset', lw=2)
+                plt.plot(history.history['val_'+metric], label='Testing dataset', lw=2)
+                plt.xlabel('Epoch')
+                if metric=='loss': plt.ylabel('Loss')
+                elif metric=='root_mean_squared_error': plt.ylabel('Root Mean Squared Error')
+                plt.legend(loc='upper right')
+                mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+                plt.savefig(outdir+'/TauCNNQCalibrator_plots/'+metric+'.pdf')
+                plt.close()
 
     else:
         QCNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/QCNNmodel', compile=False)
