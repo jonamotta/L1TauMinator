@@ -6,6 +6,8 @@ __pycache__
 */.DS_Store
 *.pyc
 *.root
+*.pdf
+*.png
 __init__.py
 L1TauMinatorSoftware/TauMinator/old
 L1TauMinatorSoftware/TauMinator_hls4ml/*/
