@@ -46,6 +46,7 @@ parser.add_option('--doZp1500',       dest='doZp1500',     help='Read the Zp1500
 parser.add_option('--doTestRun',      dest='doTestRun',    help='Do test run with reduced number of events?', action='store_true', default=False)
 # TENSORIZATION OPTIONS
 parser.add_option("--outTag",         dest="outTag",                              default="")
+parser.add_option("--inputPrecision", dest="inputPrecision",                      default=None)
 parser.add_option("--uJetPtCut",      dest="uJetPtCut",                           default=None)
 parser.add_option("--lJetPtCut",      dest="lJetPtCut",                           default=None)
 parser.add_option("--uTauPtCut",      dest="uTauPtCut",                           default=None)
@@ -170,6 +171,7 @@ for i, infile in enumerate(InFiles[:]):
     # TENSORIZATION OPTIONS
     cmsRun += ' --infileTag ' + tag
     if outTag != "":           cmsRun += ' --outTag '    + outTag
+    if options.inputPrecision: cmsRun += ' --inputPrecision ' + options.inputPrecision
     if options.uJetPtCut:      cmsRun += ' --uJetPtCut ' + options.uJetPtCut
     if options.lJetPtCut:      cmsRun += ' --lJetPtCut ' + options.lJetPtCut
     if options.uTauPtCut:      cmsRun += ' --uTauPtCut ' + options.uTauPtCut

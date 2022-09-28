@@ -84,7 +84,7 @@ source /opt/exp_soft/cms/t3/t3setup
 # python MergerSubmitter.py --v 8 --date 2022_09_10 --caloClNxM 5x9 --doCALO  --doTens4Calib --doVBFH --inTag _lTauPtCut18_uEtacut1.5 --outTag _lTauPtCut18_uEtacut1.5
 # python MergerSubmitter.py --v 8 --date 2022_09_10 --caloClNxM 5x9 --doCALO  --doTens4Ident --doVBFH --inTag _lTauPtCut18            --outTag _lTauPtCut18
 
-python MergerSubmitter.py --v 9 --date 2022_09_14 --caloClNxM 5x9 --doCALO  --doTens4Cotraining --doVBFH --inTag _lTauPtCut18_uEtacut1.5 --outTag _lTauPtCut18_uEtacut1.5
+# python MergerSubmitter.py --v 9 --date 2022_09_14 --caloClNxM 5x9 --doCALO  --doTens4Cotraining --doVBFH --inTag _lTauPtCut18_uEtacut1.5 --outTag _lTauPtCut18_uEtacut1.5
 
 # python MergerSubmitter.py --v 8 --date 2022_09_10                 --doHGCAL --doTens4Calib --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
 # python MergerSubmitter.py --v 8 --date 2022_09_10                 --doHGCAL --doTens4Ident --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
@@ -100,4 +100,9 @@ python MergerSubmitter.py --v 9 --date 2022_09_14 --caloClNxM 5x9 --doCALO  --do
 
 # python MergerSubmitter.py --v 8 --date 2022_09_10                 --doCALO  --doTens4Rate    --doMinBias --inTag _lEtacut1.5_uEtacut2.4 --outTag _lEtacut1.5_uEtacut2.4
 # python MergerSubmitter.py --v 8 --date 2022_09_10                 --doHGCAL --doTens4Rate    --doMinBias --inTag _lEtacut1.5_uEtacut2.4 --outTag _lEtacut1.5_uEtacut2.4
+
+# ------------------------------------------------------------------------------------------------------------------------
+
+python MergerSubmitter.py --v 11 --date 2022_09_28 --caloClNxM 5x9 --doCALO  --doTens4Calib --doVBFH --inTag _lTauPtCut18_uEtacut1.5 --outTag _lTauPtCut18_uEtacut1.5
+python MergerSubmitter.py --v 11 --date 2022_09_28 --caloClNxM 5x9 --doCALO  --doTens4Ident --doVBFH --inTag _lTauPtCut18            --outTag _lTauPtCut18
 
