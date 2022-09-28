@@ -9,5 +9,6 @@ __pycache__
 *.pdf
 *.png
 __init__.py
+L1TauMinatorEmulator/utilities/*/
 L1TauMinatorSoftware/TauMinator/old
 L1TauMinatorSoftware/TauMinator_hls4ml/*/

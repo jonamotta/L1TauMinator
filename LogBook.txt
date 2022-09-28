@@ -95,11 +95,33 @@
         * identifier benefits form the presence of the calibration loss
         * calibrator highly degraded from the presence of the identifier loss
 
+    * first time all the way to HLS conversion and resources estimate
+        * architechture with:
+            - ident: Conv2D(16) + Conv2D(24) + Dense(32) + Dense(16) + Dense(1)
+            - calib: Dense(32) + Dense(16) + Dense(1) 
+        * resources through the roof
+            - CNN: ~5% of vu13p
+            - DNN ident: ~1.5% of vu13p
+            - DNN calib: ~1.5% of vu13p
+        * decided to move to a smaller architechture
 
+2022_09_27_v10
+    * move to a smaller architechture to reduce resources usage (choise made on trial and error dimensions)
+        - ident: Conv2D(4) + Conv2D(8) + Dense(16) + Dense(8) + Dense(1)
+        - calib: Dense(16) + Dense(8) + Dense(1)
+    * no HLS ran here
 
-
-
-
+2022_09_28_v11
+    * move to quantized input
+        - quantization in steps of 0.25GeV
+        - max 127.25 GeV
+    * HLS only for the spefic model targeted
+    * tested ParallelizationFactor for first layer -> ParallelizationFactor=4
+        - latency reduced by x2
+        - interval reduced by x3
+        - resources increased by 10%
+        - this means: for ParallelizationFactor=1 to process the same amount of clusters, in the same time of the one with ParallelizationFactor=4, it would need 3 copies
+                      --> the parallelization factor 4 gives a 10% increase in resources but that amounts to ~64% of resources saving when considering the multiplicity of clisters to process
 
 
 
