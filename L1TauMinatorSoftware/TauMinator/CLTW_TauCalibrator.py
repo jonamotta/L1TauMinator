@@ -131,12 +131,12 @@ if __name__ == "__main__" :
         sys.stdout = Logger(outdir+'/TauCNNCalibrator_plots/training.log')
         print(options)
 
-        CNNflattened = keras.Input(shape=74, name='CNNflattened')
+        CNNflattened = keras.Input(shape=26, name='CNNflattened')
 
         x = CNNflattened
-        x = layers.Dense(32, use_bias=False, name="DNNlayer1")(x)
+        x = layers.Dense(16, use_bias=False, name="DNNlayer1")(x)
         x = layers.Activation('relu', name='RELU_DNNlayer1')(x)
-        x = layers.Dense(16, use_bias=False, name="DNNlayer2")(x)
+        x = layers.Dense(8, use_bias=False, name="DNNlayer2")(x)
         x = layers.Activation('relu', name='RELU_DNNlayer2')(x)
         x = layers.Dense(1, use_bias=False, name="DNNout")(x)
         TauCalibrated = x

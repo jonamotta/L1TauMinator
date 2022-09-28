@@ -127,20 +127,20 @@ if __name__ == "__main__" :
         if N <  5 and M <  5: wndw = (1,1)
 
         x = images
-        x = QConv2DBatchnorm(16, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), use_bias=True,
+        x = QConv2DBatchnorm(4, wndw, input_shape=(N, M, 3), kernel_initializer=RN(seed=7), use_bias=True,
                                                                      kernel_quantizer='quantized_bits(6,0,alpha=1)', bias_quantizer="quantized_bits(6,0,alpha=1)",
                                                                      name='CNNpBNlayer1')(x)
         x = QActivation('quantized_relu(10,7)', name='RELU_CNNpBNlayer1')(x)
         x = layers.MaxPooling2D(wndw, name='MP_CNNpBNlayer1')(x)
-        x = QConv2DBatchnorm(24, wndw, kernel_initializer=RN(seed=7), use_bias=True,
+        x = QConv2DBatchnorm(8, wndw, kernel_initializer=RN(seed=7), use_bias=True,
                                               kernel_quantizer='quantized_bits(6,0,alpha=1)', bias_quantizer="quantized_bits(6,0,alpha=1)",
                                               name='CNNpBNlayer2')(x)
         x = QActivation('quantized_relu(9,6)', name='RELU_CNNpBNlayer2')(x)
-        x = layers.Flatten(name="CNNflatened")(x)
+        x = layers.Flatten(name="CNNflattened")(x)
         x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
-        x = QDense(32, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
+        x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
         x = QActivation('quantized_relu(9,6)', name='RELU_DNNlayer1')(x)
-        x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
+        x = QDense(8, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
         x = QActivation('quantized_relu(8,5)', name='RELU_DNNlayer2')(x)
         x = QDense(1, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
         x = layers.Activation('sigmoid', name='sigmoid_DNNout')(x)

@@ -133,12 +133,12 @@ if __name__ == "__main__" :
         sys.stdout = Logger(outdir+'/TauCNNQCalibrator_plots/training.log')
         print(options)
 
-        CNNflattened = keras.Input(shape=74, name='CNNflattened')
+        CNNflattened = keras.Input(shape=26, name='CNNflattened')
 
         x = CNNflattened
-        x = QDense(32, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
+        x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer1')(x)
         x = QActivation('quantized_relu(9,6)', name='RELU_DNNlayer1')(x)
-        x = QDense(16, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
+        x = QDense(8, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name='DNNlayer2')(x)
         x = QActivation('quantized_relu(9,6)', name='RELU_DNNlayer2')(x)
         x = QDense(1, use_bias=False, kernel_quantizer='quantized_bits(6,0,alpha=1)', name="DNNout")(x)
         TauCalibrated = x
