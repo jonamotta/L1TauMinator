@@ -65,6 +65,9 @@ namespace TowerHelper
         int tauMatchIdx = -99;
         int jetMatchIdx = -99;
 
+        float IDscore = 0.;
+        float calibPt = 0.;
+
         std::vector<TowerHit> towerHits;
 
         void InitHits() { towerHits.clear(); }

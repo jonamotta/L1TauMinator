@@ -29,6 +29,9 @@ namespace HGClusterHelper
 
         int tauMatchIdx = -99;
         int jetMatchIdx = -99;
+
+        float IDscore = 0.;
+        float calibPt = 0.;
     };
 
     typedef std::vector<HGCluster> HGClustersCollection;
