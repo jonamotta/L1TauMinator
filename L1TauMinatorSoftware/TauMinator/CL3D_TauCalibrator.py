@@ -84,6 +84,9 @@ if __name__ == "__main__" :
         C1model = LinearRegression().fit(input_c1, target_c1)
 
         save_obj(C1model, indir+'/TauBDTCalibrator/C1model.pkl')
+        with open(indir+'/TauBDTCalibrator/C1model.txt', 'w') as f:
+            f.write('m  = '+str(C1model.coef_[0])+'\n')
+            f.write('z0 = '+str(C1model.intercept_)+'\n')
 
         dfTr['cl3d_c1'] = C1model.predict(dfTr[['cl3d_abseta']])
         dfTr['cl3d_pt_c1'] = dfTr['cl3d_c1'] + dfTr['cl3d_pt']
@@ -98,6 +101,7 @@ if __name__ == "__main__" :
         C2model = xgb.XGBRegressor(booster='gbtree', n_estimators=boostRounds, learning_rate=0.1, max_depth=max_depth).fit(input_c2, target_c2) # eval_metric=mean_absolute_error
 
         save_obj(C2model, indir+'/TauBDTCalibrator/C2model.pkl')
+        C2model.save_model(indir+'/TauBDTCalibrator/C2model.model')
 
         dfTr['cl3d_c2'] = C2model.predict(dfTr[featuresN])
         dfTr['cl3d_pt_c2'] = dfTr['cl3d_c2'] * dfTr['cl3d_pt_c1']
@@ -136,6 +140,12 @@ if __name__ == "__main__" :
         C3model = LinearRegression().fit(input_c3, target_c3)
 
         save_obj(C3model, indir+'/TauBDTCalibrator/C3model.pkl')
+        with open(indir+'/TauBDTCalibrator/C3model.txt', 'w') as f:
+            f.write('k0 = '+str(C3model.intercept_)+'\n')
+            f.write('k1 = '+str(C3model.coef_[0])+'\n')
+            f.write('k2 = '+str(C3model.coef_[1])+'\n')
+            f.write('k3 = '+str(C3model.coef_[2])+'\n')
+            f.write('k4 = '+str(C3model.coef_[3])+'\n')
 
         logpt1 = np.log(abs(dfTr['cl3d_pt_c2']))
         logpt2 = logpt1**2

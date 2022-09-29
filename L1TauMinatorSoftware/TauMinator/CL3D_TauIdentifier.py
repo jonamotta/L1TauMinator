@@ -18,11 +18,6 @@ import mplhep
 plt.style.use(mplhep.style.CMS)
 
 
-def train_xgb(dfTr, features, target, hyperparams):
-    
-
-    return classifier, FPRtrain, TPRtrain, threshold_train, auroc_train, FPRtest, TPRtest, threshold_test, auroc_test
-
 def save_obj(obj,dest):
     with open(dest,'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
@@ -183,9 +178,9 @@ if __name__ == "__main__" :
         X_train, X_test, y_train, y_test = train_test_split(dfTr[featuresN], dfTr['targetId'], stratify=dfTr['targetId'], test_size=0.2)
 
         PUmodel = xgb.XGBClassifier(objective=hyperparams['objective'], booster=hyperparams['booster'], eval_metric=hyperparams['eval_metric'],
-                                       reg_alpha=hyperparams['reg_alpha'], reg_lambda=hyperparams['reg_lambda'], max_depth=hyperparams['max_depth'],
-                                       learning_rate=hyperparams['learning_rate'], subsample=hyperparams['subsample'], colsample_bytree=hyperparams['colsample_bytree'], 
-                                       n_estimators=hyperparams['num_trees'], use_label_encoder=False)
+                                    reg_alpha=hyperparams['reg_alpha'], reg_lambda=hyperparams['reg_lambda'], max_depth=hyperparams['max_depth'],
+                                    learning_rate=hyperparams['learning_rate'], subsample=hyperparams['subsample'], colsample_bytree=hyperparams['colsample_bytree'], 
+                                    n_estimators=hyperparams['num_trees'], use_label_encoder=False)
 
         PUmodel.fit(X_train, y_train)
 
@@ -199,6 +194,7 @@ if __name__ == "__main__" :
         AUCtest = metrics.roc_auc_score(y_train,X_train['bdt_output'])
 
         save_obj(PUmodel, indir+'/TauBDTIdentifier/PUmodel.pkl')
+        PUmodel.save_model(indir+'/TauBDTIdentifier/PUmodel.model')
     else:
         PUmodel = load_obj(indir+'/TauBDTIdentifier/PUmodel.pkl')
         
