@@ -40,9 +40,9 @@ list_njobs = []
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW/")
 # list_njobs.append(60)
 
-# list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
-# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
-# list_njobs.append(240)
+list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
+list_njobs.append(240)
 
 # list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
@@ -84,9 +84,9 @@ list_njobs = []
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
 # list_njobs.append(250)
 
-list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT/")
-list_njobs.append(968)
+# list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT/")
+# list_njobs.append(968)
 
 os.system('mkdir -p /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version)
 os.system('cp listAll.sh /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version)
