@@ -14,4 +14,8 @@
   <class name="std::vector<GenHelper::GenJet>"/>
   <class name="edm::Wrapper<std::vector<GenHelper::GenTau>>"/>
   <class name="edm::Wrapper<std::vector<GenHelper::GenJet>>"/>
+
+  <class name="TauHelper::Tau"/>
+  <class name="std::vector<TauHelper::Tau>"/>
+  <class name="edm::Wrapper<std::vector<TauHelper::Tau>>"/>
 </lcgdict>

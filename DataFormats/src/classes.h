@@ -6,5 +6,6 @@
 #include "L1TauMinator/DataFormats/interface/TowerHelper.h"
 #include "L1TauMinator/DataFormats/interface/HGClusterHelper.h"
 #include "L1TauMinator/DataFormats/interface/GenHelper.h"
+#include "L1TauMinator/DataFormats/interface/TauHelper.h"
 
 #endif
