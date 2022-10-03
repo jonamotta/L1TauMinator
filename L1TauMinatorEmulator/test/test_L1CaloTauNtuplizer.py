@@ -67,9 +67,6 @@ process.source = cms.Source("PoolSource",
         '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/280000/7771879B-1E79-E44A-897D-F27D32F0F555.root',
         # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/280000/9B7AEEB7-7033-E046-8F2A-EEF32273BA86.root',
         # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/280000/9553DB2F-5F59-074B-8CEC-3679D6A1350E.root',
-
-        # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5/GEN-SIM-DIGI-RAW-MINIAOD/PU200_111X_mcRun4_realistic_T15_v1-v1/270000/E7B061EC-5425-284B-BC34-5C0CCD5AFC3C.root',
-        # '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/DA18C0FC-1189-D64B-B3B6-44F3F96F1840.root',
     ),
     secondaryFileNames = cms.untracked.vstring(),
     inputCommands = cms.untracked.vstring(

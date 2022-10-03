@@ -24,7 +24,7 @@ def splitInBlocks (l, n):
 
 ##################################################################
 
-version = "1"
+version = "2"
 
 filedir="/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/inputFiles/"
 
@@ -40,9 +40,9 @@ list_njobs = []
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Phase2HLTTDRWinter20DIGI-NoPU_110X_mcRun4_realistic_v3-v1__GEN-SIM-DIGI-RAW/")
 # list_njobs.append(60)
 
-list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
-list_njobs.append(240)
+# list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v3__GEN-SIM-DIGI-RAW/")
+# list_njobs.append(240)
 
 # list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW.txt"))
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRWinter20DIGI-PU200_110X_mcRun4_realistic_v3-v2__GEN-SIM-DIGI-RAW/")
@@ -64,13 +64,13 @@ list_njobs.append(240)
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/GluGluHToTauTau_M125_14TeV_powheg_pythia8_TuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-NoPU_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
 # list_njobs.append(8)
 
-# list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT.txt"))
-# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
-# list_njobs.append(1057)
+list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
+list_njobs.append(1057)
 
-# list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
-# list_njobs.append(49)
+list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
+list_njobs.append(49)
 
 # list_filelists.append(open(filedir+"ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
@@ -118,7 +118,8 @@ for i in range(len(list_folders)):
         for f in block: jobfilelist.write(f+"\n")
         jobfilelist.close()
 
-        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
+        cmsRun = "cmsRun test_L1CaloTauNtuplizer.py maxEvents=20 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
+        # cmsRun = "cmsRun test_Ntuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
 
         skimjob = open (outJobName, 'w')
         skimjob.write ('#!/bin/bash\n')
