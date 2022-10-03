@@ -39,11 +39,13 @@ if __name__ == "__main__" :
 
     ############################## Get model inputs ##############################
 
-    indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauBDTCalibratorTraining'+options.inTag
-    os.system('mkdir -p '+indir+'/TauBDTCalibrator_plots')
-    os.system('mkdir -p '+indir+'/TauBDTCalibrator')
+    indir  = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
+    outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauBDTCalibratorTraining'+options.inTag
+    os.system('mkdir -p '+outdir+'/TauBDTCalibrator_plots')
+    os.system('mkdir -p '+outdir+'/TauBDTCalibrator')
+    os.system('mkdir -p '+indir+'/CMSSWmodels')
 
-    dfTr = pd.read_pickle(indir+'/X_Calib_BDT_forCalibrator.pkl')
+    dfTr = pd.read_pickle(outdir+'/X_Calib_BDT_forCalibrator.pkl')
     dfTr['cl3d_abseta'] = abs(dfTr['cl3d_eta']).copy(deep=True)
 
 
@@ -83,8 +85,8 @@ if __name__ == "__main__" :
         target_c1 = dfTr['tau_visPt'] - dfTr['cl3d_pt']
         C1model = LinearRegression().fit(input_c1, target_c1)
 
-        save_obj(C1model, indir+'/TauBDTCalibrator/C1model.pkl')
-        with open(indir+'/TauBDTCalibrator/C1model.txt', 'w') as f:
+        save_obj(C1model, outdir+'/TauBDTCalibrator/C1model.pkl')
+        with open(outdir+'/TauBDTCalibrator/C1model.txt', 'w') as f:
             f.write('m  = '+str(C1model.coef_[0])+'\n')
             f.write('z0 = '+str(C1model.intercept_)+'\n')
 
@@ -100,8 +102,8 @@ if __name__ == "__main__" :
         target_c2 = dfTr['tau_visPt'] / dfTr['cl3d_pt_c1']
         C2model = xgb.XGBRegressor(booster='gbtree', n_estimators=boostRounds, learning_rate=0.1, max_depth=max_depth).fit(input_c2, target_c2) # eval_metric=mean_absolute_error
 
-        save_obj(C2model, indir+'/TauBDTCalibrator/C2model.pkl')
-        C2model.save_model(indir+'/TauBDTCalibrator/C2model.model')
+        save_obj(C2model, outdir+'/TauBDTCalibrator/C2model.pkl')
+        C2model.save_model(indir+'/CMSSWmodels/XGBident.model')
 
         dfTr['cl3d_c2'] = C2model.predict(dfTr[featuresN])
         dfTr['cl3d_pt_c2'] = dfTr['cl3d_c2'] * dfTr['cl3d_pt_c1']
@@ -117,7 +119,7 @@ if __name__ == "__main__" :
         plt.yticks(pos, np.array(features)[sorted_idx])
         plt.xlabel(r'Importance score')
         mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(indir+'/TauBDTCalibrator_plots/featureImportance_modelC2.pdf')
+        plt.savefig(outdir+'/TauBDTCalibrator_plots/featureImportance_modelC2.pdf')
 
         ######################### C3 CALIBRATION TRAINING (E dependent calibration) #########################
 
@@ -139,8 +141,8 @@ if __name__ == "__main__" :
         target_c3 = meansTrainPt['cl3d_response_c2']
         C3model = LinearRegression().fit(input_c3, target_c3)
 
-        save_obj(C3model, indir+'/TauBDTCalibrator/C3model.pkl')
-        with open(indir+'/TauBDTCalibrator/C3model.txt', 'w') as f:
+        save_obj(C3model, outdir+'/TauBDTCalibrator/C3model.pkl')
+        with open(outdir+'/TauBDTCalibrator/C3model.txt', 'w') as f:
             f.write('k0 = '+str(C3model.intercept_)+'\n')
             f.write('k1 = '+str(C3model.coef_[0])+'\n')
             f.write('k2 = '+str(C3model.coef_[1])+'\n')
@@ -156,9 +158,9 @@ if __name__ == "__main__" :
         dfTr['cl3d_response_c3'] = dfTr['cl3d_pt_c3'] / dfTr['tau_visPt']
 
     else:
-        C1model = load_obj(indir+'/TauBDTCalibrator/C1model.pkl')
-        C2model = load_obj(indir+'/TauBDTCalibrator/C2model.pkl')
-        C3model = load_obj(indir+'/TauBDTCalibrator/C3model.pkl')
+        C1model = load_obj(outdir+'/TauBDTCalibrator/C1model.pkl')
+        C2model = load_obj(outdir+'/TauBDTCalibrator/C2model.pkl')
+        C3model = load_obj(outdir+'/TauBDTCalibrator/C3model.pkl')
 
         dfTr['cl3d_response'] = dfTr['cl3d_pt'] / dfTr['tau_visPt']
         # application calibration 1
@@ -180,7 +182,7 @@ if __name__ == "__main__" :
 
     ############################## Model validation ##############################
 
-    dfVal = pd.read_pickle(indir+'/X_Calib_BDT_forEvaluator.pkl')
+    dfVal = pd.read_pickle(outdir+'/X_Calib_BDT_forEvaluator.pkl')
     dfVal['cl3d_abseta'] = abs(dfVal['cl3d_eta']).copy(deep=True)
     for i in range(len(features)): dfVal[featuresN[i]] = dfVal[features[i]].copy(deep=True)
 
@@ -227,7 +229,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 4)
     # plt.ylim(0,1750)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/calibResponse_training.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/calibResponse_training.pdf')
     plt.close()
 
     # 2D TRAINING RESPONSE
@@ -240,7 +242,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'$|\eta^{gen,\tau}|$')
     plt.xlim(0, 2)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/response_training_vs_eta.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/response_training_vs_eta.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -253,7 +255,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 2)
     # plt.ylim(0, 200)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/response_training_vs_pt.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/response_training_vs_pt.pdf')
     plt.close()
 
     # VALIDATION RESPONSE
@@ -269,7 +271,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 4)
     # plt.ylim(0, 800)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/calibResponse_validation.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/calibResponse_validation.pdf')
     plt.close()
 
     # 2D VALIDATION RESPONSE
@@ -282,7 +284,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'$|\eta^{gen,\tau}|$')
     plt.xlim(0, 2)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/response_validation_vs_eta.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/response_validation_vs_eta.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -295,7 +297,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 2)
     # plt.ylim(0, 200)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/response_validation_vs_pt.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/response_validation_vs_pt.pdf')
     plt.close()
 
     # 2D VALIDATION C1 RESPONSE
@@ -308,7 +310,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'$|\eta^{gen,\tau}|$')
     plt.xlim(0, 2)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/responseC1_validation_vs_eta.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/responseC1_validation_vs_eta.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -321,7 +323,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 2)
     # plt.ylim(0, 200)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/responseC1_validation_vs_pt.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/responseC1_validation_vs_pt.pdf')
     plt.close()
 
     # 2D VALIDATION C2 RESPONSE
@@ -334,7 +336,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'$|\eta^{gen,\tau}|$')
     plt.xlim(0, 2)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/responseC2_validation_vs_eta.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/responseC2_validation_vs_eta.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -347,7 +349,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 2)
     # plt.ylim(0, 200)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/responseC2_validation_vs_pt.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/responseC2_validation_vs_pt.pdf')
     plt.close()
 
     # SEPARATE DMs RESPONSE
@@ -370,7 +372,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 4)
     # plt.ylim(0, 450)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/DM_c0Response_validation.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/DM_c0Response_validation.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -385,7 +387,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 4)
     # plt.ylim(0, 450)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/DM_c1Response_validation.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/DM_c1Response_validation.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -400,7 +402,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 4)
     # plt.ylim(0, 450)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/DM_c2Response_validation.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/DM_c2Response_validation.pdf')
     plt.close()
 
     plt.figure(figsize=(10,10))
@@ -415,7 +417,7 @@ if __name__ == "__main__" :
     plt.xlim(0, 4)
     # plt.ylim(0, 450)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/DM_c3Response_validation.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/DM_c3Response_validation.pdf')
     plt.close()
 
     # TRAINING VALIDATION OVERLAY
@@ -430,5 +432,5 @@ if __name__ == "__main__" :
     plt.xlim(0,5)
     # plt.ylim(0,1750)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTCalibrator_plots/responses_comparison.pdf')
+    plt.savefig(outdir+'/TauBDTCalibrator_plots/responses_comparison.pdf')
     plt.close()

@@ -8,6 +8,7 @@ from sklearn import metrics
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import cmsml
 import sys
 import os
 
@@ -86,9 +87,10 @@ if __name__ == "__main__" :
 
     ############################## Get model inputs ##############################
 
-    indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
+    indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNIdentifier_plots')
+    os.system('mkdir -p '+indir+'/CMSSWmodels')
 
     # X1 is (None, N, M, 3)
     #       N runs over eta, M runs over phi
@@ -100,9 +102,9 @@ if __name__ == "__main__" :
     # Y is (None, 1)
     #       target: particel ID (tau = 1, non-tau = 0)
 
-    X1 = np.load(indir+'/X_CNN_'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
-    X2 = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
-    Y = np.load(indir+'/Y_'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
+    X1 = np.load(outdir+'/X_CNN_'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
+    X2 = np.load(outdir+'/X_Dense_'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
+    Y = np.load(outdir+'/Y_'+options.caloClNxM+'_forIdentifier.npz')['arr_0']
 
     
     ############################## Models definition ##############################
@@ -196,19 +198,23 @@ if __name__ == "__main__" :
         flat_out = TauIdentifierModel.get_layer(name='middleMan').get_output_at(0)
         CNNmodel = tf.keras.Model([image_in, positions], flat_out)
         CNNmodel.save(outdir + '/CNNmodel', include_optimizer=False)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CNNmodel.pb', CNNmodel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CNNmodel.pb.txt', CNNmodel, variables_to_constants=True)
 
         idx = 0
         for layer in TauIdentifierModel.layers:
             if layer._name == 'middleMan': idx += 1; break
             idx += 1
         input_shape = TauIdentifierModel.layers[idx].get_input_shape_at(0)[1]
-        CNNflattened = keras.Input(shape=input_shape, name='CNNflattened')
+        middleMan = keras.Input(shape=input_shape, name='middleMan')
         # create the new nodes for each layer in the path
-        x_dnn = CNNflattened
+        x_dnn = middleMan
         for layer in TauIdentifierModel.layers[idx:]:
             x_dnn = layer(x_dnn)
-        DNNmodel = tf.keras.Model(CNNflattened, x_dnn)
+        DNNmodel = tf.keras.Model(middleMan, x_dnn)
         DNNmodel.save(outdir + '/DNNmodel', include_optimizer=False)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNident.pb', DNNmodel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNident.pb.txt', DNNmodel, variables_to_constants=True)
 
         # validate the full model against the two split models
         y_full  = np.array( TauIdentifierModel.predict([X1, X2]) )
@@ -224,9 +230,9 @@ if __name__ == "__main__" :
 
     ############################## Model validation ##############################
 
-    X1_valid = np.load(indir+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    X2_valid = np.load(indir+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
-    Y_valid  = np.load(indir+'/Y_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X1_valid = np.load(outdir+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    X2_valid = np.load(outdir+'/X_Dense_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
+    Y_valid  = np.load(outdir+'/Y_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
 
     train_ident = TauIdentifierModel.predict([X1, X2])
     FPRtrain, TPRtrain, THRtrain = metrics.roc_curve(Y, train_ident)

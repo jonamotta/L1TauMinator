@@ -62,11 +62,13 @@ if __name__ == "__main__" :
 
     ############################## Get model inputs ##############################
 
-    indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauBDTIdentifierTraining'+options.inTag
-    os.system('mkdir -p '+indir+'/TauBDTIdentifier_plots')
-    os.system('mkdir -p '+indir+'/TauBDTIdentifier')
+    indir  = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
+    outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauBDTIdentifierTraining'+options.inTag
+    os.system('mkdir -p '+outdir+'/TauBDTIdentifier_plots')
+    os.system('mkdir -p '+outdir+'/TauBDTIdentifier')
+    os.system('mkdir -p '+indir+'/CMSSWmodels')
 
-    dfTr = pd.read_pickle(indir+'/X_Ident_BDT_forIdentifier.pkl')
+    dfTr = pd.read_pickle(outdir+'/X_Ident_BDT_forIdentifier.pkl')
     dfTr['cl3d_abseta'] = abs(dfTr['cl3d_eta']).copy(deep=True)
 
 
@@ -193,10 +195,10 @@ if __name__ == "__main__" :
         AUCtrain = metrics.roc_auc_score(y_test,X_test['bdt_output'])
         AUCtest = metrics.roc_auc_score(y_train,X_train['bdt_output'])
 
-        save_obj(PUmodel, indir+'/TauBDTIdentifier/PUmodel.pkl')
-        PUmodel.save_model(indir+'/TauBDTIdentifier/PUmodel.model')
+        save_obj(PUmodel, outdir+'/TauBDTIdentifier/PUmodel.pkl')
+        PUmodel.save_model(indir+'/CMSSWmodels/XGBident.model')
     else:
-        PUmodel = load_obj(indir+'/TauBDTIdentifier/PUmodel.pkl')
+        PUmodel = load_obj(outdir+'/TauBDTIdentifier/PUmodel.pkl')
         
         X_train, X_test, y_train, y_test = train_test_split(dfTr[featuresN], dfTr['targetId'], stratify=dfTr['targetId'], test_size=0.2)
 
@@ -211,7 +213,7 @@ if __name__ == "__main__" :
 
     ############################## Model validation ##############################
 
-    dfVal = pd.read_pickle(indir+'/X_Ident_BDT_forEvaluator.pkl')
+    dfVal = pd.read_pickle(outdir+'/X_Ident_BDT_forEvaluator.pkl')
     dfVal['cl3d_abseta'] = abs(dfVal['cl3d_eta']).copy(deep=True)
     for i in range(len(features)): dfVal[featuresN[i]] = dfVal[features[i]].copy(deep=True)
 
@@ -248,7 +250,7 @@ if __name__ == "__main__" :
     dfPU = dfTr.query('targetId==0')
     dfTau = dfTr.query('targetId==1')
 
-    os.system('mkdir -p '+indir+'/TauBDTIdentifier_plots/features/')
+    os.system('mkdir -p '+outdir+'/TauBDTIdentifier_plots/features/')
 
     for var in features:
         plt.figure(figsize=(10,10))
@@ -259,7 +261,7 @@ if __name__ == "__main__" :
         plt.xlabel(features_dict[var][0])
         plt.ylabel(r'a.u.')
         mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(indir+'/TauBDTIdentifier_plots/features/'+var+'.pdf')
+        plt.savefig(outdir+'/TauBDTIdentifier_plots/features/'+var+'.pdf')
         plt.close()
 
     del dfPU, dfTau
@@ -279,7 +281,7 @@ if __name__ == "__main__" :
     plt.xlabel('Signal efficiency')
     plt.ylabel('Background efficiency')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTIdentifier_plots/PUbdt_train_test_validation_rocs.pdf')
+    plt.savefig(outdir+'/TauBDTIdentifier_plots/PUbdt_train_test_validation_rocs.pdf')
     plt.close()
 
 
@@ -296,7 +298,7 @@ if __name__ == "__main__" :
     plt.yticks(pos, np.array(features)[sorted_idx])
     plt.xlabel(r'Importance score')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTIdentifier_plots/PUbdt_importances.pdf')
+    plt.savefig(outdir+'/TauBDTIdentifier_plots/PUbdt_importances.pdf')
 
 
     df = pd.concat([dfTr.query('targetId==1').sample(1500), dfTr.query('targetId==0').sample(1500)], sort=False)[features]
@@ -307,7 +309,7 @@ if __name__ == "__main__" :
     shap.plots.beeswarm(shap_values, max_display=99, show=False)
     plt.gcf().subplots_adjust(left=0.25)
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU', fontsize=16)
-    plt.savefig(indir+'/TauBDTIdentifier_plots/PUbdt_SHAPimportance.pdf')
+    plt.savefig(outdir+'/TauBDTIdentifier_plots/PUbdt_SHAPimportance.pdf')
     plt.close()
 
     most_importants = list(global_shap_importance(shap_values)['features'])[:3]
@@ -315,7 +317,7 @@ if __name__ == "__main__" :
         plt.figure(figsize=(20,20))
         shap.plots.scatter(shap_values[:,feat], color=shap_values, show=False)
         mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU', fontsize=16)
-        plt.savefig(indir+'/TauBDTIdentifier_plots/PUbdt_SHAPdependence_'+feat+'.pdf')
+        plt.savefig(outdir+'/TauBDTIdentifier_plots/PUbdt_SHAPdependence_'+feat+'.pdf')
         plt.close()
     
 
@@ -332,7 +334,7 @@ if __name__ == "__main__" :
     plt.ylabel(r'a.u.')
     plt.grid(linestyle=':')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(indir+'/TauBDTIdentifier_plots/PUbdt_score_.pdf')
+    plt.savefig(outdir+'/TauBDTIdentifier_plots/PUbdt_score_.pdf')
     plt.close()
 
     del dfPU, dfTau

@@ -6,6 +6,7 @@ from tensorflow import keras
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import cmsml
 import shap
 import sys
 import os
@@ -71,12 +72,12 @@ def inspectWeights(model, which):
 if __name__ == "__main__" :
     
     parser = OptionParser()
-    parser.add_option("--v",            dest="v",                              default=None)
-    parser.add_option("--date",         dest="date",                           default=None)
-    parser.add_option("--inTag",        dest="inTag",                          default="")
-    parser.add_option("--inTagCNN",     dest="inTagCNN",                       default="")
-    parser.add_option('--caloClNxM',    dest='caloClNxM',                      default="5x9")
-    parser.add_option('--train',        dest='train',     action='store_true', default=False)
+    parser.add_option("--v",            dest="v",                                 default=None)
+    parser.add_option("--date",         dest="date",                              default=None)
+    parser.add_option("--inTag",        dest="inTag",                             default="")
+    parser.add_option("--inTagCNN",     dest="inTagCNN",                          default="")
+    parser.add_option('--caloClNxM',    dest='caloClNxM',                         default="5x9")
+    parser.add_option('--train',        dest='train',        action='store_true', default=False)
     (options, args) = parser.parse_args()
     print(options)
 
@@ -89,6 +90,7 @@ if __name__ == "__main__" :
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTag
     os.system('mkdir -p '+outdir+'/TauCNNCalibrator_plots')
+    os.system('mkdir -p '+indir+'/CMSSWmodels')
 
     # X1 is (None, N, M, 3)
     #       N runs over eta, M runs over phi
@@ -131,9 +133,9 @@ if __name__ == "__main__" :
         sys.stdout = Logger(outdir+'/TauCNNCalibrator_plots/training.log')
         print(options)
 
-        CNNflattened = keras.Input(shape=26, name='CNNflattened')
+        middleMan = keras.Input(shape=26, name='middleMan')
 
-        x = CNNflattened
+        x = middleMan
         x = layers.Dense(16, use_bias=False, name="DNNlayer1")(x)
         x = layers.Activation('relu', name='RELU_DNNlayer1')(x)
         x = layers.Dense(8, use_bias=False, name="DNNlayer2")(x)
@@ -141,7 +143,7 @@ if __name__ == "__main__" :
         x = layers.Dense(1, use_bias=False, name="DNNout")(x)
         TauCalibrated = x
 
-        TauCalibratorModel = keras.Model(CNNflattened, TauCalibrated, name='TauCNNCalibrator')
+        TauCalibratorModel = keras.Model(middleMan, TauCalibrated, name='TauCNNCalibrator')
 
         TauCalibratorModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
                                    loss=tf.keras.losses.MeanAbsolutePercentageError(),
@@ -163,6 +165,8 @@ if __name__ == "__main__" :
         history = TauCalibratorModel.fit(CNNprediction, Y[:,0].reshape(-1,1), epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
 
         TauCalibratorModel.save(outdir+'/TauCNNCalibrator')
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNcalib.pb', TauCalibratorModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNcalib.pb.txt', TauCalibratorModel, variables_to_constants=True)
 
         for metric in history.history.keys():
             if metric == 'lr':
@@ -190,7 +194,6 @@ if __name__ == "__main__" :
     else:
         CNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/CNNmodel', compile=False)
         TauCalibratorModel = keras.models.load_model(outdir+'/TauCNNCalibrator', compile=False)
-
 
     ############################## Model validation ##############################
 
