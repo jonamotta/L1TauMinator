@@ -158,8 +158,11 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     std::vector<TowerHelper::TowerHit> l1CaloTowers;
 
     iEvent.getByToken(l1TowersToken, l1CaloTowerHandle);
+    int warnings = 0;
     for (auto &hit : *l1CaloTowerHandle.product())
     {
+        if (hit.towerIEta() == -1016 && hit.towerIPhi() == -962) { warnings += 1; }
+
         TowerHelper::TowerHit l1Hit;
         l1Hit.isBarrel     = true;
         l1Hit.l1egTowerEt  = hit.l1egTowerEt();
@@ -178,6 +181,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
         l1CaloTowers.push_back(l1Hit);
     }
+    if (warnings != 0) { std::cout << " ** WARNING : FOUND " << warnings << " TOWERS WITH towerIeta=-1016 AND towerIphi=-962" << std::endl; }
 
     int maxIetaHGCal = 0;
     iEvent.getByToken(hgcalTowersToken, hgcalTowersHandle);
@@ -248,6 +252,100 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         if (abs(l1Hit_B.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_B);
     }
 
+    // Fill missing towers in HGCAL due to current simulation limitation (because right now they are produced starting from modules and some TT do not have a centered module in front of them)
+    // --> just fill with zeros (JB approves)
+    std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
+    {
+        if (a.towerIeta == b.towerIeta) { return a.towerIphi < b.towerIphi; }
+        else                            { return a.towerIeta < b.towerIeta; }
+    });
+    int iEtaProgression = -39;
+    int iPhiProgression = 1;
+    for (auto &l1CaloTower : l1CaloTowers)
+    {
+        // skip towers with the weird IEta=-1016 IPhi=-962 values and they will also be filled with zeros
+        if (l1CaloTower.towerIeta < -39) { continue; }
+
+        int iPhiDiff = l1CaloTower.towerIphi - iPhiProgression;
+        int max = iPhiProgression+iPhiDiff;
+        if (iPhiDiff != 0)
+        {   
+            if (iPhiDiff<0) { max = 73; } // account for circularity 72->1
+            for (int iPhi=iPhiProgression; iPhi < max; ++iPhi)
+            {
+                TowerHelper::TowerHit l1Hit;
+                if (abs(iEtaProgression)<=17) { l1Hit.isBarrel = true; }
+                else                          { l1Hit.isBarrel = false; }
+                l1Hit.l1egTowerEt  = 0;
+                l1Hit.l1egTowerIet = 0;
+                l1Hit.nL1eg        = 0;
+                l1Hit.towerEta     = iEtaProgression * 0.0845;
+                if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
+                else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
+                l1Hit.towerEm      = 0.0;
+                l1Hit.towerHad     = 0.0;
+                l1Hit.towerEt      = 0.0;
+                l1Hit.towerIeta    = iEtaProgression;
+                l1Hit.towerIphi    = iPhi;
+                l1Hit.towerIem     = 0;
+                l1Hit.towerIhad    = 0;
+                l1Hit.towerIet     = 0;
+                
+                l1CaloTowers.push_back(l1Hit);
+
+                if (DEBUG) { std::cout << "Adding missing tower with iEta " << iEtaProgression << " iPhi " << iPhi << std::endl; }
+
+                iPhiProgression += 1;
+            }
+            if (max==73) // hack to account for circularity 72->1
+            {
+                iEtaProgression += 1;
+                if (iEtaProgression == 0) { iEtaProgression += 1;} // skip iEta=0
+                
+                for (int iPhi=1; iPhi < l1CaloTower.towerIphi; ++iPhi)
+                {
+                    TowerHelper::TowerHit l1Hit;
+                    if (abs(iEtaProgression)<=17) { l1Hit.isBarrel = true; }
+                    else                          { l1Hit.isBarrel = false; }
+                    l1Hit.l1egTowerEt  = 0;
+                    l1Hit.l1egTowerIet = 0;
+                    l1Hit.nL1eg        = 0;
+                    l1Hit.towerEta     = iEtaProgression * 0.0845;
+                    if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
+                    else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
+                    l1Hit.towerEm      = 0.0;
+                    l1Hit.towerHad     = 0.0;
+                    l1Hit.towerEt      = 0.0;
+                    l1Hit.towerIeta    = iEtaProgression;
+                    l1Hit.towerIphi    = iPhi;
+                    l1Hit.towerIem     = 0;
+                    l1Hit.towerIhad    = 0;
+                    l1Hit.towerIet     = 0;
+                    
+                    l1CaloTowers.push_back(l1Hit);
+
+                    if (DEBUG) { std::cout << "Adding missing tower with iEta " << iEtaProgression << " iPhi " << iPhi << std::endl; }
+
+                    iPhiProgression += 1;
+                }
+
+                iEtaProgression -= 1;
+                if (iEtaProgression == 0) { iEtaProgression -= 1;} // skip iEta=0
+            }
+        }
+        
+        iPhiProgression += 1;
+        if (iPhiProgression > 72)
+        {
+            iPhiProgression = 1;
+            iEtaProgression += 1;
+            if (iEtaProgression == 0) { iEtaProgression += 1;} // skip iEta=0
+        }
+        if (max == 73) { iPhiProgression = l1CaloTower.towerIphi+1; } // hack to account for circularity 72->1
+
+        if (iEtaProgression>39) { break; }
+    }
+
     if (DEBUG)
     {
         std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
@@ -258,14 +356,14 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            printf("CALO TOWER iEta %i iPhi %i eta %f phi %f iem %i ihad %i iet %i nL1eg %i\n",
+            printf("CALO TOWER iEta %i iPhi %i eta %f phi %f em %f had %f et %f nL1eg %i\n",
                 (int)l1CaloTower.towerIeta,
                 (int)l1CaloTower.towerIphi,
                 l1CaloTower.towerEta,
                 l1CaloTower.towerPhi,
-                l1CaloTower.towerIem,
-                l1CaloTower.towerIhad,
-                l1CaloTower.towerIet,
+                l1CaloTower.towerEm,
+                l1CaloTower.towerHad,
+                l1CaloTower.towerEt,
                 l1CaloTower.nL1eg);
         }
     }
@@ -403,12 +501,14 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(cluNxM.towerHits);
         cluNxM.InitHits(); cluNxM.towerHits = sortedHits;
 
+        if (int(sortedHits.size()) != etaClusterDimension*phiClusterDimension) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
+
         // Fill inputs for Tensorflow inference
         for (int eta = 0; eta < etaClusterDimension; ++eta)
         {
             for (int phi = 0; phi < phiClusterDimension; ++phi)
             {
-                int towerIdx = eta*phiClusterDimension + phi - 1;
+                int towerIdx = eta*phiClusterDimension + phi;
                 if (CNNfilters == 3)
                 {
                     TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 0) = cluNxM.towerHits[towerIdx].l1egTowerEt;
@@ -418,6 +518,12 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
                 else if (CNNfilters == 1)
                 {
                     TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 0) = cluNxM.towerHits[towerIdx].towerEt;
+                }
+
+                if (DEBUG)
+                {
+                    std::cout << "(" << eta << "," << phi << ")[" << towerIdx << "]        " << cluNxM.towerHits[towerIdx].l1egTowerEt << "    " << cluNxM.towerHits[towerIdx].towerEm << "    " << cluNxM.towerHits[towerIdx].towerHad << "\n" << std::endl;
+                    if (phi==phiClusterDimension-1) { std::cout << "" << std::endl; }
                 }
             }
         }
@@ -432,16 +538,16 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     // Apply CNN model
     tensorflow::NamedTensorList CNNinputList = {{"TowerClusterImage", TowerClusterImage}, {"TowerClusterPosition", TowerClusterPosition}};
     std::vector<tensorflow::Tensor> CNNoutputs;
-    tensorflow::run(CNNsession, CNNinputList, {"middleMan"}, &CNNoutputs);
+    tensorflow::run(CNNsession, CNNinputList, {"model/middleMan/concat"}, &CNNoutputs);
     tensorflow::NamedTensorList DNNinputsList = {{"middleMan", CNNoutputs[0]}};
 
     // Apply DNN for identification
     std::vector<tensorflow::Tensor> DNNoutputsIdent;
-    tensorflow::run(DNNsessionIdent, DNNinputsList, {"sigmoid_DNNout"}, &DNNoutputsIdent);
+    tensorflow::run(DNNsessionIdent, DNNinputsList, {"model_1/sigmoid_DNNout/Sigmoid"}, &DNNoutputsIdent);
 
     // Apply DNN for calibration
     std::vector<tensorflow::Tensor> DNNoutputsCalib;
-    tensorflow::run(DNNsessionCalib, DNNinputsList, {"DNNout"}, &DNNoutputsCalib);
+    tensorflow::run(DNNsessionCalib, DNNinputsList, {"TauCNNCalibrator/DNNout/MatMul"}, &DNNoutputsCalib);
 
     // Fill CNN+DNN output variables of TowerClusters
     cluIdx = 0;
@@ -542,7 +648,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
         for (int i = 0; i < nmb_calib_feats; ++i)
         {
-            if (XGBcalib_feats[i] == "cl3d_pt")               { CalibData[cluIdx][i] =  HGCluster.pt; }
+            if (XGBcalib_feats[i] == "cl3d_pt")               { CalibData[cluIdx][i] =  HGCluster.pt + (C1calib_params[0] * abs(HGCluster.eta) + C1calib_params[1]); } // C2 wants the C1Pt as input
             if (XGBcalib_feats[i] == "cl3d_e")                { CalibData[cluIdx][i] =  HGCluster.energy; }
             if (XGBcalib_feats[i] == "cl3d_eta")              { CalibData[cluIdx][i] =  HGCluster.eta; }
             if (XGBcalib_feats[i] == "cl3d_abseta")           { CalibData[cluIdx][i] =  abs(HGCluster.eta); }
@@ -610,7 +716,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     {
         HGCluster.IDscore = XGBoutputsIdent[cluIdx];
         
-        float c1pt = HGCluster.pt + (C1calib_params[0] * HGCluster.pt + C1calib_params[1]);
+        float c1pt = HGCluster.pt + (C1calib_params[0] * abs(HGCluster.eta) + C1calib_params[1]);
         float c2pt = c1pt * XGBoutputsCalib[cluIdx];
         float c2pt_log = log(abs(c2pt));
         float c3pt = c2pt / (C3calib_params[0] + C3calib_params[1] * c2pt_log + C3calib_params[2] * pow(c2pt_log,2) + C3calib_params[3] * pow(c2pt_log,3) + C3calib_params[4] * pow(c2pt_log,4));

@@ -96,6 +96,8 @@ class L1CaloTauNtuplizer : public edm::EDAnalyzer {
         std::vector<float>  _l1tau_IDscore;
         std::vector<int>    _l1tau_tauMatchIdx;
 
+        std::vector<float> _cl3d_calibPt;
+        std::vector<float> _cl3d_IDscore;
         std::vector<float> _cl3d_pt;
         std::vector<float> _cl3d_energy;
         std::vector<float> _cl3d_eta;
@@ -117,6 +119,9 @@ class L1CaloTauNtuplizer : public edm::EDAnalyzer {
         std::vector<int>   _cl3d_tauMatchIdx;
         std::vector<int>   _cl3d_jetMatchIdx;
 
+        
+        std::vector<float> _clNxM_calibPt;
+        std::vector<float> _clNxM_IDscore;
         std::vector<bool>  _clNxM_barrelSeeded;
         std::vector<int>   _clNxM_nHits;
         std::vector<int>   _clNxM_nEGs;
@@ -211,6 +216,8 @@ void L1CaloTauNtuplizer::Initialize()
     _l1tau_IDscore.clear();
     _l1tau_tauMatchIdx.clear();
 
+    _cl3d_calibPt.clear();
+    _cl3d_IDscore.clear();
     _cl3d_pt.clear();
     _cl3d_energy.clear();
     _cl3d_eta.clear();
@@ -232,6 +239,8 @@ void L1CaloTauNtuplizer::Initialize()
     _cl3d_tauMatchIdx.clear();
     _cl3d_jetMatchIdx.clear();
 
+    _clNxM_calibPt.clear();
+    _clNxM_IDscore.clear();
     _clNxM_barrelSeeded.clear();
     _clNxM_nHits.clear();
     _clNxM_nEGs.clear();
@@ -301,6 +310,8 @@ void L1CaloTauNtuplizer::beginJob()
     _tree -> Branch("l1tau_IDscore",     &_l1tau_IDscore);
     _tree -> Branch("l1tau_tauMatchIdx", &_l1tau_tauMatchIdx);
 
+    _tree -> Branch("cl3d_calibPt",          &_cl3d_calibPt);
+    _tree -> Branch("cl3d_IDscore",          &_cl3d_IDscore);
     _tree -> Branch("cl3d_pt",               &_cl3d_pt);
     _tree -> Branch("cl3d_energy",           &_cl3d_energy);
     _tree -> Branch("cl3d_eta",              &_cl3d_eta);
@@ -322,6 +333,8 @@ void L1CaloTauNtuplizer::beginJob()
     _tree -> Branch("cl3d_tauMatchIdx",      &_cl3d_tauMatchIdx);
     _tree -> Branch("cl3d_jetMatchIdx",      &_cl3d_jetMatchIdx);
 
+    _tree -> Branch( ("cl"+_NxM+"_calibPt").c_str(),      &_clNxM_calibPt);
+    _tree -> Branch( ("cl"+_NxM+"_IDscore").c_str(),      &_clNxM_IDscore);
     _tree -> Branch( ("cl"+_NxM+"_barrelSeeded").c_str(), &_clNxM_barrelSeeded);
     _tree -> Branch( ("cl"+_NxM+"_nHits").c_str(),        &_clNxM_nHits);
     _tree -> Branch( ("cl"+_NxM+"_nEGs").c_str(),         &_clNxM_nEGs);
@@ -571,6 +584,8 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
     {
         TowerHelper::TowerCluster cluNxM = CaloClustersNxM[cluIdx];
 
+        _clNxM_calibPt.push_back(cluNxM.calibPt);
+        _clNxM_IDscore.push_back(cluNxM.IDscore);
         _clNxM_barrelSeeded.push_back(cluNxM.barrelSeeded);
         _clNxM_nHits.push_back(cluNxM.nHits);
         _clNxM_seedIeta.push_back(cluNxM.seedIeta);
@@ -647,6 +662,8 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
     {
         HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
 
+        _cl3d_calibPt.push_back(hgclu.calibPt);
+        _cl3d_IDscore.push_back(hgclu.IDscore);
         _cl3d_pt.push_back(hgclu.pt);
         _cl3d_energy.push_back(hgclu.energy);
         _cl3d_eta.push_back(hgclu.eta);

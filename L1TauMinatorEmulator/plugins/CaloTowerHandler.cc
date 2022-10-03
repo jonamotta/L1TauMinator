@@ -93,8 +93,11 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     std::vector<TowerHelper::TowerHit> l1CaloTowers;
 
     iEvent.getByToken(l1TowersToken, l1CaloTowerHandle);
+    int warnings = 0;
     for (auto &hit : *l1CaloTowerHandle.product())
     {
+        if (hit.towerIEta() == -1016 && hit.towerIPhi() == -962) { warnings += 1; }
+
         TowerHelper::TowerHit l1Hit;
         l1Hit.isBarrel     = true;
         l1Hit.l1egTowerEt  = hit.l1egTowerEt();
@@ -113,6 +116,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         l1CaloTowers.push_back(l1Hit);
     }
+    if (warnings != 0) { std::cout << " ** WARNING : FOUND " << warnings << " TOWERS WITH towerIeta=-1016 AND towerIphi=-962" << std::endl; }
 
     int maxIetaHGCal = 0;
     iEvent.getByToken(hgcalTowersToken, hgcalTowersHandle);
@@ -183,6 +187,100 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         if (abs(l1Hit_B.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_B);
     }
 
+    // Fill missing towers in HGCAL due to current simulation limitation (because right now they are produced starting from modules and some TT do not have a centered module in front of them)
+    // --> just fill with zeros (JB approves)
+    std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
+    {
+        if (a.towerIeta == b.towerIeta) { return a.towerIphi < b.towerIphi; }
+        else                            { return a.towerIeta < b.towerIeta; }
+    });
+    int iEtaProgression = -39;
+    int iPhiProgression = 1;
+    for (auto &l1CaloTower : l1CaloTowers)
+    {
+        // skip towers with the weird IEta=-1016 IPhi=-962 values and they will also be filled with zeros
+        if (l1CaloTower.towerIeta < -39) { continue; }
+
+        int iPhiDiff = l1CaloTower.towerIphi - iPhiProgression;
+        int max = iPhiProgression+iPhiDiff;
+        if (iPhiDiff != 0)
+        {   
+            if (iPhiDiff<0) { max = 73; } // account for circularity 72->1
+            for (int iPhi=iPhiProgression; iPhi < max; ++iPhi)
+            {
+                TowerHelper::TowerHit l1Hit;
+                if (abs(iEtaProgression)<=17) { l1Hit.isBarrel = true; }
+                else                          { l1Hit.isBarrel = false; }
+                l1Hit.l1egTowerEt  = 0;
+                l1Hit.l1egTowerIet = 0;
+                l1Hit.nL1eg        = 0;
+                l1Hit.towerEta     = iEtaProgression * 0.0845;
+                if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
+                else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
+                l1Hit.towerEm      = 0.0;
+                l1Hit.towerHad     = 0.0;
+                l1Hit.towerEt      = 0.0;
+                l1Hit.towerIeta    = iEtaProgression;
+                l1Hit.towerIphi    = iPhi;
+                l1Hit.towerIem     = 0;
+                l1Hit.towerIhad    = 0;
+                l1Hit.towerIet     = 0;
+                
+                l1CaloTowers.push_back(l1Hit);
+
+                if (DEBUG) { std::cout << "Adding missing tower with iEta " << iEtaProgression << " iPhi " << iPhi << std::endl; }
+
+                iPhiProgression += 1;
+            }
+            if (max==73) // hack to account for circularity 72->1
+            {
+                iEtaProgression += 1;
+                if (iEtaProgression == 0) { iEtaProgression += 1;} // skip iEta=0
+                
+                for (int iPhi=1; iPhi < l1CaloTower.towerIphi; ++iPhi)
+                {
+                    TowerHelper::TowerHit l1Hit;
+                    if (abs(iEtaProgression)<=17) { l1Hit.isBarrel = true; }
+                    else                          { l1Hit.isBarrel = false; }
+                    l1Hit.l1egTowerEt  = 0;
+                    l1Hit.l1egTowerIet = 0;
+                    l1Hit.nL1eg        = 0;
+                    l1Hit.towerEta     = iEtaProgression * 0.0845;
+                    if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
+                    else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
+                    l1Hit.towerEm      = 0.0;
+                    l1Hit.towerHad     = 0.0;
+                    l1Hit.towerEt      = 0.0;
+                    l1Hit.towerIeta    = iEtaProgression;
+                    l1Hit.towerIphi    = iPhi;
+                    l1Hit.towerIem     = 0;
+                    l1Hit.towerIhad    = 0;
+                    l1Hit.towerIet     = 0;
+                    
+                    l1CaloTowers.push_back(l1Hit);
+
+                    if (DEBUG) { std::cout << "Adding missing tower with iEta " << iEtaProgression << " iPhi " << iPhi << std::endl; }
+
+                    iPhiProgression += 1;
+                }
+
+                iEtaProgression -= 1;
+                if (iEtaProgression == 0) { iEtaProgression -= 1;} // skip iEta=0
+            }
+        }
+        
+        iPhiProgression += 1;
+        if (iPhiProgression > 72)
+        {
+            iPhiProgression = 1;
+            iEtaProgression += 1;
+            if (iEtaProgression == 0) { iEtaProgression += 1;} // skip iEta=0
+        }
+        if (max == 73) { iPhiProgression = l1CaloTower.towerIphi+1; } // hack to account for circularity 72->1
+
+        if (iEtaProgression>39) { break; }
+    }
+
     if (DEBUG)
     {
         std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
@@ -237,7 +335,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            if (DEBUG) { std::cout << " // Ieta " << l1CaloTower.towerIeta << " - Iphi " << l1CaloTower.towerIeta; }
+            if (DEBUG) { std::cout << " // Ieta " << l1CaloTower.towerIeta << " - Iphi " << l1CaloTower.towerIphi; }
 
             // skip HF towers for seeding
             if (abs(l1CaloTower.towerIeta) > 35) { continue; }
@@ -343,15 +441,11 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
         }// end for loop of TP clustering
 
-        if (DEBUG) { std::cout << "dimension of cluster before pic-like ordering " << clu9x9.towerHits.size() << std::endl;}
-
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu9x9.towerHits);
         clu9x9.InitHits(); clu9x9.towerHits = sortedHits;
 
-        if (DEBUG) { std::cout << "dimension of cluster after pic-like ordering " << clu9x9.towerHits.size() << std::endl;}
-
-        if (DEBUG) { std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl; }
+        if (sortedHits.size() != 81) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 81 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
 
     }// end while loop of 9x9 TowerClusters creation
 
@@ -472,6 +566,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu7x7.towerHits);
         clu7x7.InitHits(); clu7x7.towerHits = sortedHits;
 
+        if (sortedHits.size() != 49) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 49 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
+
     }// end while loop of 7x7 TowerClusters creation
 
 
@@ -590,6 +686,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x5.towerHits);
         clu5x5.InitHits(); clu5x5.towerHits = sortedHits;
+
+        if (sortedHits.size() != 25) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 25 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
 
     }// end while loop of 5x5 TowerClusters creation
 
@@ -710,6 +808,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x9.towerHits);
         clu5x9.InitHits(); clu5x9.towerHits = sortedHits;
 
+        if (sortedHits.size() != 45) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 45 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
+
     }// end while loop of 5x9 TowerClusters creation
 
 
@@ -828,6 +928,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x7.towerHits);
         clu5x7.InitHits(); clu5x7.towerHits = sortedHits;
+
+        if (sortedHits.size() != 35) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 35 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
 
     }// end while loop of 5x7 TowerClusters creation
 
@@ -948,6 +1050,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu3x7.towerHits);
         clu3x7.InitHits(); clu3x7.towerHits = sortedHits;
 
+        if (sortedHits.size() != 21) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 21 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
+
     }// end while loop of 3x7 TowerClusters creation
 
 
@@ -1066,6 +1170,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
         std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu3x5.towerHits);
         clu3x5.InitHits(); clu3x5.towerHits = sortedHits;
+
+        if (sortedHits.size() != 15) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 15 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
 
     }// end while loop of 3x5 TowerClusters creation
 
