@@ -71,8 +71,8 @@ if __name__ == "__main__" :
     YCNN  = np.load(indir+'/CMSSWNtuplized/Tensorized_'+options.caloClNxM+'/Y_'+options.caloClNxM+'.npz')['arr_0']
     XBDT = pd.read_pickle(indir+'/CMSSWNtuplized/Tensorized_'+options.caloClNxM+'/X_BDT.pkl')
 
-    print(X1CNN[0])
-    exit()
+    # print(X1CNN[0])
+    # exit()
 
     ############################## Apply CNN models to inputs ##############################
 
@@ -103,6 +103,7 @@ if __name__ == "__main__" :
     logpt2 = logpt1**2
     logpt3 = logpt1**3
     logpt4 = logpt1**4
+    XBDT['XGB_pt_c2_log'] = logpt1
     XBDT['XGB_calibPt'] = XBDT['XGB_pt_c2'] / C3model.predict(np.vstack([logpt1, logpt2, logpt3, logpt4]).T)
 
     XBDT['MAN_pt_c1'] = XBDT['cl3d_pt'] + C1coefs[0]*XBDT['cl3d_abseta'] + C1coefs[1]
@@ -113,50 +114,11 @@ if __name__ == "__main__" :
     XBDT['CMSSW_calibPt'] = XBDT['cl3d_calibPt']
 
 
-    print('\n-------')
-    print('-------\n')
-
-    print('XGB_pt_c1 max =', XBDT['XGB_pt_c1'].max())
-    print('MAN_pt_c1 max =', XBDT['MAN_pt_c1'].max())
-    print('-------')
-    print('XGB_pt_c1 min =', XBDT['XGB_pt_c1'].min())
-    print('MAN_pt_c1 min =', XBDT['MAN_pt_c1'].min())
-
-    print('\n-------')
-    print('-------\n')
-
-    print('XGB_pt_c2 max =', XBDT['XGB_pt_c2'].max())
-    print('MAN_pt_c2 max =', XBDT['MAN_pt_c2'].max())
-    print('-------')
-    print('XGB_pt_c2 min =', XBDT['XGB_pt_c2'].min())
-    print('MAN_pt_c2 min =', XBDT['MAN_pt_c2'].min())
-
-    print('\n-------')
-    print('-------\n')
-
-    print('XGB_calibPt max =', XBDT['XGB_calibPt'].max())
-    print('MAN_calibPt max =', XBDT['MAN_calibPt'].max())
-    print('CMSSW_calibPt max = ', XBDT['CMSSW_calibPt'].max())
-    print('-------')
-    print('XGB_calibPt min =', XBDT['XGB_calibPt'].min())
-    print('MAN_calibPt min =', XBDT['MAN_calibPt'].min())
-    print('CMSSW_calibPt min = ', XBDT['CMSSW_calibPt'].min())
-
-    print('\n-------')
-    print('-------\n')
-
-    print('Keras_calibPt max =', dfCNN['Keras_calibPt'].max())
-    print('CMSSW_calibPt max = ', dfCNN['CMSSW_calibPt'].max())
-    print('-------')
-    print('Keras_calibPt min =', dfCNN['Keras_calibPt'].min())
-    print('CMSSW_calibPt min = ', dfCNN['CMSSW_calibPt'].min())
-
-
 
     plt.figure(figsize=(10,10))
-    plt.hist(dfCNN['Keras_IDscore'], bins=np.arange(0,1,0.05), label='Keras', color='red', density=True, histtype='step', lw=2)
-    n,bins,patches = plt.hist(dfCNN['CMSSW_IDscore'], bins=np.arange(0,1,0.05), density=True, histtype='step', lw=0)
-    plt.scatter(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, marker='o', c='black', s=40, label='CMSSW')
+    plt.hist(dfCNN['Keras_IDscore'], bins=np.arange(0,1,0.05), label='Keras', color='red', density=True, histtype='step', lw=2, zorder=-1)
+    n,bins,patches = plt.hist(dfCNN['CMSSW_IDscore'], bins=np.arange(0,1,0.05), density=True, histtype='step', lw=0, zorder=-1)
+    plt.scatter(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, marker='o', c='black', s=40, label='CMSSW', zorder=1)
     plt.grid(linestyle=':')
     plt.legend(loc = 'upper right', fontsize=16)
     # plt.xlim(0.85,1.001)
@@ -168,11 +130,27 @@ if __name__ == "__main__" :
     plt.savefig(perfdir+'/DNNident_score.pdf')
     plt.close()
 
+    plt.figure(figsize=(10,10))
+    plt.hist(dfCNN['Keras_calibPt'], bins=np.arange(0,150,5), label='Keras', color='red', density=True, histtype='step', lw=2, zorder=-1)
+    n,bins,patches = plt.hist(dfCNN['CMSSW_calibPt'], bins=np.arange(0,150,5), density=True, histtype='step', lw=0, zorder=-1)
+    plt.scatter(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, marker='o', c='black', s=40, label='CMSSW', zorder=1)
+    plt.grid(linestyle=':')
+    plt.legend(loc = 'upper right', fontsize=16)
+    # plt.xlim(0.85,1.001)
+    plt.yscale('log')
+    #plt.ylim(0.01,1)
+    plt.xlabel(r'CNN score')
+    plt.ylabel(r'a.u.')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(perfdir+'/DNNcalib_pt.pdf')
+    plt.close()
+
+
 
     plt.figure(figsize=(10,10))
-    plt.hist(XBDT['XGB_IDscore'], bins=np.arange(0,1,0.05), label='XGBoost', color='red', density=True, histtype='step', lw=2)
-    n,bins,patches = plt.hist(XBDT['CMSSW_IDscore'], bins=np.arange(0,1,0.05), density=True, histtype='step', lw=0)
-    plt.scatter(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, marker='o', c='black', s=40, label='CMSSW')
+    plt.hist(XBDT['XGB_IDscore'], bins=np.arange(0,1,0.05), label='XGBoost', color='red', density=True, histtype='step', lw=2, zorder=-1)
+    n,bins,patches = plt.hist(XBDT['CMSSW_IDscore'], bins=np.arange(0,1,0.05), density=True, histtype='step', lw=0, zorder=-1)
+    plt.scatter(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, marker='o', c='black', s=40, label='CMSSW', zorder=1)
     plt.grid(linestyle=':')
     plt.legend(loc = 'upper right', fontsize=16)
     # plt.xlim(0.85,1.001)
@@ -182,6 +160,21 @@ if __name__ == "__main__" :
     plt.ylabel(r'a.u.')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(perfdir+'/XGBident_score.pdf')
+    plt.close()
+
+    plt.figure(figsize=(10,10))
+    plt.hist(XBDT['XGB_calibPt'], bins=np.arange(0,100,5), label='XGBoost', color='red', density=True, histtype='step', lw=2, zorder=-1)
+    n,bins,patches = plt.hist(XBDT['CMSSW_calibPt'], bins=np.arange(0,100,5), density=True, histtype='step', lw=0, zorder=-1)
+    plt.scatter(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, marker='o', c='black', s=40, label='CMSSW', zorder=1)
+    plt.grid(linestyle=':')
+    plt.legend(loc = 'upper right', fontsize=16)
+    # plt.xlim(0.85,1.001)
+    plt.yscale('log')
+    #plt.ylim(0.01,1)
+    plt.xlabel(r'CNN score')
+    plt.ylabel(r'a.u.')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(perfdir+'/XGBcalib_pt.pdf')
     plt.close()
 
 

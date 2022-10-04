@@ -1,1 +1,0 @@
-python FastTensorizer.py --infile /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v1/test/Ntuple.root --outdir /data_CMS/cms/motta/Phase2L1T/2022_09_28_v11/CMSSWNtuplized --caloClNxM 5x9
