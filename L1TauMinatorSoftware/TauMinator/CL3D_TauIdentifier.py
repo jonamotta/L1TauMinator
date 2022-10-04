@@ -90,8 +90,9 @@ if __name__ == "__main__" :
                      'cl3d_srrtot'           : [r'3D cluster total $\sigma_{rr}$',[0.,0.01,10]],
                      'cl3d_srrmax'           : [r'3D cluster max $\sigma_{rr}$',[0.,0.01,10]],
                      'cl3d_srrmean'          : [r'3D cluster mean $\sigma_{rr}$',[0.,0.01,10]], 
-                     'cl3d_hoe'              : [r'Energy in CE-H / Energy in CE-E',[0.,4.,20]], 
-                     'cl3d_meanz'            : [r'3D cluster meanz',[325.,375.,30]], 
+                     'cl3d_hoe'              : [r'Energy in CE-H / Energy in CE-E',[0.,200.,100]], 
+                     'cl3d_meanz'            : [r'3D cluster meanz',[325.,375.,30]],
+                     'cl3d_localAbsMeanZ'    : [r'3D cluster meanz',[0.,2000.,200]],
     }
     if options.doRescale:
         features_dict = {'cl3d_c1'               : [r'3D cluster C1',[-33.,33.,66]],
@@ -124,7 +125,7 @@ if __name__ == "__main__" :
         }
 
     # selected features from FS
-    features = ['cl3d_pt', 'cl3d_coreshowerlength', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz']
+    features = ['cl3d_pt', 'cl3d_coreshowerlength', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
     featuresN = ['f0', 'f1', 'f2', 'f3', 'f4', 'f5']
     features2shift = ['cl3d_coreshowerlength']
     features2saturate = ['cl3d_c3', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz']
@@ -196,6 +197,7 @@ if __name__ == "__main__" :
         AUCtest = metrics.roc_auc_score(y_train,X_train['bdt_output'])
 
         save_obj(PUmodel, outdir+'/TauBDTIdentifier/PUmodel.pkl')
+        PUmodel.save_model(outdir+'/TauBDTIdentifier/PUmodel.model')
         PUmodel.save_model(indir+'/CMSSWmodels/XGBident.model')
     else:
         PUmodel = load_obj(outdir+'/TauBDTIdentifier/PUmodel.pkl')
@@ -260,6 +262,7 @@ if __name__ == "__main__" :
         plt.grid(linestyle=':')
         plt.xlabel(features_dict[var][0])
         plt.ylabel(r'a.u.')
+        if var=='cl3d_hoe': plt.yscale('log')
         mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
         plt.savefig(outdir+'/TauBDTIdentifier_plots/features/'+var+'.pdf')
         plt.close()

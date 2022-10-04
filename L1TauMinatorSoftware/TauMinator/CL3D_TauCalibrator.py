@@ -57,7 +57,7 @@ if __name__ == "__main__" :
     # max_depth = 2
     
     # features used for the C2 calibration step - OPTIMIZED
-    features = ['cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_abseta', 'cl3d_spptot', 'cl3d_srrmean', 'cl3d_meanz']
+    features = ['cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_localAbsEta', 'cl3d_spptot', 'cl3d_srrmean', 'cl3d_localAbsMeanZ']
     featuresN = ['f0', 'f1', 'f2', 'f3', 'f4', 'f5']
     boostRounds = 60
     max_depth = 5
@@ -103,6 +103,7 @@ if __name__ == "__main__" :
         C2model = xgb.XGBRegressor(booster='gbtree', n_estimators=boostRounds, learning_rate=0.1, max_depth=max_depth).fit(input_c2, target_c2) # eval_metric=mean_absolute_error
 
         save_obj(C2model, outdir+'/TauBDTCalibrator/C2model.pkl')
+        C2model.save_model(outdir+'/TauBDTCalibrator/C2model.model')
         C2model.save_model(indir+'/CMSSWmodels/XGBident.model')
 
         dfTr['cl3d_c2'] = C2model.predict(dfTr[featuresN])
