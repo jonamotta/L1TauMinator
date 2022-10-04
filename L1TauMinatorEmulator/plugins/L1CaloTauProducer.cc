@@ -706,7 +706,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
     // Apply XGB for calibration
     DMatrixHandle CalibMatrix;
-    XGDMatrixCreateFromMat((float *)CalibData,nmb_cl3ds,nmb_ident_feats,-1,&CalibMatrix);
+    XGDMatrixCreateFromMat((float *)CalibData,nmb_cl3ds,nmb_calib_feats,-1,&CalibMatrix);
     bst_ulong LENoutputsCalib = 0;
     const float *XGBoutputsCalib;
     auto ret2=XGBoosterPredict(XGBcalib, CalibMatrix,0, 0,0,&LENoutputsCalib,&XGBoutputsCalib);
