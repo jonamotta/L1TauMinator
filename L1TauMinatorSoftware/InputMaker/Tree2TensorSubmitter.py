@@ -46,7 +46,6 @@ parser.add_option('--doZp1500',       dest='doZp1500',     help='Read the Zp1500
 parser.add_option('--doTestRun',      dest='doTestRun',    help='Do test run with reduced number of events?', action='store_true', default=False)
 # TENSORIZATION OPTIONS
 parser.add_option("--outTag",         dest="outTag",                              default="")
-parser.add_option("--inputPrecision", dest="inputPrecision",                      default=None)
 parser.add_option("--uJetPtCut",      dest="uJetPtCut",                           default=None)
 parser.add_option("--lJetPtCut",      dest="lJetPtCut",                           default=None)
 parser.add_option("--uTauPtCut",      dest="uTauPtCut",                           default=None)
@@ -81,7 +80,7 @@ if not options.doHH and not options.doQCD and not options.doVBFH and not options
     exit()
 
 ##################### DEFINE INPUTS AND OUTPUTS ####################
-version = "1"
+version = "2"
 indir  = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version
 outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
 
@@ -171,7 +170,6 @@ for i, infile in enumerate(InFiles[:]):
     # TENSORIZATION OPTIONS
     cmsRun += ' --infileTag ' + tag
     if outTag != "":           cmsRun += ' --outTag '    + outTag
-    if options.inputPrecision: cmsRun += ' --inputPrecision ' + options.inputPrecision
     if options.uJetPtCut:      cmsRun += ' --uJetPtCut ' + options.uJetPtCut
     if options.lJetPtCut:      cmsRun += ' --lJetPtCut ' + options.lJetPtCut
     if options.uTauPtCut:      cmsRun += ' --uTauPtCut ' + options.uTauPtCut

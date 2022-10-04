@@ -8,12 +8,13 @@ import glob
 import sys
 import os
 
-def inputQuantizer(inputE, inputPrecision):
-    if inputPrecision: return min( np.floor(inputE/inputPrecision), 511 ) * inputPrecision
-    else:              return inputE
+def inputQuantizer(inputF, LSB, nbits):
+    if LSB: return min( np.floor(inputF/LSB), 2**nbits-1 ) * LSB
+    else:   return inputF
+inputQuantizer_vctd = np.vectorize(inputQuantizer)
 
 
-def TensorizeForClNxMRate(dfFlatTowClus, uEtacut, lEtacut, NxM, inputPrecision):
+def TensorizeForClNxMRate(dfFlatTowClus, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -60,9 +61,9 @@ def TensorizeForClNxMRate(dfFlatTowClus, uEtacut, lEtacut, NxM, inputPrecision):
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            x1l.append(inputQuantizer(dfTowClus.cl_towerEgEt.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfTowClus.cl_towerEm.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfTowClus.cl_towerHad.loc[idx][j], inputPrecision))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerEgEt.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerEm.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerHad.loc[idx][j], 0.25, 10))
         x1 = np.array(x1l).reshape(N,M,3)
         
         # "targets" of the NN
@@ -92,7 +93,7 @@ def TensorizeForClNxMRate(dfFlatTowClus, uEtacut, lEtacut, NxM, inputPrecision):
     np.savez_compressed(saveTensTo['targetsRate'], Y)
 
 
-def TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM, inputPrecision):
+def TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0:
         print('** WARNING : no data to be tensorized for identification here')
         return
@@ -205,9 +206,9 @@ def TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets,
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEgEt.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEm.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerHad.loc[idx][j], inputPrecision))
+            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEgEt.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEm.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerHad.loc[idx][j], 0.25, 10))
         x1 = np.array(x1l).reshape(N,M,3)
         
         # target of the NN
@@ -235,7 +236,7 @@ def TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets,
     np.savez_compressed(saveTensTo['targetsIdentifier'], Y)
 
 
-def TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM, inputPrecision):
+def TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0:
         print('** WARNING : no data to be tensorized for identification here')
         return
@@ -354,9 +355,9 @@ def TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJe
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEgEt.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEm.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerHad.loc[idx][j], inputPrecision))
+            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEgEt.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerEm.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCluTauJetPu.cl_towerHad.loc[idx][j], 0.25, 10))
         x1 = np.array(x1l).reshape(N,M,3)
         
         # target of the NN
@@ -389,7 +390,7 @@ def TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, uJe
     np.savez_compressed(saveTensTo['targetsCoTraining'], Y)
 
 
-def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM, inputPrecision):
+def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut, NxM):
     if len(dfFlatTowClus) == 0 or len(dfFlatGenTaus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -470,9 +471,9 @@ def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPt
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            x1l.append(inputQuantizer(dfCluTau.cl_towerEgEt.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCluTau.cl_towerEm.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCluTau.cl_towerHad.loc[idx][j], inputPrecision))
+            x1l.append(inputQuantizer(dfCluTau.cl_towerEgEt.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCluTau.cl_towerEm.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCluTau.cl_towerHad.loc[idx][j], 0.25, 10))
         x1 = np.array(x1l).reshape(N,M,3)
         
         # targets of the NN
@@ -504,7 +505,7 @@ def TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPt
     np.savez_compressed(saveTensTo['targetsCalibrator'], Y)
 
 
-def TensorizeForCl3dRate(dfFlatHGClus, uEtacut, lEtacut, inputPrecision):
+def TensorizeForCl3dRate(dfFlatHGClus, uEtacut, lEtacut):
     if len(dfFlatHGClus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -530,7 +531,7 @@ def TensorizeForCl3dRate(dfFlatHGClus, uEtacut, lEtacut, inputPrecision):
     dfHGClus.to_pickle(saveTensTo['inputsRateBDT'])
 
 
-def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut, inputPrecision):
+def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, uJetPtCut, lJetPtCut, uTauPtCut, lTauPtCut, uEtacut, lEtacut):
     if len(dfFlatHGClus) == 0:
         print('** WARNING : no data to be tensorized for identification here')
         return
@@ -605,6 +606,28 @@ def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, u
     dfCluTauJetPu = pd.concat([dfCluTau, dfCluJet, dfCluPU], axis=0)
     dfCluTauJetPu  = dfCluTauJetPu.sample(frac=1).copy(deep=True)
 
+    # compute variables in HGCAL local reference frame
+    dfCluTauJetPu['cl3d_localAbsEta']   = abs(dfCluTauJetPu['cl3d_eta']) - 1.45 # not sure if this 1.45 is correct
+    dfCluTauJetPu['cl3d_localAbsMeanZ'] = 10*( abs(dfCluTauJetPu['cl3d_meanz']) - 320 ) # not sure if this 320 is correct
+    
+    # target the current foreseen precisions for clusters variables
+    dfCluTauJetPu['cl3d_pt'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_pt'], 0.25, 14)
+    dfCluTauJetPu['cl3d_localAbsEta'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_localAbsEta'], 0.004, 9)
+    dfCluTauJetPu['cl3d_localAbsMeanZ'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_localAbsMeanZ'], 0.5, 12)
+
+    # custom precision based on the 8x16bits available
+    # all targeting ufixed<16,0>  -->  0.0000153 ~ 1/2^16
+    dfCluTauJetPu['cl3d_seetot'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_seetot'], 0.0000153, 16)
+    dfCluTauJetPu['cl3d_seemax'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_seemax'], 0.0000153, 16)
+    dfCluTauJetPu['cl3d_spptot'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_spptot'], 0.0000153, 16)
+    dfCluTauJetPu['cl3d_sppmax'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_sppmax'], 0.0000153, 16)
+    dfCluTauJetPu['cl3d_srrtot'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_srrtot'], 0.0000153, 16)
+    dfCluTauJetPu['cl3d_srrmax'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_srrmax'], 0.0000153, 16)
+    dfCluTauJetPu['cl3d_srrmean'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_srrmean'], 0.0000153, 16)
+    # targeting ufixed<16,7>  -->  0.0005 ~ 1/2^11
+    dfCluTauJetPu['cl3d_hoe'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_hoe'], 0.0005, 16)
+    dfCluTauJetPu['cl3d_szz'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_szz'], 0.0005, 16)
+
     # make uniqueId the index
     dfCluTauJetPu.set_index('uniqueId',inplace=True)
 
@@ -612,7 +635,7 @@ def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, u
     dfCluTauJetPu.to_pickle(saveTensTo['inputsIdentifierBDT'])
 
 
-def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut, inputPrecision):
+def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut):
     if len(dfFlatHGClus) == 0 or len(dfFlatGenTaus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -658,6 +681,28 @@ def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCu
     # shuffle the rows so that no possible order gets learned
     dfCluTau = dfCluTau.sample(frac=1).copy(deep=True)
 
+    # compute variables in HGCAL local reference frame
+    dfCluTau['cl3d_localAbsEta']   = abs(dfCluTau['cl3d_eta']) - 1.45 # not sure if this 1.45 is correct
+    dfCluTau['cl3d_localAbsMeanZ'] = 10*( abs(dfCluTau['cl3d_meanz']) - 320 ) # not sure if this 320 is correct
+    
+    # target the current foreseen precisions for clusters variables
+    dfCluTau['cl3d_pt'] = inputQuantizer_vctd(dfCluTau['cl3d_pt'], 0.25, 14)
+    dfCluTau['cl3d_localAbsEta'] = inputQuantizer_vctd(dfCluTau['cl3d_localAbsEta'], 0.004, 9)
+    dfCluTau['cl3d_localAbsMeanZ'] = inputQuantizer_vctd(dfCluTau['cl3d_localAbsMeanZ'], 0.5, 12)
+
+    # custom precision based on the 8x16bits available
+    # all targeting ufixed<16,0>  -->  0.0000153 ~ 1/2^16
+    dfCluTau['cl3d_seetot'] = inputQuantizer_vctd(dfCluTau['cl3d_seetot'], 0.0000153, 16)
+    dfCluTau['cl3d_seemax'] = inputQuantizer_vctd(dfCluTau['cl3d_seemax'], 0.0000153, 16)
+    dfCluTau['cl3d_spptot'] = inputQuantizer_vctd(dfCluTau['cl3d_spptot'], 0.0000153, 16)
+    dfCluTau['cl3d_sppmax'] = inputQuantizer_vctd(dfCluTau['cl3d_sppmax'], 0.0000153, 16)
+    dfCluTau['cl3d_srrtot'] = inputQuantizer_vctd(dfCluTau['cl3d_srrtot'], 0.0000153, 16)
+    dfCluTau['cl3d_srrmax'] = inputQuantizer_vctd(dfCluTau['cl3d_srrmax'], 0.0000153, 16)
+    dfCluTau['cl3d_srrmean'] = inputQuantizer_vctd(dfCluTau['cl3d_srrmean'], 0.0000153, 16)
+    # targeting ufixed<16,7>  -->  0.0005 ~ 1/2^11
+    dfCluTau['cl3d_hoe'] = inputQuantizer_vctd(dfCluTau['cl3d_hoe'], 0.0005, 16)
+    dfCluTau['cl3d_szz'] = inputQuantizer_vctd(dfCluTau['cl3d_szz'], 0.0005, 16)
+
     # make uniqueId the index
     dfCluTau.reset_index(inplace=True)
     dfCluTau.set_index('uniqueId',inplace=True)
@@ -666,7 +711,7 @@ def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCu
     dfCluTau.to_pickle(saveTensTo['inputsCalibratorBDT'])
 
 
-def TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut,  NxM, inputPrecision):
+def TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, uEtacut, lEtacut,  NxM):
     if len(dfFlatTowClus) == 0 or len(dfFlatHGClus) == 0 or len(dfFlatGenTaus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -748,9 +793,9 @@ def TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            x1l.append(inputQuantizer(dfCLTWTau.cl_towerEgEt.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCLTWTau.cl_towerEm.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfCLTWTau.cl_towerHad.loc[idx][j], inputPrecision))
+            x1l.append(inputQuantizer(dfCLTWTau.cl_towerEgEt.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCLTWTau.cl_towerEm.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfCLTWTau.cl_towerHad.loc[idx][j], 0.25, 10))
         x1 = np.array(x1l).reshape(N,M,3)
         
         # targets of the NN
@@ -785,7 +830,7 @@ def TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus
     dfCL3DTau.to_pickle(saveTensTo['inputsMinatorBDT'])
 
 
-def TensorizeForTauMinatorRate(dfFlatTowClus, dfFlatHGClus, uEtacut, lEtacut,  NxM, inputPrecision):
+def TensorizeForTauMinatorRate(dfFlatTowClus, dfFlatHGClus, uEtacut, lEtacut,  NxM):
     if len(dfFlatTowClus) == 0 or len(dfFlatHGClus) == 0:
         print('** WARNING : no data to be tensorized for calibration here')
         return
@@ -834,9 +879,9 @@ def TensorizeForTauMinatorRate(dfFlatTowClus, dfFlatHGClus, uEtacut, lEtacut,  N
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            x1l.append(inputQuantizer(dfTowClus.cl_towerEgEt.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfTowClus.cl_towerEm.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfTowClus.cl_towerHad.loc[idx][j], inputPrecision))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerEgEt.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerEm.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerHad.loc[idx][j], 0.25, 10))
         x1 = np.array(x1l).reshape(N,M,3)
         
         # "targets" of the NN
@@ -893,7 +938,6 @@ if __name__ == "__main__" :
     # TENSORIZATION OPTIONS
     parser.add_option("--infileTag",      dest="infileTag",                           default=None)
     parser.add_option("--outTag",         dest="outTag",                              default="")
-    parser.add_option("--inputPrecision", dest="inputPrecision", type=float,          default=None)
     parser.add_option("--uJetPtCut",      dest="uJetPtCut",                           default=None)
     parser.add_option("--lJetPtCut",      dest="lJetPtCut",                           default=None)
     parser.add_option("--uTauPtCut",      dest="uTauPtCut",                           default=None)
@@ -1206,26 +1250,26 @@ if __name__ == "__main__" :
 
     if options.doTens4Cotraining:
         print('** INFO : doing tensorization for co-training')
-        TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM, options.inputPrecision)
+        TensorizeForClNxMCoTraining(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
 
     if options.doTens4Calib:
         print('** INFO : doing tensorization for calibration')
-        if options.doCALO:  TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM, options.inputPrecision)
-        if options.doHGCAL: TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.inputPrecision)
+        if options.doCALO:  TensorizeForClNxMCalibration(dfFlatTowClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
+        if options.doHGCAL: TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut)
 
     if options.doTens4Ident:
         print('** INFO : doing tensorization for identification')
-        if options.doCALO:  TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM, options.inputPrecision)
-        if options.doHGCAL: TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.inputPrecision)
+        if options.doCALO:  TensorizeForClNxMIdentification(dfFlatTowClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
+        if options.doHGCAL: TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, options.uJetPtCut, options.lJetPtCut, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut)
 
     if options.doTens4Minator:
         print('** INFO : doing tensorization for TauMinator performance evaluation')
-        TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM, options.inputPrecision)
+        TensorizeForTauMinatorPerformance(dfFlatTowClus, dfFlatHGClus, dfFlatGenTaus, options.uTauPtCut, options.lTauPtCut, options.uEtacut, options.lEtacut, options.caloClNxM)
 
     if options.doTens4Rate:
         print('** INFO : doing tensorization for rate evaluation')
-        if options.doCALO:    TensorizeForClNxMRate(dfFlatTowClus, options.uEtacut, options.lEtacut, options.caloClNxM, options.inputPrecision)
-        elif options.doHGCAL: TensorizeForCl3dRate(dfFlatHGClus, options.uEtacut, options.lEtacut, options.inputPrecision)
-        else:                 TensorizeForTauMinatorRate(dfFlatTowClus, dfFlatHGClus, options.uEtacut, options.lEtacut, options.caloClNxM, options.inputPrecision)
+        if options.doCALO:    TensorizeForClNxMRate(dfFlatTowClus, options.uEtacut, options.lEtacut, options.caloClNxM)
+        elif options.doHGCAL: TensorizeForCl3dRate(dfFlatHGClus, options.uEtacut, options.lEtacut)
+        else:                 TensorizeForTauMinatorRate(dfFlatTowClus, dfFlatHGClus, options.uEtacut, options.lEtacut, options.caloClNxM)
 
     print('** INFO : ALL DONE!')

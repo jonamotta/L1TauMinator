@@ -106,5 +106,24 @@ source /opt/exp_soft/cms/t3/t3setup
 # python MergerSubmitter.py --v 11 --date 2022_09_28 --caloClNxM 5x9 --doCALO  --doTens4Calib --doVBFH --inTag _lTauPtCut18_uEtacut1.5 --outTag _lTauPtCut18_uEtacut1.5
 # python MergerSubmitter.py --v 11 --date 2022_09_28 --caloClNxM 5x9 --doCALO  --doTens4Ident --doVBFH --inTag _lTauPtCut18            --outTag _lTauPtCut18
 
-python MergerSubmitter.py --v 11 --date 2022_09_28                 --doHGCAL --doTens4Calib --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
-python MergerSubmitter.py --v 11 --date 2022_09_28                 --doHGCAL --doTens4Ident --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
+# python MergerSubmitter.py --v 11 --date 2022_09_28                 --doHGCAL --doTens4Calib --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
+# python MergerSubmitter.py --v 11 --date 2022_09_28                 --doHGCAL --doTens4Ident --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
+
+# ------------------------------------------------------------------------------------------------------------------------
+
+python MergerSubmitter.py --v 12 --date 2022_10_04 --caloClNxM 5x9 --doCALO  --doTens4Calib --doVBFH --inTag _lTauPtCut18_uEtacut1.5 --outTag _lTauPtCut18_uEtacut1.5
+python MergerSubmitter.py --v 12 --date 2022_10_04 --caloClNxM 5x9 --doCALO  --doTens4Ident --doVBFH --inTag _lTauPtCut18            --outTag _lTauPtCut18
+
+python MergerSubmitter.py --v 12 --date 2022_10_04                 --doHGCAL --doTens4Calib --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
+python MergerSubmitter.py --v 12 --date 2022_10_04                 --doHGCAL --doTens4Ident --doVBFH --inTag _lTauPtCut18_lEtacut1.5 --outTag _lTauPtCut18_lEtacut1.5
+
+
+
+
+
+
+
+
+
+
+
