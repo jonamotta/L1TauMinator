@@ -124,6 +124,35 @@
                       --> the parallelization factor 4 gives a 10% increase in resources but that amounts to ~64% of resources saving when considering the multiplicity of clisters to process
 
 
+*****************************************************************
+SOLVED PROBLEM WITH THE MISSING TRIGGER TOWERS OF HGCAL
+THE FIX SOLVES ALSO THE PROBLEM WITH THE DEFAULTED BARREL TOWERS
+NO MORE OUT OF SHAPE TOWERCLUTERS AFTER THE FIX
+*****************************************************************
+
+
+2022_10_04_v12
+    * re-run all the workflow with the newer Ntuples
+    * quantization of the inputs to 10 bits as forseen for towers
+    * quantization of all HGCAL inputs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
