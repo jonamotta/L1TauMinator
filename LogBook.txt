@@ -135,6 +135,15 @@ NO MORE OUT OF SHAPE TOWERCLUTERS AFTER THE FIX
     * re-run all the workflow with the newer Ntuples
     * quantization of the inputs to 10 bits as forseen for towers
     * quantization of all HGCAL inputs
+    * first move to DNNs for the CL3D part
+        - allows decoupling of id from cl3d_pt
+        - has drowback of neading feature pre-processing
+        - performance is actually better than BDTs
+    * re-run all the HLS machinery too
+    * make first HLS conversion of the DNNs for CL3Ds
+    * move to CMSSW-based evaluation of final performance
+        - have a producer running the Tensorflow models
+        - run turnons and rate code in the same fashion as the Run3 code
 
 
 
