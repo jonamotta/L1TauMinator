@@ -165,8 +165,8 @@ if __name__ == "__main__" :
         history = TauCalibratorModel.fit(CNNprediction, Y[:,0].reshape(-1,1), epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
 
         TauCalibratorModel.save(outdir+'/TauCNNCalibrator')
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNcalib.pb', TauCalibratorModel, variables_to_constants=True)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNcalib.pb.txt', TauCalibratorModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CLTW_DNNcalib.pb', TauCalibratorModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CLTW_DNNcalib.pb.txt', TauCalibratorModel, variables_to_constants=True)
 
         for metric in history.history.keys():
             if metric == 'lr':

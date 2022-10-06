@@ -104,7 +104,7 @@ if __name__ == "__main__" :
 
         save_obj(C2model, outdir+'/TauBDTCalibrator/C2model.pkl')
         C2model.save_model(outdir+'/TauBDTCalibrator/C2model.model')
-        C2model.save_model(indir+'/CMSSWmodels/XGBident.model')
+        C2model.save_model(indir+'/CMSSWmodels/XGBcalib.model')
 
         dfTr['cl3d_c2'] = C2model.predict(dfTr[featuresN])
         dfTr['cl3d_pt_c2'] = dfTr['cl3d_c2'] * dfTr['cl3d_pt_c1']

@@ -198,8 +198,8 @@ if __name__ == "__main__" :
         flat_out = TauIdentifierModel.get_layer(name='middleMan').get_output_at(0)
         CNNmodel = tf.keras.Model([image_in, positions], flat_out)
         CNNmodel.save(outdir + '/CNNmodel', include_optimizer=False)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CNNmodel.pb', CNNmodel, variables_to_constants=True)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CNNmodel.pb.txt', CNNmodel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CLTW_CNNmodel.pb', CNNmodel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CLTW_CNNmodel.pb.txt', CNNmodel, variables_to_constants=True)
 
         idx = 0
         for layer in TauIdentifierModel.layers:
@@ -213,8 +213,8 @@ if __name__ == "__main__" :
             x_dnn = layer(x_dnn)
         DNNmodel = tf.keras.Model(middleMan, x_dnn)
         DNNmodel.save(outdir + '/DNNmodel', include_optimizer=False)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNident.pb', DNNmodel, variables_to_constants=True)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/DNNident.pb.txt', DNNmodel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CLTW_DNNident.pb', DNNmodel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CLTW_DNNident.pb.txt', DNNmodel, variables_to_constants=True)
 
         # validate the full model against the two split models
         y_full  = np.array( TauIdentifierModel.predict([X1, X2]) )
