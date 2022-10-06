@@ -90,7 +90,7 @@ if __name__ == "__main__" :
 
     dfTr = pd.read_pickle(indir+'/X_Calib_BDT_forCalibrator.pkl')
 
-    feats = ['cl3d_pt', 'cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_seemax', 'cl3d_spptot', 'cl3d_sppmax', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmax', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
+    feats = ['cl3d_pt', 'cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
 
     scaler = StandardScaler()
     scaled = pd.DataFrame(scaler.fit_transform(dfTr[feats]), columns=feats)

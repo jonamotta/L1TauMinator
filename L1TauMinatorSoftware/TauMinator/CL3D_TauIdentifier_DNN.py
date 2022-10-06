@@ -89,7 +89,7 @@ if __name__ == "__main__" :
     dfTr = pd.read_pickle(indir+'/X_Ident_BDT_forIdentifier.pkl')
     dfTr['cl3d_abseta'] = abs(dfTr['cl3d_eta']).copy(deep=True)
 
-    feats = ['cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_localAbsMeanZ']
+    feats = ['cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
 
     scaler = StandardScaler()
     scaled = pd.DataFrame(scaler.fit_transform(dfTr[feats]), columns=feats)
@@ -135,8 +135,8 @@ if __name__ == "__main__" :
         history = TauIdentifierModel.fit(TrTensorizedInput, TrTensorizedTarget, epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
 
         TauIdentifierModel.save(outdir + '/TauDNNIdentifier')
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNident.pb', DNNmodel, variables_to_constants=True)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNident.pb.txt', DNNmodel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNident.pb', TauIdentifierModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNident.pb.txt', TauIdentifierModel, variables_to_constants=True)
 
         for metric in history.history.keys():
             if metric == 'lr':
