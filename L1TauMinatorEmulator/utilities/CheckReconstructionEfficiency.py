@@ -29,7 +29,7 @@ def deltaPhi( phi1, phi2 ):
     else:                 return delta_phi
 
 
-directory = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v1/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/'
+directory = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v2/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/'
 
 inChain = ROOT.TChain("Ntuplizer/L1TauMinatorTree");
 inChain.Add(directory+'/Ntuple_*.root');
@@ -189,6 +189,8 @@ for evt in range(0, nEntries):
 
 
 ######################################################
+
+os.system('mkdir -p RecoEffs')
 
 plt.figure(figsize=(10,10))
 plt.hist(etaResponse_goodNxMTaus, bins=np.arange(0.6,1.4,0.01), label=r'$\mu$=%.3f , $\sigma$=%.3f'%(np.mean(etaResponse_goodNxMTaus),np.std(etaResponse_goodNxMTaus)), color='green', lw=2, histtype='step', density=True)
