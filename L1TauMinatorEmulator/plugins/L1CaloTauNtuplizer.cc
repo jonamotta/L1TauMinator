@@ -17,6 +17,7 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/L1Trigger/interface/Tau.h"
 
 #include "L1TauMinator/DataFormats/interface/TowerHelper.h"
 #include "L1TauMinator/DataFormats/interface/HGClusterHelper.h"
@@ -53,6 +54,9 @@ class L1CaloTauNtuplizer : public edm::EDAnalyzer {
         edm::EDGetTokenT<TauHelper::TausCollection> minatedTausToken;
         edm::Handle<TauHelper::TausCollection> minatedTausHandle;
 
+        edm::EDGetTokenT<l1t::TauBxCollection> squareTausToken;
+        edm::Handle<l1t::Tau> squareTausHandle;
+
         edm::EDGetTokenT<GenHelper::GenTausCollection> genTausToken;
         edm::Handle<GenHelper::GenTausCollection> genTausHandle;
 
@@ -87,14 +91,20 @@ class L1CaloTauNtuplizer : public edm::EDAnalyzer {
         std::vector<int>   _tau_DM;
         std::vector<int>   _tau_Idx;
 
-        std::vector<float>  _l1tau_pt;
-        std::vector<float>  _l1tau_eta;
-        std::vector<float>  _l1tau_phi;
-        std::vector<int>    _l1tau_clusterIdx;
-        std::vector<bool>   _l1tau_isBarrel;
-        std::vector<bool>   _l1tau_isEndcap;
-        std::vector<float>  _l1tau_IDscore;
-        std::vector<int>    _l1tau_tauMatchIdx;
+        std::vector<float>  _minatedl1tau_pt;
+        std::vector<float>  _minatedl1tau_eta;
+        std::vector<float>  _minatedl1tau_phi;
+        std::vector<int>    _minatedl1tau_clusterIdx;
+        std::vector<bool>   _minatedl1tau_isBarrel;
+        std::vector<bool>   _minatedl1tau_isEndcap;
+        std::vector<float>  _minatedl1tau_IDscore;
+        std::vector<int>    _minatedl1tau_tauMatchIdx;
+
+        std::vector<float>  _squarel1tau_pt;
+        std::vector<float>  _squarel1tau_eta;
+        std::vector<float>  _squarel1tau_phi;
+        std::vector<int>    _squarel1tau_isoEt;
+        std::vector<int>    _squarel1tau_iso;
 
         std::vector<float> _cl3d_calibPt;
         std::vector<float> _cl3d_IDscore;
@@ -170,6 +180,7 @@ L1CaloTauNtuplizer::L1CaloTauNtuplizer(const edm::ParameterSet& iConfig)
     : CaloClustersNxMToken(consumes<TowerHelper::TowerClustersCollection>(iConfig.getParameter<edm::InputTag>("CaloClustersNxM"))),
       HGClustersToken(consumes<HGClusterHelper::HGClustersCollection>(iConfig.getParameter<edm::InputTag>("HGClusters"))),
       minatedTausToken(consumes<TauHelper::TausCollection>(iConfig.getParameter<edm::InputTag>("minatedTaus"))),
+      squareTausToken(consumes<l1t::TauBxCollection>(iConfig.getParameter<edm::InputTag>("squareTaus"))),
       genTausToken(consumes<GenHelper::GenTausCollection>(iConfig.getParameter<edm::InputTag>("genTaus"))),
       DEBUG(iConfig.getParameter<bool>("DEBUG"))
 {
@@ -207,14 +218,20 @@ void L1CaloTauNtuplizer::Initialize()
     _tau_DM.clear();
     _tau_Idx.clear();
 
-    _l1tau_pt.clear();
-    _l1tau_eta.clear();
-    _l1tau_phi.clear();
-    _l1tau_clusterIdx.clear();
-    _l1tau_isBarrel.clear();
-    _l1tau_isEndcap.clear();
-    _l1tau_IDscore.clear();
-    _l1tau_tauMatchIdx.clear();
+    _minatedl1tau_pt.clear();
+    _minatedl1tau_eta.clear();
+    _minatedl1tau_phi.clear();
+    _minatedl1tau_clusterIdx.clear();
+    _minatedl1tau_isBarrel.clear();
+    _minatedl1tau_isEndcap.clear();
+    _minatedl1tau_IDscore.clear();
+    _minatedl1tau_tauMatchIdx.clear();
+
+    _squarel1tau_pt.clear();
+    _squarel1tau_eta.clear();
+    _squarel1tau_phi.clear();
+    _squarel1tau_isoEt.clear();
+    _squarel1tau_iso.clear();
 
     _cl3d_calibPt.clear();
     _cl3d_IDscore.clear();
@@ -301,14 +318,20 @@ void L1CaloTauNtuplizer::beginJob()
     _tree -> Branch("tau_DM",       &_tau_DM);
     _tree -> Branch("tau_Idx",      &_tau_Idx);
 
-    _tree -> Branch("l1tau_pt",          &_l1tau_pt);
-    _tree -> Branch("l1tau_eta",         &_l1tau_eta);
-    _tree -> Branch("l1tau_phi",         &_l1tau_phi);
-    _tree -> Branch("l1tau_clusterIdx",  &_l1tau_clusterIdx);
-    _tree -> Branch("l1tau_isBarrel",    &_l1tau_isBarrel);
-    _tree -> Branch("l1tau_isEndcap",    &_l1tau_isEndcap);
-    _tree -> Branch("l1tau_IDscore",     &_l1tau_IDscore);
-    _tree -> Branch("l1tau_tauMatchIdx", &_l1tau_tauMatchIdx);
+    _tree -> Branch("minatedl1tau_pt",          &_minatedl1tau_pt);
+    _tree -> Branch("minatedl1tau_eta",         &_minatedl1tau_eta);
+    _tree -> Branch("minatedl1tau_phi",         &_minatedl1tau_phi);
+    _tree -> Branch("minatedl1tau_clusterIdx",  &_minatedl1tau_clusterIdx);
+    _tree -> Branch("minatedl1tau_isBarrel",    &_minatedl1tau_isBarrel);
+    _tree -> Branch("minatedl1tau_isEndcap",    &_minatedl1tau_isEndcap);
+    _tree -> Branch("minatedl1tau_IDscore",     &_minatedl1tau_IDscore);
+    _tree -> Branch("minatedl1tau_tauMatchIdx", &_minatedl1tau_tauMatchIdx);
+
+    _tree -> Branch("squarel1tau_pt",    &_squarel1tau_pt);
+    _tree -> Branch("squarel1tau_eta",   &_squarel1tau_eta);
+    _tree -> Branch("squarel1tau_phi",   &_squarel1tau_phi);
+    _tree -> Branch("squarel1tau_isoEt", &_squarel1tau_isoEt);
+    _tree -> Branch("squarel1tau_iso",   &_squarel1tau_iso);
 
     _tree -> Branch("cl3d_calibPt",          &_cl3d_calibPt);
     _tree -> Branch("cl3d_IDscore",          &_cl3d_IDscore);
@@ -386,11 +409,13 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
     iEvent.getByToken(CaloClustersNxMToken, CaloClustersNxMHandle);
     iEvent.getByToken(HGClustersToken, HGClustersHandle);
     iEvent.getByToken(minatedTausToken, minatedTausHandle);
+    iEvent.getByToken(squareTausToken, squareTausHandle);
     iEvent.getByToken(genTausToken, genTausHandle);
     
     const TowerHelper::TowerClustersCollection& CaloClustersNxM = *CaloClustersNxMHandle;
     const HGClusterHelper::HGClustersCollection& HGClusters = *HGClustersHandle;
     const TauHelper::TausCollection& minatedTaus = *minatedTausHandle;
+    const l1t::Tau& squareTaus = *squareTausHandle;
     const GenHelper::GenTausCollection& genTaus = *genTausHandle;
 
     if (DEBUG)
@@ -499,29 +524,29 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
         
-        // Perform geometrical matching of l1Taus clusters
+        // Perform geometrical matching of minatedl1Taus clusters
         matchedCluIdx = -99;
         dR2min = 0.25;
-        for (long unsigned int l1tauIdx = 0; l1tauIdx < minatedTaus.size(); l1tauIdx++)
+        for (long unsigned int minatedl1tauIdx = 0; minatedl1tauIdx < minatedTaus.size(); minatedl1tauIdx++)
         {
-            TauHelper::Tau l1tau = minatedTaus[l1tauIdx];
+            TauHelper::Tau minatedl1tau = minatedTaus[minatedl1tauIdx];
 
-            float dEta = l1tau.eta - tau.visEta;
-            float dPhi = reco::deltaPhi(l1tau.phi, tau.visPhi);
+            float dEta = minatedl1tau.eta - tau.visEta;
+            float dPhi = reco::deltaPhi(minatedl1tau.phi, tau.visPhi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
             if (dR2 <= dR2min)
             {
                 dR2min = dR2;
-                matchedCluIdx = l1tauIdx;
+                matchedCluIdx = minatedl1tauIdx;
             }
 
             if (DEBUG)
             {
                 printf("         - HGC CLU pt %f eta %f phi %f dEta %f dPhi %f dR2 %f (%i)\n",
-                    l1tau.pt,
-                    l1tau.eta,
-                    l1tau.phi,
+                    minatedl1tau.pt,
+                    minatedl1tau.eta,
+                    minatedl1tau.phi,
                     dEta,
                     dPhi,
                     dR2,
@@ -530,8 +555,8 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
         }
         if (matchedCluIdx != -99)
         {
-            TauHelper::Tau& writable_l1tau =  const_cast<TauHelper::Tau&>(minatedTaus[matchedCluIdx]);
-            writable_l1tau.tauMatchIdx = tauIdx;
+            TauHelper::Tau& writable_minatedl1tau =  const_cast<TauHelper::Tau&>(minatedTaus[matchedCluIdx]);
+            writable_minatedl1tau.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << "\n       *********************************************************************************************************** \n" << std::endl; }
@@ -565,18 +590,34 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
         _tau_Idx.push_back(tauIdx);
     }
 
+    // Fill TauMinator L1Taus
     for (long unsigned int tauIdx = 0; tauIdx < minatedTaus.size(); tauIdx++)
     {
         TauHelper::Tau tau = minatedTaus[tauIdx];
 
-        _l1tau_pt.push_back(tau.pt);
-        _l1tau_eta.push_back(tau.eta);
-        _l1tau_phi.push_back(tau.phi);
-        _l1tau_clusterIdx.push_back(tau.clusterIdx);
-        _l1tau_isBarrel.push_back(tau.isBarrel);
-        _l1tau_isEndcap.push_back(tau.isEndcap);
-        _l1tau_IDscore.push_back(tau.IDscore);
-        _l1tau_tauMatchIdx.push_back(tau.tauMatchIdx);
+        _minatedl1tau_pt.push_back(tau.pt);
+        _minatedl1tau_eta.push_back(tau.eta);
+        _minatedl1tau_phi.push_back(tau.phi);
+        _minatedl1tau_clusterIdx.push_back(tau.clusterIdx);
+        _minatedl1tau_isBarrel.push_back(tau.isBarrel);
+        _minatedl1tau_isEndcap.push_back(tau.isEndcap);
+        _minatedl1tau_IDscore.push_back(tau.IDscore);
+        _minatedl1tau_tauMatchIdx.push_back(tau.tauMatchIdx);
+    }
+
+    // Fill baseline square L1Taus
+    // iEvent.getByToken(squareTausToken, squareTausHandle);
+    // for (l1t::TauBxCollection::const_iterator bx0TauIt = squareTausHandle->begin(0); bx0TauIt != squareTausHandle->end(0) ; bx0TauIt++)
+    for (long unsigned int tauIdx = 0; tauIdx < squareTaus.size(); tauIdx++)
+    {
+        // const l1t::Tau& tau = *bx0TauIt;
+        l1t::Tau tau = squareTaus[tauIdx];
+
+        _squarel1tau_pt.push_back(tau.pt());
+        _squarel1tau_eta.push_back(tau.eta());
+        _squarel1tau_phi.push_back(tau.phi());
+        _squarel1tau_isoEt.push_back(tau.hwQual());
+        _squarel1tau_iso.push_back(tau.hwIso());
     }
 
     // Fill NxM CaloCluster branches

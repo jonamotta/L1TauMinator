@@ -28,6 +28,7 @@
 #include "L1TauMinator/DataFormats/interface/TauHelper.h"
 
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
+#include <xgboost/c_api.h>
 
 
 class L1CaloTauProducer : public edm::stream::EDProducer<> {
@@ -44,7 +45,6 @@ class L1CaloTauProducer : public edm::stream::EDProducer<> {
         int endcap_iphi(float &phi) const;
         int endcap_ieta(float &eta) const;
         std::vector<TowerHelper::TowerHit> sortPicLike(std::vector<TowerHelper::TowerHit>) const;
-        float inputQuantizer(float inputF, float LSB, int nbits);
 
         //----tokens and handles----
         edm::EDGetTokenT<l1tp2::CaloTowerCollection> l1TowersToken;
@@ -68,31 +68,29 @@ class L1CaloTauProducer : public edm::stream::EDProducer<> {
         double HcalEtMinForClustering;
         double EtMinForSeeding;
 
-        std::string CLTW_CNNmodel_path;
-        std::string CLTW_DNNident_path;
-        std::string CLTW_DNNcalib_path;
+        std::string CNNmodel_path;
+        std::string DNNident_path;
+        std::string DNNcalib_path;
 
-        std::string CL3D_DNNident_path;
-        std::string CL3D_DNNcalib_path;
-
-        std::vector<std::string> CL3D_DNNident_feats;
-        std::vector<std::string> CL3D_DNNcalib_feats;
+        std::string XGBident_path;
+        std::string XGBcalib_path;
+        std::vector<std::string> XGBident_feats;
+        std::vector<std::string> XGBcalib_feats;
+        std::vector<double> C1calib_params;
+        std::vector<double> C3calib_params;
 
         bool DEBUG;
 
-        tensorflow::GraphDef* CLTW_CNNmodel;
-        tensorflow::GraphDef* CLTW_DNNident;
-        tensorflow::GraphDef* CLTW_DNNcalib;
+        tensorflow::GraphDef* CNNmodel;
+        tensorflow::GraphDef* DNNident;
+        tensorflow::GraphDef* DNNcalib;
 
-        tensorflow::Session* CLTW_CNNsession;
-        tensorflow::Session* CLTW_DNNsessionIdent;
-        tensorflow::Session* CLTW_DNNsessionCalib;
-
-        tensorflow::GraphDef* CL3D_DNNident;
-        tensorflow::GraphDef* CL3D_DNNcalib;
-
-        tensorflow::Session* CL3D_DNNsessionIdent;
-        tensorflow::Session* CL3D_DNNsessionCalib;
+        tensorflow::Session* CNNsession;
+        tensorflow::Session* DNNsessionIdent;
+        tensorflow::Session* DNNsessionCalib;
+        
+        BoosterHandle XGBident;
+        BoosterHandle XGBcalib;
 };
 
 
@@ -117,32 +115,34 @@ L1CaloTauProducer::L1CaloTauProducer(const edm::ParameterSet& iConfig)
       EcalEtMinForClustering(iConfig.getParameter<double>("EcalEtMinForClustering")),
       HcalEtMinForClustering(iConfig.getParameter<double>("HcalEtMinForClustering")),
       EtMinForSeeding(iConfig.getParameter<double>("EtMinForSeeding")),
-      CLTW_CNNmodel_path(iConfig.getParameter<std::string>("CLTW_CNNmodel_path")),
-      CLTW_DNNident_path(iConfig.getParameter<std::string>("CLTW_DNNident_path")),
-      CLTW_DNNcalib_path(iConfig.getParameter<std::string>("CLTW_DNNcalib_path")),
-      CL3D_DNNident_path(iConfig.getParameter<std::string>("CL3D_DNNident_path")),
-      CL3D_DNNcalib_path(iConfig.getParameter<std::string>("CL3D_DNNcalib_path")),
-      CL3D_DNNident_feats(iConfig.getParameter<std::vector<std::string>>("CL3D_DNNident_feats")),
-      CL3D_DNNcalib_feats(iConfig.getParameter<std::vector<std::string>>("CL3D_DNNcalib_feats")),
+      CNNmodel_path(iConfig.getParameter<std::string>("CNNmodel_path")),
+      DNNident_path(iConfig.getParameter<std::string>("DNNident_path")),
+      DNNcalib_path(iConfig.getParameter<std::string>("DNNcalib_path")),
+      XGBident_path(iConfig.getParameter<std::string>("XGBident_path")),
+      XGBcalib_path(iConfig.getParameter<std::string>("XGBcalib_path")),
+      XGBident_feats(iConfig.getParameter<std::vector<std::string>>("XGBident_feats")),
+      XGBcalib_feats(iConfig.getParameter<std::vector<std::string>>("XGBcalib_feats")),
+      C1calib_params(iConfig.getParameter<std::vector<double>>("C1calib_params")),
+      C3calib_params(iConfig.getParameter<std::vector<double>>("C3calib_params")),
       DEBUG(iConfig.getParameter<bool>("DEBUG"))
 {    
 
     // Create sessions for Tensorflow inferece
-    CLTW_CNNmodel = tensorflow::loadGraphDef(CLTW_CNNmodel_path);
-    CLTW_CNNsession = tensorflow::createSession(CLTW_CNNmodel);
+    CNNmodel = tensorflow::loadGraphDef(CNNmodel_path);
+    CNNsession = tensorflow::createSession(CNNmodel);
 
-    CLTW_DNNident = tensorflow::loadGraphDef(CLTW_DNNident_path);
-    CLTW_DNNsessionIdent = tensorflow::createSession(CLTW_DNNident);
+    DNNident = tensorflow::loadGraphDef(DNNident_path);
+    DNNsessionIdent = tensorflow::createSession(DNNident);
 
-    CLTW_DNNcalib = tensorflow::loadGraphDef(CLTW_DNNcalib_path);
-    CLTW_DNNsessionCalib = tensorflow::createSession(CLTW_DNNcalib);
+    DNNcalib = tensorflow::loadGraphDef(DNNcalib_path);
+    DNNsessionCalib = tensorflow::createSession(DNNcalib);
 
-    CL3D_DNNident = tensorflow::loadGraphDef(CL3D_DNNident_path);
-    CL3D_DNNsessionIdent = tensorflow::createSession(CL3D_DNNident);
+    // Load models for XGBoost inference
+    XGBoosterCreate(NULL,0,&XGBident);
+    XGBoosterLoadModel(XGBident,XGBident_path.c_str());
 
-    CL3D_DNNcalib = tensorflow::loadGraphDef(CL3D_DNNcalib_path);
-    CL3D_DNNsessionCalib = tensorflow::createSession(CL3D_DNNcalib);
-
+    XGBoosterCreate(NULL,0,&XGBcalib);
+    XGBoosterLoadModel(XGBcalib,XGBcalib_path.c_str());
 
     // Create produced outputs
     produces<TowerHelper::TowerClustersCollection>("l1TowerClustersNxM");
@@ -511,9 +511,9 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
                 int towerIdx = eta*phiClusterDimension + phi;
                 if (CNNfilters == 3)
                 {
-                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 0) = inputQuantizer(cluNxM.towerHits[towerIdx].l1egTowerEt, 0.25, 10);
-                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 1) = inputQuantizer(cluNxM.towerHits[towerIdx].towerEm, 0.25, 10);
-                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 2) = inputQuantizer(cluNxM.towerHits[towerIdx].towerHad, 0.25, 10);
+                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 0) = cluNxM.towerHits[towerIdx].l1egTowerEt;
+                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 1) = cluNxM.towerHits[towerIdx].towerEm;
+                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 2) = cluNxM.towerHits[towerIdx].towerHad;
                 }
                 else if (CNNfilters == 1)
                 {
@@ -536,25 +536,25 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     }// end while loop of NxM TowerClusters creation
 
     // Apply CNN model
-    tensorflow::NamedTensorList CLTW_CNNinputList = {{"TowerClusterImage", TowerClusterImage}, {"TowerClusterPosition", TowerClusterPosition}};
-    std::vector<tensorflow::Tensor> CLTW_CNNoutputs;
-    tensorflow::run(CLTW_CNNsession, CLTW_CNNinputList, {"model/middleMan/concat"}, &CLTW_CNNoutputs);
-    tensorflow::NamedTensorList CLTW_DNNinputsList = {{"middleMan", CLTW_CNNoutputs[0]}};
+    tensorflow::NamedTensorList CNNinputList = {{"TowerClusterImage", TowerClusterImage}, {"TowerClusterPosition", TowerClusterPosition}};
+    std::vector<tensorflow::Tensor> CNNoutputs;
+    tensorflow::run(CNNsession, CNNinputList, {"model/middleMan/concat"}, &CNNoutputs);
+    tensorflow::NamedTensorList DNNinputsList = {{"middleMan", CNNoutputs[0]}};
 
     // Apply DNN for identification
-    std::vector<tensorflow::Tensor> CLTW_DNNoutputsIdent;
-    tensorflow::run(CLTW_DNNsessionIdent, CLTW_DNNinputsList, {"model_1/sigmoid_DNNout/Sigmoid"}, &CLTW_DNNoutputsIdent);
+    std::vector<tensorflow::Tensor> DNNoutputsIdent;
+    tensorflow::run(DNNsessionIdent, DNNinputsList, {"model_1/sigmoid_DNNout/Sigmoid"}, &DNNoutputsIdent);
 
     // Apply DNN for calibration
-    std::vector<tensorflow::Tensor> CLTW_DNNoutputsCalib;
-    tensorflow::run(CLTW_DNNsessionCalib, CLTW_DNNinputsList, {"TauCNNCalibrator/DNNout/MatMul"}, &CLTW_DNNoutputsCalib);
+    std::vector<tensorflow::Tensor> DNNoutputsCalib;
+    tensorflow::run(DNNsessionCalib, DNNinputsList, {"TauCNNCalibrator/DNNout/MatMul"}, &DNNoutputsCalib);
 
     // Fill CNN+DNN output variables of TowerClusters
     cluIdx = 0;
     for (auto& cluNxM : *l1TowerClustersNxM)
     {
-        cluNxM.IDscore = CLTW_DNNoutputsIdent[0].matrix<float>()(0, cluIdx);
-        cluNxM.calibPt = CLTW_DNNoutputsCalib[0].matrix<float>()(0, cluIdx);
+        cluNxM.IDscore = DNNoutputsIdent[0].matrix<float>()(0, cluIdx);
+        cluNxM.calibPt = DNNoutputsCalib[0].matrix<float>()(0, cluIdx);
         cluIdx += 1; // increase index of cluster in batch
     }
 
@@ -591,6 +591,14 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     std::unique_ptr<HGClusterHelper::HGClustersCollection> HGClustersCollection(new HGClusterHelper::HGClustersCollection);
     iEvent.getByToken(HGClusterToken, HGClusterHandle);
 
+    // Create batch input for XGBoost models
+    const l1t::HGCalMulticlusterBxCollection& HGClusters = *HGClusterHandle;
+    int nmb_cl3ds = HGClusters.size();
+    int nmb_ident_feats = XGBident_feats.size();
+    int nmb_calib_feats = XGBcalib_feats.size();
+    float IdentData[nmb_cl3ds][nmb_ident_feats];
+    float CalibData[nmb_cl3ds][nmb_calib_feats];
+
     cluIdx = 0;
     for (auto& cl3d : *HGClusterHandle.product())
     {
@@ -614,6 +622,52 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         HGCluster.hoe = cl3d.hOverE();
         HGCluster.meanz = cl3d.zBarycenter();
         HGCluster.quality = cl3d.hwQual();
+
+        for (int i = 0; i < nmb_ident_feats; ++i)
+        {
+            if (XGBident_feats[i] == "cl3d_pt")               { IdentData[cluIdx][i] =  HGCluster.pt; }
+            if (XGBident_feats[i] == "cl3d_e")                { IdentData[cluIdx][i] =  HGCluster.energy; }
+            if (XGBident_feats[i] == "cl3d_eta")              { IdentData[cluIdx][i] =  HGCluster.eta; }
+            if (XGBident_feats[i] == "cl3d_abseta")           { IdentData[cluIdx][i] =  abs(HGCluster.eta); }
+            if (XGBident_feats[i] == "cl3d_phi")              { IdentData[cluIdx][i] =  HGCluster.phi; }
+            if (XGBident_feats[i] == "cl3d_showerlength")     { IdentData[cluIdx][i] =  HGCluster.showerlength; }
+            if (XGBident_feats[i] == "cl3d_coreshowerlength") { IdentData[cluIdx][i] =  HGCluster.coreshowerlength; }
+            if (XGBident_feats[i] == "cl3d_firstlayer")       { IdentData[cluIdx][i] =  HGCluster.firstlayer; }
+            if (XGBident_feats[i] == "cl3d_seetot")           { IdentData[cluIdx][i] =  HGCluster.seetot; }
+            if (XGBident_feats[i] == "cl3d_seemax")           { IdentData[cluIdx][i] =  HGCluster.seemax; }
+            if (XGBident_feats[i] == "cl3d_spptot")           { IdentData[cluIdx][i] =  HGCluster.spptot; }
+            if (XGBident_feats[i] == "cl3d_sppmax")           { IdentData[cluIdx][i] =  HGCluster.sppmax; }
+            if (XGBident_feats[i] == "cl3d_szz")              { IdentData[cluIdx][i] =  HGCluster.szz; }
+            if (XGBident_feats[i] == "cl3d_srrtot")           { IdentData[cluIdx][i] =  HGCluster.srrtot; }
+            if (XGBident_feats[i] == "cl3d_srrmax")           { IdentData[cluIdx][i] =  HGCluster.srrmax; }
+            if (XGBident_feats[i] == "cl3d_srrmean")          { IdentData[cluIdx][i] =  HGCluster.srrmean; }
+            if (XGBident_feats[i] == "cl3d_hoe")              { IdentData[cluIdx][i] =  HGCluster.hoe; }
+            if (XGBident_feats[i] == "cl3d_meanz")            { IdentData[cluIdx][i] =  HGCluster.meanz; }
+            if (XGBident_feats[i] == "cl3d_quality")          { IdentData[cluIdx][i] =  HGCluster.quality; }
+        }
+
+        for (int i = 0; i < nmb_calib_feats; ++i)
+        {
+            if (XGBcalib_feats[i] == "cl3d_pt")               { CalibData[cluIdx][i] =  HGCluster.pt + (C1calib_params[0] * abs(HGCluster.eta) + C1calib_params[1]); } // C2 wants the C1Pt as input
+            if (XGBcalib_feats[i] == "cl3d_e")                { CalibData[cluIdx][i] =  HGCluster.energy; }
+            if (XGBcalib_feats[i] == "cl3d_eta")              { CalibData[cluIdx][i] =  HGCluster.eta; }
+            if (XGBcalib_feats[i] == "cl3d_abseta")           { CalibData[cluIdx][i] =  abs(HGCluster.eta); }
+            if (XGBcalib_feats[i] == "cl3d_phi")              { CalibData[cluIdx][i] =  HGCluster.phi; }
+            if (XGBcalib_feats[i] == "cl3d_showerlength")     { CalibData[cluIdx][i] =  HGCluster.showerlength; }
+            if (XGBcalib_feats[i] == "cl3d_coreshowerlength") { CalibData[cluIdx][i] =  HGCluster.coreshowerlength; }
+            if (XGBcalib_feats[i] == "cl3d_firstlayer")       { CalibData[cluIdx][i] =  HGCluster.firstlayer; }
+            if (XGBcalib_feats[i] == "cl3d_seetot")           { CalibData[cluIdx][i] =  HGCluster.seetot; }
+            if (XGBcalib_feats[i] == "cl3d_seemax")           { CalibData[cluIdx][i] =  HGCluster.seemax; }
+            if (XGBcalib_feats[i] == "cl3d_spptot")           { CalibData[cluIdx][i] =  HGCluster.spptot; }
+            if (XGBcalib_feats[i] == "cl3d_sppmax")           { CalibData[cluIdx][i] =  HGCluster.sppmax; }
+            if (XGBcalib_feats[i] == "cl3d_szz")              { CalibData[cluIdx][i] =  HGCluster.szz; }
+            if (XGBcalib_feats[i] == "cl3d_srrtot")           { CalibData[cluIdx][i] =  HGCluster.srrtot; }
+            if (XGBcalib_feats[i] == "cl3d_srrmax")           { CalibData[cluIdx][i] =  HGCluster.srrmax; }
+            if (XGBcalib_feats[i] == "cl3d_srrmean")          { CalibData[cluIdx][i] =  HGCluster.srrmean; }
+            if (XGBcalib_feats[i] == "cl3d_hoe")              { CalibData[cluIdx][i] =  HGCluster.hoe; }
+            if (XGBcalib_feats[i] == "cl3d_meanz")            { CalibData[cluIdx][i] =  HGCluster.meanz; }
+            if (XGBcalib_feats[i] == "cl3d_quality")          { CalibData[cluIdx][i] =  HGCluster.quality; }
+        }
 
         if (DEBUG)
         {
@@ -643,82 +697,31 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         cluIdx += 1; // increase index of cluster in batch
     }
 
-    // Create batch input for Tensorflow models
-    tensorflow::setLogging("2");
-    batchSize =  (int)(HGClustersCollection->size());
-    const int nmb_ident_feats = CL3D_DNNident_feats.size();
-    const int nmb_calib_feats = CL3D_DNNcalib_feats.size();
-    tensorflow::TensorShape identInputShape({batchSize, nmb_ident_feats});
-    tensorflow::Tensor Cl3dIdentInput(tensorflow::DT_FLOAT, identInputShape);
-    tensorflow::TensorShape calibInputShape({batchSize, nmb_calib_feats});
-    tensorflow::Tensor Cl3dCalibInput(tensorflow::DT_FLOAT, calibInputShape);
+    // Apply XGB for identification
+    DMatrixHandle IdentMatrix;
+    XGDMatrixCreateFromMat((float *)IdentData,nmb_cl3ds,nmb_ident_feats,-1,&IdentMatrix);
+    bst_ulong LENoutputsIdent = 0;
+    const float *XGBoutputsIdent;
+    auto ret1=XGBoosterPredict(XGBident, IdentMatrix,0, 0,0,&LENoutputsIdent,&XGBoutputsIdent);
+
+    // Apply XGB for calibration
+    DMatrixHandle CalibMatrix;
+    XGDMatrixCreateFromMat((float *)CalibData,nmb_cl3ds,nmb_calib_feats,-1,&CalibMatrix);
+    bst_ulong LENoutputsCalib = 0;
+    const float *XGBoutputsCalib;
+    auto ret2=XGBoosterPredict(XGBcalib, CalibMatrix,0, 0,0,&LENoutputsCalib,&XGBoutputsCalib);
 
     cluIdx = 0;
     for (auto& HGCluster : *HGClustersCollection)
     {
-        for (int i = 0; i < nmb_ident_feats; ++i)
-        {
-            if (CL3D_DNNident_feats[i] == "cl3d_pt")               { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.pt, 0.25, 14); }
-            if (CL3D_DNNident_feats[i] == "cl3d_e")                { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.energy, 0.25, 14); }
-            if (CL3D_DNNident_feats[i] == "cl3d_eta")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.eta; }
-            if (CL3D_DNNident_feats[i] == "cl3d_localAbsEta")      { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9); }
-            if (CL3D_DNNident_feats[i] == "cl3d_phi")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.phi; }
-            if (CL3D_DNNident_feats[i] == "cl3d_showerlength")     { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.showerlength; }
-            if (CL3D_DNNident_feats[i] == "cl3d_coreshowerlength") { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.coreshowerlength; }
-            if (CL3D_DNNident_feats[i] == "cl3d_firstlayer")       { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.firstlayer; }
-            if (CL3D_DNNident_feats[i] == "cl3d_seetot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seetot, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_seemax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seemax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_spptot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.spptot, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_sppmax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.sppmax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_szz")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.szz, 0.002, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrtot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrtot, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrmax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrmean")          { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmean, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_hoe")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.hoe, 0.002, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_localAbsMeanZ")    { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(10*abs(HGCluster.meanz)-320, 0.5, 12); }
-        }
-
-        for (int i = 0; i < nmb_calib_feats; ++i)
-        {
-            if (CL3D_DNNcalib_feats[i] == "cl3d_pt")               { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.pt, 0.25, 14); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_e")                { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.energy, 0.25, 14); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_eta")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.eta; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_abseta")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_phi")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.phi; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_showerlength")     { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.showerlength; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_coreshowerlength") { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.coreshowerlength; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_firstlayer")       { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.firstlayer; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_seetot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seetot, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_seemax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seemax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_spptot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.spptot, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_sppmax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.sppmax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_szz")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.szz, 0.002, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrtot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrtot, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrmax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrmean")          { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmean, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_hoe")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.hoe, 0.002, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_meanz")            { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(10*(abs(HGCluster.meanz)-320), 0.5, 12); }
-        }
-
-        cluIdx += 1; // increase index of cluster in batch
-    }
-
-    // Apply DNN for identification
-    tensorflow::NamedTensorList CL3D_DNNIdentInputsList = {{"CL3DFeatures", Cl3dIdentInput}};
-    std::vector<tensorflow::Tensor> CL3D_DNNoutputsIdent;
-    tensorflow::run(CLTW_DNNsessionIdent, CL3D_DNNIdentInputsList, {"TauDNNIdentifier/sigmoid_DNNout/Sigmoid"}, &CL3D_DNNoutputsIdent);
-
-    // Apply DNN for calibration
-    tensorflow::NamedTensorList CL3D_DNNCalibInputsList = {{"CL3DFeatures", Cl3dCalibInput}};
-    std::vector<tensorflow::Tensor> CL3D_DNNoutputsCalib;
-    tensorflow::run(CLTW_DNNsessionCalib, CL3D_DNNCalibInputsList, {"TauDNNCalibrator/DNNout/MatMul"}, &CL3D_DNNoutputsCalib);
-
-    // Fill CNN+DNN output variables of TowerClusters
-    cluIdx = 0;
-    for (auto& HGCluster : *HGClustersCollection)
-    {
-        HGCluster.IDscore = CL3D_DNNoutputsIdent[0].matrix<float>()(0, cluIdx);
-        HGCluster.calibPt = CL3D_DNNoutputsCalib[0].matrix<float>()(0, cluIdx);
+        HGCluster.IDscore = XGBoutputsIdent[cluIdx];
+        
+        float c1pt = HGCluster.pt + (C1calib_params[0] * abs(HGCluster.eta) + C1calib_params[1]);
+        float c2pt = c1pt * XGBoutputsCalib[cluIdx];
+        float c2pt_log = log(abs(c2pt));
+        float c3pt = c2pt / (C3calib_params[0] + C3calib_params[1] * c2pt_log + C3calib_params[2] * pow(c2pt_log,2) + C3calib_params[3] * pow(c2pt_log,3) + C3calib_params[4] * pow(c2pt_log,4));
+        HGCluster.calibPt = c3pt;
+        
         cluIdx += 1; // increase index of cluster in batch
     }
 
@@ -837,11 +840,5 @@ std::vector<TowerHelper::TowerHit> L1CaloTauProducer::sortPicLike(std::vector<To
 
     return towerHits;
 }
-
-float L1CaloTauProducer::inputQuantizer(float inputF, float LSB, int nbits)
-{
-    return min( floor(inputF/LSB), float(pow(2,nbits)-1) ) * LSB;
-}
-
 
 DEFINE_FWK_MODULE(L1CaloTauProducer);
