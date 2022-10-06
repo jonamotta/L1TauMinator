@@ -624,9 +624,9 @@ def TensorizeForCl3dIdentification(dfFlatHGClus, dfFlatGenTaus, dfFlatGenJets, u
     dfCluTauJetPu['cl3d_srrtot'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_srrtot'], 0.0000153, 16)
     dfCluTauJetPu['cl3d_srrmax'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_srrmax'], 0.0000153, 16)
     dfCluTauJetPu['cl3d_srrmean'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_srrmean'], 0.0000153, 16)
-    # targeting ufixed<16,7>  -->  0.0005 ~ 1/2^11
-    dfCluTauJetPu['cl3d_hoe'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_hoe'], 0.0005, 16)
-    dfCluTauJetPu['cl3d_szz'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_szz'], 0.0005, 16)
+    # targeting ufixed<16,7>  -->  0.002 ~ 1/2^9
+    dfCluTauJetPu['cl3d_hoe'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_hoe'], 0.002, 16)
+    dfCluTauJetPu['cl3d_szz'] = inputQuantizer_vctd(dfCluTauJetPu['cl3d_szz'], 0.002, 16)
 
     # make uniqueId the index
     dfCluTauJetPu.set_index('uniqueId',inplace=True)
@@ -699,9 +699,9 @@ def TensorizeForCl3dCalibration(dfFlatHGClus, dfFlatGenTaus, uTauPtCut, lTauPtCu
     dfCluTau['cl3d_srrtot'] = inputQuantizer_vctd(dfCluTau['cl3d_srrtot'], 0.0000153, 16)
     dfCluTau['cl3d_srrmax'] = inputQuantizer_vctd(dfCluTau['cl3d_srrmax'], 0.0000153, 16)
     dfCluTau['cl3d_srrmean'] = inputQuantizer_vctd(dfCluTau['cl3d_srrmean'], 0.0000153, 16)
-    # targeting ufixed<16,7>  -->  0.0005 ~ 1/2^11
-    dfCluTau['cl3d_hoe'] = inputQuantizer_vctd(dfCluTau['cl3d_hoe'], 0.0005, 16)
-    dfCluTau['cl3d_szz'] = inputQuantizer_vctd(dfCluTau['cl3d_szz'], 0.0005, 16)
+    # targeting ufixed<16,7>  -->  0.002 ~ 1/2^9
+    dfCluTau['cl3d_hoe'] = inputQuantizer_vctd(dfCluTau['cl3d_hoe'], 0.002, 16)
+    dfCluTau['cl3d_szz'] = inputQuantizer_vctd(dfCluTau['cl3d_szz'], 0.002, 16)
 
     # make uniqueId the index
     dfCluTau.reset_index(inplace=True)
