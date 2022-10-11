@@ -55,7 +55,7 @@ class L1CaloTauNtuplizer : public edm::EDAnalyzer {
         edm::Handle<TauHelper::TausCollection> minatedTausHandle;
 
         edm::EDGetTokenT<l1t::TauBxCollection> squareTausToken;
-        edm::Handle<l1t::Tau> squareTausHandle;
+        edm::Handle<BXVector<l1t::Tau>>  squareTausHandle;
 
         edm::EDGetTokenT<GenHelper::GenTausCollection> genTausToken;
         edm::Handle<GenHelper::GenTausCollection> genTausHandle;
@@ -103,7 +103,8 @@ class L1CaloTauNtuplizer : public edm::EDAnalyzer {
         std::vector<float>  _squarel1tau_pt;
         std::vector<float>  _squarel1tau_eta;
         std::vector<float>  _squarel1tau_phi;
-        std::vector<int>    _squarel1tau_isoEt;
+        std::vector<float>  _squarel1tau_isoEt;
+        std::vector<int>    _squarel1tau_qual;
         std::vector<int>    _squarel1tau_iso;
 
         std::vector<float> _cl3d_calibPt;
@@ -231,6 +232,7 @@ void L1CaloTauNtuplizer::Initialize()
     _squarel1tau_eta.clear();
     _squarel1tau_phi.clear();
     _squarel1tau_isoEt.clear();
+    _squarel1tau_qual.clear();
     _squarel1tau_iso.clear();
 
     _cl3d_calibPt.clear();
@@ -331,6 +333,7 @@ void L1CaloTauNtuplizer::beginJob()
     _tree -> Branch("squarel1tau_eta",   &_squarel1tau_eta);
     _tree -> Branch("squarel1tau_phi",   &_squarel1tau_phi);
     _tree -> Branch("squarel1tau_isoEt", &_squarel1tau_isoEt);
+    _tree -> Branch("squarel1tau_qual",  &_squarel1tau_qual);
     _tree -> Branch("squarel1tau_iso",   &_squarel1tau_iso);
 
     _tree -> Branch("cl3d_calibPt",          &_cl3d_calibPt);
@@ -415,7 +418,6 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
     const TowerHelper::TowerClustersCollection& CaloClustersNxM = *CaloClustersNxMHandle;
     const HGClusterHelper::HGClustersCollection& HGClusters = *HGClustersHandle;
     const TauHelper::TausCollection& minatedTaus = *minatedTausHandle;
-    const l1t::Tau& squareTaus = *squareTausHandle;
     const GenHelper::GenTausCollection& genTaus = *genTausHandle;
 
     if (DEBUG)
@@ -606,17 +608,15 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
     }
 
     // Fill baseline square L1Taus
-    // iEvent.getByToken(squareTausToken, squareTausHandle);
-    // for (l1t::TauBxCollection::const_iterator bx0TauIt = squareTausHandle->begin(0); bx0TauIt != squareTausHandle->end(0) ; bx0TauIt++)
-    for (long unsigned int tauIdx = 0; tauIdx < squareTaus.size(); tauIdx++)
+    for (l1t::TauBxCollection::const_iterator bx0TauIt = squareTausHandle->begin(0); bx0TauIt != squareTausHandle->end(0) ; bx0TauIt++)
     {
-        // const l1t::Tau& tau = *bx0TauIt;
-        l1t::Tau tau = squareTaus[tauIdx];
+        const l1t::Tau& tau = *bx0TauIt;
 
         _squarel1tau_pt.push_back(tau.pt());
         _squarel1tau_eta.push_back(tau.eta());
         _squarel1tau_phi.push_back(tau.phi());
-        _squarel1tau_isoEt.push_back(tau.hwQual());
+        _squarel1tau_isoEt.push_back(tau.isoEt());
+        _squarel1tau_qual.push_back(tau.hwQual());
         _squarel1tau_iso.push_back(tau.hwIso());
     }
 
