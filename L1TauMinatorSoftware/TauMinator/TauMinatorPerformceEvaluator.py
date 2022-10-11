@@ -1,13 +1,9 @@
 from scipy.optimize import curve_fit
-from optparse import OptionParser
-from scipy.special import btdtri # beta quantile function
-from tensorflow import keras
-from sklearn import metrics
-import tensorflow as tf
-import xgboost as xgb
-import pandas as pd
+from array import array
 import numpy as np
 import pickle
+import ROOT
+import sys
 import os
 
 import matplotlib.pyplot as plt
@@ -15,8 +11,20 @@ import matplotlib
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
-np.random.seed(7)
+class Logger(object):
+    def __init__(self,file):
+        self.terminal = sys.stdout
+        self.log = open(file, "w")
 
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)  
+
+    def flush(self):
+        #this flush method is needed for python 3 compatibility.
+        #this handles the flush command by doing nothing.
+        #you might want to specify some extra behavior here.
+        pass
 
 def save_obj(obj,dest):
     with open(dest,'wb') as f:
@@ -25,27 +33,6 @@ def save_obj(obj,dest):
 def load_obj(source):
     with open(source,'rb') as f:
         return pickle.load(f)
-
-def efficiency(g, WP, thr, upper=False):
-    sel = g[(g['TauMinated'+WP]==1) & (g['L1_pt']>thr)].shape[0]
-    tot = g.shape[0]
-
-    efficiency = float(sel) / float(tot)
-
-    # clopper pearson errors --> ppf gives the boundary of the cinfidence interval, therefore for plotting we have to subtract the value of the central value of the efficiency!!
-    alpha = (1 - 0.9) / 2
-
-    if sel == tot:
-        uError = 0.
-    else:
-        uError = abs(btdtri(sel+1, tot-sel, 1-alpha) - efficiency)
-
-    if sel == 0:
-        lError = 0.
-    else:
-        lError = abs(efficiency - btdtri(sel, tot-sel+1, alpha))
-
-    return efficiency, lError, uError
 
 def sigmoid(x , a, x0, k):
     return a / ( 1 + np.exp(-k*(x-x0)) )
@@ -57,642 +44,806 @@ def sigmoid(x , a, x0, k):
 
 if __name__ == "__main__" :
     parser = OptionParser()
-    parser.add_option("--v",                dest="v",                default=None)
-    parser.add_option("--date",             dest="date",             default=None)
-    parser.add_option("--inTag",            dest="inTag",            default="")
-    parser.add_option("--inTagCNNCalib",    dest="inTagCNNCalib",    default="")
-    parser.add_option("--CNNCalibSparsity", dest="CNNCalibSparsity", default=None)
-    parser.add_option("--inTagCNNIdent",    dest="inTagCNNIdent",    default="")
-    parser.add_option("--CNNIdentSparsity", dest="CNNIdentSparsity", default=None)
-    parser.add_option("--inTagBDTCalib",    dest="inTagBDTCalib",    default="")
-    parser.add_option("--inTagBDTIdent",    dest="inTagBDTIdent",    default="")
-    parser.add_option('--caloClNxM',        dest='caloClNxM',        default="5x9")
+    parser.add_option("--NtupleV",          dest="NtupleV",                default=None)
+    parser.add_option("--v",                dest="v",                      default=None)
+    parser.add_option("--date",             dest="date",                   default=None)
+    parser.add_option('--loop',             dest='loop',                   default=False)
+    parser.add_option('--etaEr',            dest='etaEr',      type=float, default=3.0)
+    parser.add_option('--doMinator',        dest='doMinator',              default=False)
+    parser.add_option('--doCLTWonly',       dest='doCLTWonly',             default=False)
+    parser.add_option("--inTagCNN_clNxM",   dest="inTagCNN_clNxM",         default="")
+    parser.add_option("--inTagDNN_cl3d",    dest="inTagDNN_cl3d",          default="")
+    parser.add_option('--caloClNxM',        dest='caloClNxM',              default="5x9")
     (options, args) = parser.parse_args()
     print(options)
 
-    # get clusters' shape dimensions
-    N = int(options.caloClNxM.split('x')[0])
-    M = int(options.caloClNxM.split('x')[1])
+    if not options.doMinator and not options.doCLTWonly:
+        print('** ERROR : no target evaluation psecified, select doMinator or doCLTWonly')
+        print('** EXITING!')
+        exit()
 
-    ############################## Get models and inputs ##############################
+    if options.doMinator and options.doCLTWonly:
+        print('** ERROR : two target evaluation psecified, select only one between doMinator and doCLTWonly')
+        print('** EXITING!')
+        exit()
 
-    indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
-    perfdir = indir+'/TauMinatorPerformanceEvaluator_'+options.caloClNxM
-    CNNWPdir = indir+'/TauCNNEvaluator'+options.caloClNxM
-    BDTWPdir = indir+'/TauBDTEvaluator'
+    ptBins=[15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 175, 200, 500]
+    offline_pts = [17.5,  22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5, 67.5, 72.5, 77.5, 82.5, 87.5, 92.5, 97.5, 102.5, 107.5, 112.5, 117.5, 122.5, 127.5, 132.5, 137.5, 142.5, 147.5, 152.5, 157.5, 170, 187.5, 350]
 
-    if options.CNNCalibSparsity:
-        TauCalibratorModel = keras.models.load_model(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCNNCalib+'/TauCNNCalibrator'+options.CNNCalibSparsity+'Pruned', compile=False)
-        perfdir += '_CNNCalib'+options.inTagCNNCalib+'_'+options.CNNCalibSparsity+'Pruned'
-        CNNWPdir += '_Calib'+options.inTagCNNCalib+'_'+options.CNNCalibSparsity+'Pruned'
+    if etaEr==3.0:
+        etaBins=[-3.0, -2.7, -2.4, -2.1, -1.8, -1.5, -1.305, -1.0, -0.66, -0.33, 0.0, 0.33, 0.66, 1.0, 1.305, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0]
+        eta_bins_centers = [-2.85, -2.55, -2.25, -1.95, -1.65, -1.4025, -1.1525, -0.825, -0.495, -0.165, 0.165, 0.495, 0.825, 1.1525, 1.4025, 1.65, 1.95, 2.25, 2.55, 2.85]
+    elif etaEr==2.4:
+        etaBins=[-2.4, -2.1, -1.8, -1.5, -1.305, -1.0, -0.66, -0.33, 0.0, 0.33, 0.66, 1.0, 1.305, 1.5, 1.8, 2.1, 2.4]
+        eta_bins_centers = [-2.25, -1.95, -1.65, -1.4025, -1.1525, -0.825, -0.495, -0.165, 0.165, 0.495, 0.825, 1.1525, 1.4025, 1.65, 1.95, 2.25]
     else:
-        TauCalibratorModel = keras.models.load_model(indir+'/TauCNNCalibrator'+options.caloClNxM+'Training'+options.inTagCNNCalib+'/TauCNNCalibrator', compile=False)
-        perfdir += '_CNNCalib'+options.inTagCNNCalib
-        CNNWPdir += '_Calib'+options.inTagCNNCalib
-    
-    if options.CNNIdentSparsity:
-        TauIdentifierModel = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNNIdent+'/TauCNNIdentifier'+options.CNNIdentSparsity+'Pruned', compile=False)
-        perfdir += '_CNNIdent'+options.inTagCNNIdent+'_'+options.CNNIdentSparsity+'Pruned'
-        CNNWPdir += '_Ident'+options.inTagCNNIdent+'_'+options.CNNIdentSparsity+'Pruned'
-    else:
-        TauIdentifierModel = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNNIdent+'/TauCNNIdentifier', compile=False)
-        perfdir += '_CNNIdent'+options.inTagCNNIdent
-        CNNWPdir += '_Ident'+options.inTagCNNIdent
+        exit()
 
-    PUmodel = load_obj(indir+'/TauBDTIdentifierTraining'+options.inTagBDTIdent+'/TauBDTIdentifier/PUmodel.pkl')
-    C1model = load_obj(indir+'/TauBDTCalibratorTraining'+options.inTagBDTCalib+'/TauBDTCalibrator/C1model.pkl')
-    C2model = load_obj(indir+'/TauBDTCalibratorTraining'+options.inTagBDTCalib+'/TauBDTCalibrator/C2model.pkl')
-    C3model = load_obj(indir+'/TauBDTCalibratorTraining'+options.inTagBDTCalib+'/TauBDTCalibrator/C3model.pkl')
-    perfdir += '_BDTCalib'+options.inTagBDTCalib+'_BDTIdent'+options.inTagBDTIdent
-    BDTWPdir += '_Calib'+options.inTagBDTCalib+'_Ident'+options.inTagBDTCalib
-
-    CNN_WP_dict = load_obj(CNNWPdir+'/TauMinatorCNN_WPs.pkl')
-    BDT_WP_dict = load_obj(BDTWPdir+'/TauMinatorBDT_WPs.pkl')
-
-    os.system('mkdir -p '+perfdir+'/turnons')
-
-    X1CNN = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_CNN_'+options.caloClNxM+'.npz')['arr_0']
-    X2CNN = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_Dense_'+options.caloClNxM+'.npz')['arr_0']
-    YCNN  = np.load(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/Y_'+options.caloClNxM+'.npz')['arr_0']
-
-    XBDT = pd.read_pickle(indir+'/TauMinatorPerformanceInputs_'+options.caloClNxM+options.inTag+'/X_BDT.pkl')
-    XBDT['cl3d_abseta'] = abs(XBDT['cl3d_eta']).copy(deep=True)
-
-    ############################## Apply CNN models to inputs ##############################
-
-    dfCNN = pd.DataFrame()
-    dfCNN['event']        = YCNN[:,4].ravel().astype(int)
-    dfCNN['tau_visPt' ]   = YCNN[:,0].ravel()
-    dfCNN['tau_visEta']   = YCNN[:,1].ravel()
-    dfCNN['tau_visPhi']   = YCNN[:,2].ravel()
-    dfCNN['tau_DM']       = YCNN[:,3].ravel().astype(int)
-    dfCNN['L1_pt_CLNxM']  = TauCalibratorModel.predict([X1CNN, X2CNN]).ravel()
-    dfCNN['L1_eta_CLNxM'] = X2CNN[:,0].ravel()
-    dfCNN['L1_phi_CLNxM'] = X2CNN[:,1].ravel()
-    dfCNN['CNNscore']     = TauIdentifierModel.predict([X1CNN, X2CNN]).ravel()
-    dfCNN['CNNpass99']    = dfCNN['CNNscore'] > CNN_WP_dict['wp99']
-    dfCNN['CNNpass95']    = dfCNN['CNNscore'] > CNN_WP_dict['wp95']
-    dfCNN['CNNpass90']    = dfCNN['CNNscore'] > CNN_WP_dict['wp90']
-    dfCNN.sort_values('event', inplace=True)
-
-    ############################## Apply BDT models to inputs ##############################
-
-    featuresCalib = ['cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_abseta', 'cl3d_spptot', 'cl3d_srrmean', 'cl3d_meanz']
-    featuresCalibN = ['f0', 'f1', 'f2', 'f3', 'f4', 'f5']
-    
-    featuresIdent = ['cl3d_pt', 'cl3d_coreshowerlength', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz']
-    featuresIdentN = ['f0', 'f1', 'f2', 'f3', 'f4', 'f5']
-
-    # rename features with numbers (needed by PUmodel) and apply it
-    for i in range(len(featuresIdent)): XBDT[featuresIdentN[i]] = XBDT[featuresIdent[i]].copy(deep=True)
-    XBDT['bdt_output'] = PUmodel.predict_proba(XBDT[featuresIdentN])[:,1]
-
-    # rename features with numbers (needed by C2model) and apply calibrations
-    XBDT.drop(featuresIdentN, axis=1, inplace=True)
-    for i in range(len(featuresCalib)): XBDT[featuresCalibN[i]] = XBDT[featuresCalib[i]].copy(deep=True)
-    XBDT['cl3d_pt_c1'] = C1model.predict(XBDT[['cl3d_abseta']]) + XBDT['cl3d_pt']
-    XBDT['cl3d_pt_c2'] = C2model.predict(XBDT[featuresCalibN]) * XBDT['cl3d_pt_c1']
-    logpt1 = np.log(abs(XBDT['cl3d_pt_c2']))
-    logpt2 = logpt1**2
-    logpt3 = logpt1**3
-    logpt4 = logpt1**4
-    XBDT['cl3d_pt_c3'] = XBDT['cl3d_pt_c2'] / C3model.predict(np.vstack([logpt1, logpt2, logpt3, logpt4]).T)
-
-    dfBDT = XBDT[['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM', 'cl3d_pt_c3', 'cl3d_eta', 'cl3d_phi', 'bdt_output']].copy(deep=True)
-    dfBDT.rename(columns={'cl3d_pt_c3':'L1_pt_CL3D', 'cl3d_eta':'L1_eta_CL3D', 'cl3d_phi':'L1_phi_CL3D', 'bdt_output':'BDTscore'}, inplace=True)
-    dfBDT['BDTpass99']  = dfBDT['BDTscore'] > BDT_WP_dict['wp99']
-    dfBDT['BDTpass95']  = dfBDT['BDTscore'] > BDT_WP_dict['wp95']
-    dfBDT['BDTpass90']  = dfBDT['BDTscore'] > BDT_WP_dict['wp90']
-    dfBDT.sort_values('event', inplace=True)
-
-    dfTOT = pd.concat([dfCNN, dfBDT], axis=0, sort=False)[['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM']]
-    dfTOT.drop_duplicates(['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM'], keep='first', inplace=True)
-
-    ############################## Match CL3D to CLNxM in the endcap ##############################
-
-    # define the endcap part of the towers >1.3 so that a DeltaEta(CLTW, CL3D)<0.25 can be applied, 0.25 ~ HGCAL_TT_size * 3
-    dfCNN_CE = dfCNN[abs(dfCNN['tau_visEta'])>1.3]     
-
-    # CL3Ds should have a better efficiency that CLTW in HGCAL -> we give CL3D precedence in the joining
-    dfCNN_CE.set_index(['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM'], inplace=True)
-    dfBDT.set_index(['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM'], inplace=True)
-    dfTauMinated_CE = dfBDT.join(dfCNN_CE, on=['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM'], how='left', rsuffix='_joined', sort=False)
-
-    # drop all cases in which there is no good match between CL3D and CLTW -> corresponds to DeltaR<0.47 in the furthest corner of the CLTW
-    dfTauMinated_CE.dropna(axis=0, how='any', inplace=True)
-    dfTauMinated_CE['L1_deltaEta'] = abs(dfTauMinated_CE['L1_eta_CL3D'] - dfTauMinated_CE['L1_eta_CLNxM'])
-    dfTauMinated_CE['L1_deltaPhi'] = abs(dfTauMinated_CE['L1_phi_CL3D'] - dfTauMinated_CE['L1_phi_CLNxM'])
-    dfTauMinated_CE = dfTauMinated_CE[((dfTauMinated_CE['L1_deltaEta'] < 0.25) & (dfTauMinated_CE['L1_deltaPhi'] < 0.4))] # | (dfTauMinated_CE['L1_pt_CL3D']>75) | (dfTauMinated_CE['L1_pt_CLNxM']>75)]
-    dfTauMinated_CE.drop(['L1_deltaEta', 'L1_deltaPhi'], axis=1, inplace=True)
-
-    ############################## Put togetehr the everything again ##############################
-
-    dfCNN.set_index(['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM'], inplace=True)
-    dfTauMinated = pd.concat([dfTauMinated_CE, dfCNN], axis=0, sort=False)
-    
-    # if L1_pt_CL3D keep that as the L1 candidate for the tau
-    dfTauMinated.sort_values('L1_pt_CL3D', inplace=True)
-    dfTauMinated.reset_index(inplace=True)
-    dfTauMinated.drop_duplicates(['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM'], keep='first', inplace=True)
-
-    # saparate the rightful HGCAL candidates from the barrel candidates
-    dfTauMinated.fillna(-99.9, inplace=True) # this fills the NaN of all the CLTW wothout a CL3D match
-    dfTauMinated_CB = dfTauMinated[dfTauMinated['L1_pt_CL3D']==-99.9][['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM',
-                                                                       'L1_pt_CLNxM', 'L1_eta_CLNxM', 'L1_phi_CLNxM',
-                                                                       'CNNpass99', 'CNNpass95', 'CNNpass90']]
-    
-    dfTauMinated_CE = dfTauMinated[dfTauMinated['L1_pt_CL3D']!=-99.9][['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM',
-                                                                       'L1_pt_CL3D', 'L1_eta_CL3D', 'L1_phi_CL3D',
-                                                                       'BDTpass99', 'BDTpass95', 'BDTpass90', 'CNNpass99', 'CNNpass95', 'CNNpass90']]
-
-    # do some renaiming
-    dfTauMinated_CE['TauMinated99'] = (dfTauMinated_CE['BDTpass99'] == True) & (dfTauMinated_CE['CNNpass99'] == True)
-    dfTauMinated_CE['TauMinated95'] = (dfTauMinated_CE['BDTpass95'] == True) & (dfTauMinated_CE['CNNpass95'] == True)
-    dfTauMinated_CE['TauMinated90'] = (dfTauMinated_CE['BDTpass90'] == True) & (dfTauMinated_CE['CNNpass90'] == True)
-    dfTauMinated_CE.drop(['BDTpass99', 'BDTpass95', 'BDTpass90', 'CNNpass99', 'CNNpass95', 'CNNpass90'], axis=1, inplace=True)
-    dfTauMinated_CE.rename(columns={'L1_pt_CL3D':'L1_pt' , 'L1_eta_CL3D':'L1_eta' , 'L1_phi_CL3D':'L1_phi'}, inplace=True)
-    dfTauMinated_CB.rename(columns={'L1_pt_CLNxM':'L1_pt' , 'L1_eta_CLNxM':'L1_eta' , 'L1_phi_CLNxM':'L1_phi' , 'CNNpass99':'TauMinated99' , 'CNNpass95':'TauMinated95' , 'CNNpass90':'TauMinated90'}, inplace=True)
-
-    # put back everything toegtehr, also the taus that are not match to any L1 object 
-    dfTauMinated = pd.concat([dfTauMinated_CB, dfTauMinated_CE, dfTOT], axis=0, sort=False)
-    dfTauMinated.sort_values('L1_pt', inplace=True)
-    dfTauMinated.drop_duplicates(['event', 'tau_visPt', 'tau_visEta', 'tau_visPhi', 'tau_DM'], keep='first', inplace=True)
-
-    # geometrically missed tau to be investigated
-    dfTauMissed = dfTauMinated[dfTauMinated['L1_pt'].isna()]
-    dfTauMinated.dropna(axis=0, how='any', inplace=True)
-
-    del dfTOT, dfTauMinated_CB, dfTauMinated_CE, dfCNN, dfBDT, dfCNN_CE, X1CNN, X2CNN, YCNN, XBDT
-
-    ############################## Calculate efficiencies ##############################
-
-    dfTauMinated['tau_visPt_bin'] = pd.cut(dfTauMinated['tau_visPt'],
-                              bins=[15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 200, 500],
-                              labels=False,
-                              include_lowest=True)
-
-    dfTauMinated['tau_visEta_bin'] = pd.cut(dfTauMinated['tau_visEta'],
-                              bins=[-3.5, -3.0, -2.7, -2.4, -2.1, -1.8, -1.5, -1.305, -1.0, -0.66, -0.33, 0.0, 0.33, 0.66, 1.0, 1.305, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.5],
-                              labels=False,
-                              include_lowest=True)
-
-    dfTauMinated_dm0  = dfTauMinated[dfTauMinated['tau_DM'] == 0].copy(deep=True)
-    dfTauMinated_dm1  = dfTauMinated[(dfTauMinated['tau_DM'] == 1) | (dfTauMinated['tau_DM'] == 2)].copy(deep=True)
-    dfTauMinated_dm10 = dfTauMinated[dfTauMinated['tau_DM'] == 10].copy(deep=True)
-    dfTauMinated_dm11 = dfTauMinated[(dfTauMinated['tau_DM'] == 11) | (dfTauMinated['tau_DM'] == 12)].copy(deep=True)
-
-    cmap = matplotlib.cm.get_cmap('tab20c'); i=0
-    pt_bins_centers = [17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5, 67.5, 72.5, 77.5, 82.5, 87.5, 92.5, 97.5, 102.5, 107.5, 112.5, 117.5, 122.5, 127.5, 132.5, 137.5, 142.5, 147.5, 175, 350]
-    eta_bins_centers = [-3.25, -2.85, -2.55, -2.25, -1.95, -1.65, -1.4025, -1.1525, -0.825, -0.495, -0.165, 0.165, 0.495, 0.825, 1.1525, 1.4025, 1.65, 1.95, 2.25, 2.55, 2.85, 3.25]
     online_thresholds = range(20, 175, 1)
     plotting_thresholds = range(20, 110, 10)
-    turnons_dm_dict = {}
-    turnons_dict = {}
-    etaeffs_dict = {}
-    mapping_dict = {'threshold':[], 'wp99_pt95':[], 'wp99_pt90':[], 'wp99_pt50':[],
-                                    'wp95_pt95':[], 'wp95_pt90':[], 'wp95_pt50':[],
-                                    'wp90_pt95':[], 'wp90_pt90':[], 'wp90_pt50':[]}
-    offline_pts = dfTauMinated.groupby('tau_visPt_bin').mean()['tau_visPt']
-
-    for thr in online_thresholds:
-        print(' ** INFO : calculating turnons and mappings for threshold '+str(thr)+' GeV')
-
-        # TURNONS
-        grouped = dfTauMinated.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '99', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '95', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '90', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        # ONLINE TO OFFILNE MAPPING
-        mapping_dict['wp99_pt95'].append(np.interp(0.95, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-        mapping_dict['wp99_pt90'].append(np.interp(0.90, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-        mapping_dict['wp99_pt50'].append(np.interp(0.50, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-
-        mapping_dict['wp95_pt95'].append(np.interp(0.95, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-        mapping_dict['wp95_pt90'].append(np.interp(0.90, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-        mapping_dict['wp95_pt50'].append(np.interp(0.50, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-
-        mapping_dict['wp90_pt95'].append(np.interp(0.95, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-        mapping_dict['wp90_pt90'].append(np.interp(0.90, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-        mapping_dict['wp90_pt50'].append(np.interp(0.50, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][:,0], offline_pts)) #,right=-99,left=-98)
-
-        # TURNONS DM 0
-        grouped = dfTauMinated_dm0.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '99', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm0.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '95', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm0TurnonAt95wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm0.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '90', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm0TurnonAt90wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        # TURNONS DM 1
-        grouped = dfTauMinated_dm1.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '99', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm1.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '95', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm1TurnonAt95wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm1.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '90', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm1TurnonAt90wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        # TURNONS DM 10
-        grouped = dfTauMinated_dm10.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '99', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm10.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '95', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm10TurnonAt95wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm10.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '90', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm10TurnonAt90wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        # TURNONS DM 11
-        grouped = dfTauMinated_dm11.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '99', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm11.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '95', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm11TurnonAt95wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        grouped = dfTauMinated_dm11.groupby('tau_visPt_bin').apply(lambda g: efficiency(g, '90', thr))
-        turnon = []
-        for ton in grouped: turnon.append([ton[0], ton[1], ton[2]])
-        turnons_dm_dict['dm11TurnonAt90wpAt'+str(thr)+'GeV'] = np.array(turnon)
-
-        # ETA EFFICIENCIES
-        # grouped = dfTauMinated.groupby('tau_visEta_bin').apply(lambda g: efficiency(g, '99', thr))
-        # efficiency = []
-        # for eff in grouped: efficiency.append([eff[0], eff[1], eff[2]])
-        # etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'] = np.array(efficiency)
-
-        # grouped = dfTauMinated.groupby('tau_visEta_bin').apply(lambda g: efficiency(g, '95', thr))
-        # efficiency = []
-        # for eff in grouped: efficiency.append([eff[0], eff[1], eff[2]])
-        # etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'] = np.array(efficiency)
-
-        # grouped = dfTauMinated.groupby('tau_visEta_bin').apply(lambda g: efficiency(g, '90', thr))
-        # efficiency = []
-        # for eff in grouped: efficiency.append([eff[0], eff[1], eff[2]])
-        # etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'] = np.array(efficiency)
-
-    save_obj(mapping_dict, perfdir+'/online2offline_mapping.pkl')
-
-
-    ##################################################################################
-    # PLOT TURNONS
-    i = 0
-    plt.figure(figsize=(10,10))
-    for thr in plotting_thresholds:
-        if not thr%10:
-            plt.errorbar(pt_bins_centers,turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][:,1], turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-
-            p0 = [1, thr, 1] 
-            popt, pcov = curve_fit(sigmoid, pt_bins_centers, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][:,0], p0, maxfev=5000)
-            plt.plot(pt_bins_centers, sigmoid(pt_bins_centers, *popt), '-', label='_', lw=1.5, color=cmap(i))
-
-            i+=1 
-    plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-    plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.ylim(0., 1.05)
-    plt.xlim(0., 150.)
-    # plt.xscale('log')
-    plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Efficiency')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/turnons_WP99.pdf')
-    plt.close()
-
-    i = 0
-    plt.figure(figsize=(10,10))
-    for thr in plotting_thresholds:
-        if not thr%10:
-            plt.errorbar(pt_bins_centers,turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][:,1], turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-
-            p0 = [1, thr, 1] 
-            popt, pcov = curve_fit(sigmoid, pt_bins_centers, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][:,0], p0, maxfev=5000)
-            plt.plot(pt_bins_centers, sigmoid(pt_bins_centers, *popt), '-', label='_', lw=1.5, color=cmap(i))
-
-            i+=1 
-    plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-    plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.ylim(0., 1.05)
-    plt.xlim(0., 150.)
-    # plt.xscale('log')
-    plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Efficiency')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/turnons_WP95.pdf')
-    plt.close()
-
-    i = 0
-    plt.figure(figsize=(10,10))
-    for thr in plotting_thresholds:
-        if not thr%10:
-            plt.errorbar(pt_bins_centers,turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][:,1], turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-
-            p0 = [1, thr, 1] 
-            popt, pcov = curve_fit(sigmoid, pt_bins_centers, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][:,0], p0, maxfev=5000)
-            plt.plot(pt_bins_centers, sigmoid(pt_bins_centers, *popt), '-', label='_', lw=1.5, color=cmap(i))
-
-            i+=1 
-    plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-    plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.ylim(0., 1.05)
-    plt.xlim(0., 150.)
-    # plt.xscale('log')
-    plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Efficiency')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/turnons_WP90.pdf')
-    plt.close()
-
-
-    ##################################################################################
-    # PLOT ONLINE TO OFFLINE MAPPING
-    plt.figure(figsize=(10,10))
-    plt.plot(online_thresholds, mapping_dict['wp99_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
-    plt.plot(online_thresholds, mapping_dict['wp99_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
-    plt.plot(online_thresholds, mapping_dict['wp99_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.xlabel('L1 Threshold [GeV]')
-    plt.ylabel('Offline threshold [GeV]')
-    plt.xlim(0, 110)
-    # plt.ylim(0, 200)
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/online2offline_WP99.pdf')
-    plt.close()
-
-    plt.figure(figsize=(10,10))
-    plt.plot(online_thresholds, mapping_dict['wp95_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
-    plt.plot(online_thresholds, mapping_dict['wp95_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
-    plt.plot(online_thresholds, mapping_dict['wp95_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.xlabel('L1 Threshold [GeV]')
-    plt.ylabel('Offline threshold [GeV]')
-    plt.xlim(0, 110)
-    # plt.ylim(0, 200)
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/online2offline_WP95.pdf')
-    plt.close()
-
-    plt.figure(figsize=(10,10))
-    plt.plot(online_thresholds, mapping_dict['wp90_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
-    plt.plot(online_thresholds, mapping_dict['wp90_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
-    plt.plot(online_thresholds, mapping_dict['wp90_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.xlabel('L1 Threshold [GeV]')
-    plt.ylabel('Offline threshold [GeV]')
-    plt.xlim(0, 110)
-    # plt.ylim(0, 200)
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/online2offline_WP90.pdf')
-    plt.close()
-
-
-    ##################################################################################
-    # PLOT TURNONS PER DM
-    i = 0
-    plt.figure(figsize=(10,10))
-    for thr in plotting_thresholds:
-        if not thr%10:
-            plt.errorbar(pt_bins_centers,turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][:,1], turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-
-            p0 = [1, thr, 1] 
-            popt, pcov = curve_fit(sigmoid, pt_bins_centers, turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][:,0], p0, maxfev=5000)
-            plt.plot(pt_bins_centers, sigmoid(pt_bins_centers, *popt), '-', label='_', lw=1.5, color=cmap(i))
-
-            i+=1 
-    plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-    plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.ylim(0., 1.05)
-    plt.xlim(0., 150.)
-    plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Efficiency')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/dm0_turnons_WP99.pdf')
-    plt.close()
-
-    i = 0
-    plt.figure(figsize=(10,10))
-    for thr in plotting_thresholds:
-        if not thr%10:
-            plt.errorbar(pt_bins_centers,turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][:,1], turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-
-            p0 = [1, thr, 1] 
-            popt, pcov = curve_fit(sigmoid, pt_bins_centers, turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][:,0], p0, maxfev=5000)
-            plt.plot(pt_bins_centers, sigmoid(pt_bins_centers, *popt), '-', label='_', lw=1.5, color=cmap(i))
-
-            i+=1 
-    plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-    plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.ylim(0., 1.05)
-    plt.xlim(0., 150.)
-    plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Efficiency')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/dm1_turnons_WP99.pdf')
-    plt.close()
-
-    i = 0
-    plt.figure(figsize=(10,10))
-    for thr in plotting_thresholds:
-        if not thr%10:
-            plt.errorbar(pt_bins_centers,turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][:,1], turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-
-            p0 = [1, thr, 1] 
-            popt, pcov = curve_fit(sigmoid, pt_bins_centers, turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][:,0], p0, maxfev=5000)
-            plt.plot(pt_bins_centers, sigmoid(pt_bins_centers, *popt), '-', label='_', lw=1.5, color=cmap(i))
-
-            i+=1 
-    plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-    plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.ylim(0., 1.05)
-    plt.xlim(0., 150.)
-    plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Efficiency')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/dm10_turnons_WP99.pdf')
-    plt.close()
-
-    i = 0
-    plt.figure(figsize=(10,10))
-    for thr in plotting_thresholds:
-        if not thr%10:
-            plt.errorbar(pt_bins_centers,turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][:,1], turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-
-            p0 = [1, thr, 1] 
-            popt, pcov = curve_fit(sigmoid, pt_bins_centers, turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][:,0], p0, maxfev=5000)
-            plt.plot(pt_bins_centers, sigmoid(pt_bins_centers, *popt), '-', label='_', lw=1.5, color=cmap(i))
-
-            i+=1 
-    plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-    plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-    plt.legend(loc = 'lower right', fontsize=14)
-    plt.ylim(0., 1.05)
-    plt.xlim(0., 150.)
-    plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Efficiency')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/dm11_turnons_WP99.pdf')
-    plt.close()
-
-
-    ##################################################################################
-    # PLOT EFFICIENCIES VS ETA
-    # i = 0
-    # plt.figure(figsize=(10,10))
-    # for thr in plotting_thresholds:
-    #     if not thr%10:
-    #         plt.errorbar(eta_bins_centers,etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'][:,1], etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-    #         i+=1 
-    # plt.hlines(0.90, 0, eta_bins_centers.max(), lw=2, color='dimgray', label='0.90 Eff.')
-    # plt.hlines(0.95, 0, eta_bins_centers.max(), lw=2, color='black', label='0.95 Eff.')
-    # plt.legend(loc = 'lower right', fontsize=14)
-    # plt.ylim(0., 1.05)
-    # plt.xlim(0., 150.)
-    # plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    # plt.ylabel(r'Efficiency')
-    # plt.grid()
-    # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(perfdir+'/turnons/turnons_WP99.pdf')
-    # plt.close()
-
-    # i = 0
-    # plt.figure(figsize=(10,10))
-    # for thr in plotting_thresholds:
-    #     if not thr%10:
-    #         plt.errorbar(eta_bins_centers,etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'][:,1], etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-    #         i+=1 
-    # plt.hlines(0.90, 0, eta_bins_centers.max(), lw=2, color='dimgray', label='0.90 Eff.')
-    # plt.hlines(0.95, 0, eta_bins_centers.max(), lw=2, color='black', label='0.95 Eff.')
-    # plt.legend(loc = 'lower right', fontsize=14)
-    # plt.ylim(0., 1.05)
-    # plt.xlim(0., 150.)
-    # plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    # plt.ylabel(r'Efficiency')
-    # plt.grid()
-    # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(perfdir+'/turnons/turnons_WP95.pdf')
-    # plt.close()
-
-    # i = 0
-    # plt.figure(figsize=(10,10))
-    # for thr in plotting_thresholds:
-    #     if not thr%10:
-    #         plt.errorbar(eta_bins_centers,etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'][:,0],xerr=1,yerr=[etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'][:,1], etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'][:,2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
-    #         i+=1 
-    # plt.hlines(0.90, 0, eta_bins_centers.max(), lw=2, color='dimgray', label='0.90 Eff.')
-    # plt.hlines(0.95, 0, eta_bins_centers.max(), lw=2, color='black', label='0.95 Eff.')
-    # plt.legend(loc = 'lower right', fontsize=14)
-    # plt.ylim(0., 1.05)
-    # plt.xlim(0., 150.)
-    # plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-    # plt.ylabel(r'Efficiency')
-    # plt.grid()
-    # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    # plt.savefig(perfdir+'/turnons/turnons_WP90.pdf')
-    # plt.close()
-
-
-    ##################################################################################
-    # PLOT MISSED TAUs
-    plt.figure(figsize=(10,10))
-    plt.hist(dfTauMissed['tau_visPt'], bins=np.arange(18,203,5), label=r'Geometrically missed $\tau$', linewidth=2, color='blue', density=True, histtype='step')
-    plt.legend(loc = 'upper right')
-    plt.xlabel(r'$p_T^{Gen. \tau}$ [GeV]')
-    plt.ylabel('a.u.')
-    plt.yscale('log')
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/missed_pt.pdf')
-    plt.close()
-
-    plt.figure(figsize=(10,10))
-    plt.hist(dfTauMissed['tau_visEta'], bins=np.arange(-3.1,3.1,0.1), label=r'Geometrically missed $\tau$', linewidth=2, color='blue', density=True, histtype='step')
-    plt.legend(loc = 'upper right')
-    plt.xlabel(r'$\eta^{Gen. \tau}$')
-    plt.ylabel('a.u.')
-    # plt.xlim(0, 110)
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/missed_eta.pdf')
-    plt.close()
-
-    plt.figure(figsize=(10,10))
-    plt.hist(dfTauMissed['tau_visPhi'], bins=np.arange(-3.2,3.2,0.1), label=r'Geometrically missed $\tau$', linewidth=2, color='blue', density=True, histtype='step')
-    plt.legend(loc = 'upper right')
-    plt.xlabel(r'$\phi^{Gen. \tau}$')
-    plt.ylabel('a.u.')
-    # plt.xlim(0, 110)
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/missed_phi.pdf')
-    plt.close()
-
-    plt.figure(figsize=(10,10))
-    plt.hist(dfTauMissed['tau_DM'], label=r'Geometrically missed $\tau$', linewidth=2, color='blue', density=True, histtype='step')
-    plt.legend(loc = 'upper right')
-    plt.xlabel(r'$\tau$ decay mode')
-    plt.ylabel('a.u.')
-    # plt.xlim(0, 110)
-    plt.grid()
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(perfdir+'/turnons/missed_dm.pdf')
-    plt.close()
 
-
-
-
-
-
-
+    perfdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauMinatorPerformanceEvaluator'
+    if options.doMinator:  tag = '_minator'
+    if options.doCLTWonly: tag = '_cltwOnly'
+    os.system('mkdir -p '+perfdir+'/turnons'+tag)
+
+    if options.loop:
+        #passing histograms (numerators)
+        minated99_passing_ptBins = []
+        minated95_passing_ptBins = []
+        minated90_passing_ptBins = []
+        minated85_passing_ptBins = []
+        minated80_passing_ptBins = []
+        minated75_passing_ptBins = []
+        square_passing_ptBins = []
+        minated99_passing_etaBins = []
+        minated95_passing_etaBins = []
+        minated90_passing_etaBins = []
+        square_passing_etaBins = []
+        for threshold in online_thresholds:
+            minated99_passing_ptBins.append(ROOT.TH1F("minated99_passing_thr"+str(int(threshold))+"_ptBins","minated99_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+            minated95_passing_ptBins.append(ROOT.TH1F("minated95_passing_thr"+str(int(threshold))+"_ptBins","minated95_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+            minated90_passing_ptBins.append(ROOT.TH1F("minated90_passing_thr"+str(int(threshold))+"_ptBins","minated90_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+            minated85_passing_ptBins.append(ROOT.TH1F("minated85_passing_thr"+str(int(threshold))+"_ptBins","minated85_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+            minated80_passing_ptBins.append(ROOT.TH1F("minated80_passing_thr"+str(int(threshold))+"_ptBins","minated80_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+            minated75_passing_ptBins.append(ROOT.TH1F("minated75_passing_thr"+str(int(threshold))+"_ptBins","minated75_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+            square_passing_ptBins.append(ROOT.TH1F("square_passing_thr"+str(int(threshold))+"_ptBins","square_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+
+            minated99_passing_etaBins.append(ROOT.TH1F("minated99_passing_thr"+str(int(threshold))+"_etaBins","minated99_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
+            minated95_passing_etaBins.append(ROOT.TH1F("minated95_passing_thr"+str(int(threshold))+"_etaBins","minated95_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
+            minated90_passing_etaBins.append(ROOT.TH1F("minated90_passing_thr"+str(int(threshold))+"_etaBins","minated90_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
+            square_passing_etaBins.append(ROOT.TH1F("square_passing_thr"+str(int(threshold))+"_etaBins","square_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
+
+        #denominator
+        denominator_ptBins = ROOT.TH1F("denominator_ptBins","denominator_ptBins",len(ptBins)-1, array('f',ptBins))
+        denominator_etaBins = ROOT.TH1F("denominator_etaBins","denominator_etaBins",len(etaBins)-1, array('f',etaBins))
+
+        # working points
+        CLTW_ID_WP = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier5x9Training'+options.inTagCNN_clNxM+'/TauCNNIdentifier_plots/CLTW_TauIdentifier_WPs.pkl')
+        CL3D_ID_WP = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNIdentifierTraining'+options.inTagDNN_cl3d+'/TauDNNIdentifier_plots/CL3D_TauIdentifier_WPs.pkl')
+
+        # loop over the events to fill all the histograms
+        directory = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+options.NtuleV+'/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/'
+        inChain = ROOT.TChain("L1CaloTauNtuplizer/L1TauMinatorTree");
+        inChain.Add(directory+'/Ntuple_*.root');
+        nEntries = inChain.GetEntries()
+        for evt in range(0, nEntries):
+            if evt%1000==0: print('--> ',evt)
+            # if evt == 2000: break
+
+            entry = inChain.GetEntry(evt)
+
+            _gentau_visEta = inChain.tau_visEta
+            if len(_gentau_visEta)==0: continue
+            _gentau_visPhi = inChain.tau_visPhi
+            _gentau_visPt = inChain.tau_visPt
+            
+            if options.doMinator:
+                _l1tau_pt = list(inChain.minatedl1tau_pt)
+                _l1tau_eta = list(inChain.minatedl1tau_eta)
+                _l1tau_phi = list(inChain.minatedl1tau_phi)
+                _l1tau_IDscore = list(inChain.minatedl1tau_IDscore)
+                _l1tau_isBarrel = list(inChain.minatedl1tau_isBarrel)
+
+            if options.doCLTWonly:
+                _l1tau_pt = list(inChain.cl5x9_calibPt)
+                _l1tau_eta = list(inChain.cl5x9_seedEta)
+                _l1tau_phi = list(inChain.cl5x9_seedPhi)
+                _l1tau_IDscore = list(inChain.cl5x9_IDscore)
+                _l1tau_isBarrel = list(inChain.cl5x9_isBarrel)
+
+            _squarel1tau_pt = list(inChain.squarel1tau_pt)
+            _squarel1tau_eta = list(inChain.squarel1tau_eta)
+            _squarel1tau_phi = list(inChain.squarel1tau_phi)
+            _squarel1tau_iso = list(inChain.squarel1tau_qual) # iso is called quality in the ntuples of square taus
+
+            for tauPt, tauEta, tauPhi in zip(_gentau_visPt, _gentau_visEta, _gentau_visPhi):
+                if abs(tauEta) > etaEr: continue # skip taus out of acceptance
+
+                denominator_ptBins.Fill(tauPt)
+                if tauPt > 40: denominator_etaBins.Fill(tauEta)
+
+                gentau = ROOT.TLorentzVector()
+                gentau.SetPtEtaPhiM(tauPt, tauEta, tauPhi, 0)
+
+                minatedMatched = False
+                squareMatched = False
+                highestMinatedL1Pt = -99.9
+                highestSquaredL1Pt = -99.9
+
+                # loop over TauMinator taus
+                for l1tauPt, l1tauEta, l1tauPhi, l1tauId, isBarrel in zip(_l1tau_pt, _l1tau_eta, _l1tau_phi, _l1tau_IDscore, _l1tau_isBarrel):
+                    l1tau = ROOT.TLorentzVector()
+                    l1tau.SetPtEtaPhiM(l1tauPt, l1tauEta, l1tauPhi, 0)
+
+                    # check matching
+                    if gentau.DeltaR(l1tau)<0.5:
+                        minatedMatched = True
+                        # keep only L1 match with highest pT
+                        if l1tau.Pt()>highestMinatedL1Pt:
+                            highestMinatedL1Pt = l1tau.Pt()
+                            highestMinatedL1Id = l1tauId
+                            highestMinatedL1isBarrel = isBarrel
+
+                # loop over SquareCalo taus
+                for l1tauPt, l1tauEta, l1tauPhi, l1tauIso in zip(_squarel1tau_pt, _squarel1tau_eta, _squarel1tau_phi, _squarel1tau_iso):
+                    if not l1tauIso: continue # skip all the non iso taus
+
+                    l1tau = ROOT.TLorentzVector()
+                    l1tau.SetPtEtaPhiM(l1tauPt, l1tauEta, l1tauPhi, 0)
+
+                    # check matching
+                    if gentau.DeltaR(l1tau)<0.5:
+                        squareMatched = True
+                        # keep only L1 match with highest pT
+                        if l1tau.Pt()>highestMinatedL1Pt:
+                            highestSquaredL1Pt = l1tau.Pt()
+                            highestSquaredL1Eta = l1tau.Eta()
+
+                # fill numerator histograms for every thresholds
+                for i, thr in enumerate(online_thresholds): 
+                    if minatedMatched and highestMinatedL1Pt>float(thr):
+                        if options.doCLTWonly:
+                            if highestMinatedL1Id >= CLTW_ID_WP['wp99']: # or highestMinatedL1Pt>75.: 
+                                minated99_passing_ptBins[i].Fill(gentau.Pt())
+                                if gentau.Pt() > 40: minated99_passing_etaBins[i].Fill(gentau.Eta())
+                            
+                            if highestMinatedL1Id >= CLTW_ID_WP['wp95']: # or highestMinatedL1Pt>75.: 
+                                minated95_passing_ptBins[i].Fill(gentau.Pt())
+                                if gentau.Pt() > 40: minated95_passing_etaBins[i].Fill(gentau.Eta())
+                            
+                            if highestMinatedL1Id >= CLTW_ID_WP['wp90']: # or highestMinatedL1Pt>75.: 
+                                minated90_passing_ptBins[i].Fill(gentau.Pt())
+                                if gentau.Pt() > 40: minated90_passing_etaBins[i].Fill(gentau.Eta())
+
+                            if highestMinatedL1Id >= CLTW_ID_WP['wp85']: # or highestMinatedL1Pt>75.: 
+                                minated85_passing_ptBins[i].Fill(gentau.Pt())
+
+                            if highestMinatedL1Id >= CLTW_ID_WP['wp80']: # or highestMinatedL1Pt>75.: 
+                                minated80_passing_ptBins[i].Fill(gentau.Pt())
+
+                            if highestMinatedL1Id >= CLTW_ID_WP['wp75']: # or highestMinatedL1Pt>75.: 
+                                minated75_passing_ptBins[i].Fill(gentau.Pt())
+
+                        if options.doMinator:
+                            if highestMinatedL1isBarrel:
+                                if highestMinatedL1Id >= CLTW_ID_WP['wp99']: # or highestMinatedL1Pt>75.: 
+                                    minated99_passing_ptBins[i].Fill(gentau.Pt())
+                                    if gentau.Pt() > 40: minated99_passing_etaBins[i].Fill(gentau.Eta())
+                                
+                                if highestMinatedL1Id >= CLTW_ID_WP['wp95']: # or highestMinatedL1Pt>75.: 
+                                    minated95_passing_ptBins[i].Fill(gentau.Pt())
+                                    if gentau.Pt() > 40: minated95_passing_etaBins[i].Fill(gentau.Eta())
+                                
+                                if highestMinatedL1Id >= CLTW_ID_WP['wp90']: # or highestMinatedL1Pt>75.: 
+                                    minated90_passing_ptBins[i].Fill(gentau.Pt())
+                                    if gentau.Pt() > 40: minated90_passing_etaBins[i].Fill(gentau.Eta())
+
+                                if highestMinatedL1Id >= CLTW_ID_WP['wp85']: # or highestMinatedL1Pt>75.: 
+                                    minated85_passing_ptBins[i].Fill(gentau.Pt())
+
+                                if highestMinatedL1Id >= CLTW_ID_WP['wp80']: # or highestMinatedL1Pt>75.: 
+                                    minated80_passing_ptBins[i].Fill(gentau.Pt())
+
+                                if highestMinatedL1Id >= CLTW_ID_WP['wp75']: # or highestMinatedL1Pt>75.: 
+                                    minated75_passing_ptBins[i].Fill(gentau.Pt())
+                            else:
+                                if highestMinatedL1Id >= CL3D_ID_WP['wp99'] or highestMinatedL1Pt>75.: 
+                                    minated99_passing_ptBins[i].Fill(gentau.Pt())
+                                    minated99_passing_etaBins[i].Fill(gentau.Eta())
+                                
+                                if highestMinatedL1Id >= CL3D_ID_WP['wp95'] or highestMinatedL1Pt>75.: 
+                                    minated95_passing_ptBins[i].Fill(gentau.Pt())
+                                    minated95_passing_etaBins[i].Fill(gentau.Eta())
+
+                                if highestMinatedL1Id >= CL3D_ID_WP['wp90'] or highestMinatedL1Pt>75.: 
+                                    minated90_passing_ptBins[i].Fill(gentau.Pt())
+                                    minated90_passing_etaBins[i].Fill(gentau.Eta())
+
+
+                    if squareMatched and highestSquaredL1Pt>float(thr):
+                        square_passing_ptBins[i].Fill(gentau.Pt())
+                        square_passing_etaBins[i].Fill(gentau.Eta())
+
+        # end of the loop over the events
+        #################################
+
+        # TGraphAsymmErrors for efficiency turn-ons
+        turnonsMinated99 = []
+        turnonsMinated95 = []
+        turnonsMinated90 = []
+        turnonsMinated85 = []
+        turnonsMinated80 = []
+        turnonsMinated75 = []
+        turnonsSquare = []
+        etaEffMinated99 = []
+        etaEffMinated95 = []
+        etaEffMinated90 = []
+        etaEffSquare = []
+        for i, thr in enumerate(online_thresholds):
+            turnonsMinated99.append(ROOT.TGraphAsymmErrors(minated99_passing_ptBins[i], denominator_ptBins, "cp"))
+            turnonsMinated95.append(ROOT.TGraphAsymmErrors(minated95_passing_ptBins[i], denominator_ptBins, "cp"))
+            turnonsMinated90.append(ROOT.TGraphAsymmErrors(minated90_passing_ptBins[i], denominator_ptBins, "cp"))
+            turnonsMinated85.append(ROOT.TGraphAsymmErrors(minated85_passing_ptBins[i], denominator_ptBins, "cp"))
+            turnonsMinated80.append(ROOT.TGraphAsymmErrors(minated80_passing_ptBins[i], denominator_ptBins, "cp"))
+            turnonsMinated75.append(ROOT.TGraphAsymmErrors(minated75_passing_ptBins[i], denominator_ptBins, "cp"))
+            turnonsSquare.append(ROOT.TGraphAsymmErrors(square_passing_ptBins[i], denominator_ptBins, "cp"))
+
+            etaEffMinated99.append(ROOT.TGraphAsymmErrors(minated99_passing_etaBins[i], denominator_etaBins, "cp"))
+            etaEffMinated95.append(ROOT.TGraphAsymmErrors(minated95_passing_etaBins[i], denominator_etaBins, "cp"))
+            etaEffMinated90.append(ROOT.TGraphAsymmErrors(minated90_passing_etaBins[i], denominator_etaBins, "cp"))
+            etaEffSquare.append(ROOT.TGraphAsymmErrors(square_passing_etaBins[i], denominator_etaBins, "cp"))
+
+        # save to file 
+
+        fileout = ROOT.TFile(perfdir+"/turnons"+tag+"/efficiency_graphs"+tag+"_er"+str(etaEr)+".root","RECREATE")
+        denominator_ptBins.Write()
+        denominator_etaBins.Write()
+        for i, thr in enumerate(online_thresholds): 
+            minated99_passing_ptBins[i].Write()
+            minated95_passing_ptBins[i].Write()
+            minated90_passing_ptBins[i].Write()
+            minated85_passing_ptBins[i].Write()
+            minated80_passing_ptBins[i].Write()
+            minated75_passing_ptBins[i].Write()
+            square_passing_ptBins[i].Write()
+            minated99_passing_etaBins[i].Write()
+            minated95_passing_etaBins[i].Write()
+            minated90_passing_etaBins[i].Write()
+            square_passing_etaBins[i].Write()
+
+            turnonsMinated99[i].Write()
+            turnonsMinated95[i].Write()
+            turnonsMinated90[i].Write()
+            turnonsMinated85[i].Write()
+            turnonsMinated80[i].Write()
+            turnonsMinated75[i].Write()
+            turnonsSquare[i].Write()
+            etaEffMinated99[i].Write()
+            etaEffMinated95[i].Write()
+            etaEffMinated90[i].Write()
+            etaEffSquare[i].Write()
+
+        fileout.Close()
+
+else:
+    filein = ROOT.TFile(perfdir+"/turnons"+tag+"/efficiency_graphs"+tag+"_er"+str(etaEr)+".root","READ")
+
+    # TGraphAsymmErrors for efficiency turn-ons
+    turnonsMinated99 = []
+    turnonsMinated95 = []
+    turnonsMinated90 = []
+    turnonsMinated85 = []
+    turnonsMinated80 = []
+    turnonsMinated75 = []
+    turnonsSquare = []
+    etaEffMinated99 = []
+    etaEffMinated95 = []
+    etaEffMinated90 = []
+    etaEffSquare = []
+    for i, thr in enumerate(online_thresholds):
+        turnonsMinated99.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+        turnonsMinated95.append(filein.Get("divide_minated95_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+        turnonsMinated90.append(filein.Get("divide_minated90_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+        turnonsMinated85.append(filein.Get("divide_minated85_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+        turnonsMinated80.append(filein.Get("divide_minated80_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+        turnonsMinated75.append(filein.Get("divide_minated75_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+        turnonsSquare.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+
+        etaEffMinated99.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
+        etaEffMinated95.append(filein.Get("divide_minated95_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
+        etaEffMinated90.append(filein.Get("divide_minated90_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
+        etaEffSquare.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
+
+
+
+turnons_dict = {}
+etaeffs_dict = {}
+mapping_dict = {'threshold':[],
+                'wp99_pt95':[], 'wp99_pt90':[], 'wp99_pt50':[],
+                'wp95_pt95':[], 'wp95_pt90':[], 'wp95_pt50':[],
+                'wp90_pt95':[], 'wp90_pt90':[], 'wp90_pt50':[],
+                'wp85_pt95':[], 'wp85_pt90':[], 'wp85_pt50':[],
+                'wp80_pt95':[], 'wp80_pt90':[], 'wp80_pt50':[],
+                'wp75_pt95':[], 'wp75_pt90':[], 'wp75_pt50':[]}
+for i, thr in enumerate(online_thresholds):
+    turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'] = [[],[],[]]
+    turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'] = [[],[],[]]
+    turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'] = [[],[],[]]
+    turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'] = [[],[],[]]
+    turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'] = [[],[],[]]
+    turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'] = [[],[],[]]
+
+    etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'] = [[],[],[]]
+    etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'] = [[],[],[]]
+    etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'] = [[],[],[]]
+
+    for ibin in range(0,turnonsMinated99[i].GetN()):
+        turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][0].append(turnonsMinated99[i].GetPointY(ibin))
+        turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][0].append(turnonsMinated95[i].GetPointY(ibin))
+        turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][0].append(turnonsMinated90[i].GetPointY(ibin))
+        turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][0].append(turnonsMinated85[i].GetPointY(ibin))
+        turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][0].append(turnonsMinated80[i].GetPointY(ibin))
+        turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][0].append(turnonsMinated75[i].GetPointY(ibin))
+
+        turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][1].append(turnonsMinated99[i].GetErrorYlow(ibin))
+        turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][1].append(turnonsMinated95[i].GetErrorYlow(ibin))
+        turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][1].append(turnonsMinated90[i].GetErrorYlow(ibin))
+        turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][1].append(turnonsMinated85[i].GetErrorYlow(ibin))
+        turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][1].append(turnonsMinated80[i].GetErrorYlow(ibin))
+        turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][1].append(turnonsMinated75[i].GetErrorYlow(ibin))
+
+        turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][2].append(turnonsMinated99[i].GetErrorYhigh(ibin))
+        turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][2].append(turnonsMinated95[i].GetErrorYhigh(ibin))
+        turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][2].append(turnonsMinated90[i].GetErrorYhigh(ibin))
+        turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][2].append(turnonsMinated85[i].GetErrorYhigh(ibin))
+        turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][2].append(turnonsMinated80[i].GetErrorYhigh(ibin))
+        turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][2].append(turnonsMinated75[i].GetErrorYhigh(ibin))
+
+    for ibin in range(0,etaEffMinated99[i].GetN()):
+        etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'][0].append(etaEffMinated99[i].GetPointY(ibin))
+        etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'][0].append(etaEffMinated95[i].GetPointY(ibin))
+        etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'][0].append(etaEffMinated90[i].GetPointY(ibin))
+
+        etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'][1].append(etaEffMinated99[i].GetErrorYlow(ibin))
+        etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'][1].append(etaEffMinated95[i].GetErrorYlow(ibin))
+        etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'][1].append(etaEffMinated90[i].GetErrorYlow(ibin))
+
+        etaeffs_dict['efficiencyVsEtaAt99wpAt'+str(thr)+'GeV'][2].append(etaEffMinated99[i].GetErrorYhigh(ibin))
+        etaeffs_dict['efficiencyVsEtaAt95wpAt'+str(thr)+'GeV'][2].append(etaEffMinated95[i].GetErrorYhigh(ibin))
+        etaeffs_dict['efficiencyVsEtaAt90wpAt'+str(thr)+'GeV'][2].append(etaEffMinated90[i].GetErrorYhigh(ibin))
+
+    # ONLINE TO OFFILNE MAPPING
+    mapping_dict['wp99_pt95'].append(np.interp(0.95, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp99_pt90'].append(np.interp(0.90, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp99_pt50'].append(np.interp(0.50, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+
+    mapping_dict['wp95_pt95'].append(np.interp(0.95, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp95_pt90'].append(np.interp(0.90, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp95_pt50'].append(np.interp(0.50, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+
+    mapping_dict['wp90_pt95'].append(np.interp(0.95, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp90_pt90'].append(np.interp(0.90, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp90_pt50'].append(np.interp(0.50, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+
+    mapping_dict['wp85_pt95'].append(np.interp(0.95, turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp85_pt90'].append(np.interp(0.90, turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp85_pt50'].append(np.interp(0.50, turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+
+    mapping_dict['wp80_pt95'].append(np.interp(0.95, turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp80_pt90'].append(np.interp(0.90, turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp80_pt50'].append(np.interp(0.50, turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+
+    mapping_dict['wp75_pt95'].append(np.interp(0.95, turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp75_pt90'].append(np.interp(0.90, turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+    mapping_dict['wp75_pt50'].append(np.interp(0.50, turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][0], offline_pts)) #,right=-99,left=-98)
+
+save_obj(mapping_dict, perfdir+'/turnons'+tag+'/online2offline_mapping.pkl')
+
+
+
+X_square = [2.8468899521531092, 8.875598086124402, 15.0, 20.933014354066984, 26.794258373205736, 32.99043062200957, 39.01913875598086, 44.88038277511962, 50.909090909090914, 57.10526315789473, 63.0, 68.99521531100478, 75.1, 81.0, 87.0, 93.0, 99.13875598086125, 105.0, 111.1, 117.0, 123.1, 129.0, 135.0, 141.17224880382778, 147.0334928229665]
+Y_square = [0.20067385444743946, 0.08301886792452828, 0.10727762803234508, 0.28557951482479793, 0.55, 0.8035040431266847, 0.9247978436657682, 0.9721024258760108, 0.9757412398921833, 0.992722371967655, 0.9987870619946092, 0.9939353099730459, 0.9987870619946092, 0.9987870619946092, 0.9987870619946092, 1.0, 1.0, 0.9987870619946092, 0.9987870619946092, 0.9975741239892184, 1.0, 1.0, 1.0, 1.0, 1.0]
+X_puppi = [8.875598086124402, 15.0, 20.933014354066984, 26.794258373205736, 32.99043062200957, 39.01913875598086, 44.88038277511962, 50.909090909090914, 57.10526315789473, 63.0, 68.99521531100478, 75.1, 81.0, 87.0, 93.0, 99.13875598086125, 105.0, 111.1, 117.0, 123.1, 129.0, 135.0, 141.17224880382778, 147.0334928229665]
+Y_puppi = [0.0, 0.005390835579514919, 0.013881401617250821, 0.10242587601078168, 0.5827493261455526, 0.8047169811320755, 0.8629380053908356, 0.9150943396226415, 0.9478436657681941, 0.9684636118598383, 0.9733153638814016, 0.9842318059299192, 0.9757412398921833, 0.9842318059299192, 0.9769541778975741, 0.9951482479784367, 0.9890835579514825, 0.9939353099730459, 0.9975741239892184, 0.9951482479784367, 0.992722371967655, 1.0, 0.9915094339622642, 1.0]
+
+plt.figure(figsize=(10,10))
+plt.errorbar(offline_pts,turnons_dict['turnonAt90wpAt28GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt90wpAt28GeV'][1], turnons_dict['turnonAt90wpAt28GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='green')
+plt.errorbar(X_square,Y_square,xerr=1, ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='blue')
+plt.errorbar(X_puppi,Y_puppi,xerr=1, ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='red')
+plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(15., 160.)
+# plt.xscale('log')
+plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/turnons_hacky.pdf')
+plt.close()
+
+
+
+cmap = matplotlib.cm.get_cmap('tab20c'); i=0
+##################################################################################
+# PLOT TURNONS
+i = 0
+plt.figure(figsize=(10,10))
+for thr in plotting_thresholds:
+    if not thr%10:
+        plt.errorbar(offline_pts,turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][1], turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+        p0 = [1, thr, 1] 
+        popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dict['turnonAt99wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+        plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+        i+=1 
+plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(15., 160.)
+# plt.xscale('log')
+plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/turnons_WP99.pdf')
+plt.close()
+
+i = 0
+plt.figure(figsize=(10,10))
+for thr in plotting_thresholds:
+    if not thr%10:
+        plt.errorbar(offline_pts,turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][1], turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+        p0 = [1, thr, 1] 
+        popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dict['turnonAt95wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+        plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+        i+=1 
+plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(15., 160.)
+# plt.xscale('log')
+plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/turnons_WP95.pdf')
+plt.close()
+
+i = 0
+plt.figure(figsize=(10,10))
+for thr in plotting_thresholds:
+    if not thr%10:
+        plt.errorbar(offline_pts,turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][1], turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+        p0 = [1, thr, 1] 
+        popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dict['turnonAt90wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+        plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+        i+=1 
+plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(15., 160.)
+# plt.xscale('log')
+plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/turnons_WP90.pdf')
+plt.close()
+
+i = 0
+plt.figure(figsize=(10,10))
+for thr in plotting_thresholds:
+    if not thr%10:
+        plt.errorbar(offline_pts,turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][1], turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+        p0 = [1, thr, 1] 
+        popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dict['turnonAt85wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+        plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+        i+=1 
+plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(15., 160.)
+# plt.xscale('log')
+plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/turnons_WP85.pdf')
+plt.close()
+
+
+i = 0
+plt.figure(figsize=(10,10))
+for thr in plotting_thresholds:
+    if not thr%10:
+        plt.errorbar(offline_pts,turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][1], turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+        p0 = [1, thr, 1] 
+        popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dict['turnonAt80wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+        plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+        i+=1 
+plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(15., 160.)
+# plt.xscale('log')
+plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/turnons_WP80.pdf')
+plt.close()
+
+
+i = 0
+plt.figure(figsize=(10,10))
+for thr in plotting_thresholds:
+    if not thr%10:
+        plt.errorbar(offline_pts,turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][1], turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+        p0 = [1, thr, 1] 
+        popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dict['turnonAt75wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+        plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+        i+=1 
+plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(15., 160.)
+# plt.xscale('log')
+plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/turnons_WP75.pdf')
+plt.close()
+
+
+##################################################################################
+# PLOT ONLINE TO OFFLINE MAPPING
+plt.figure(figsize=(10,10))
+plt.plot(online_thresholds, mapping_dict['wp99_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
+plt.plot(online_thresholds, mapping_dict['wp99_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
+plt.plot(online_thresholds, mapping_dict['wp99_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.xlabel('L1 Threshold [GeV]')
+plt.ylabel('Offline threshold [GeV]')
+plt.xlim(20, 100)
+plt.ylim(20, 200)
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/online2offline_WP99.pdf')
+plt.close()
+
+plt.figure(figsize=(10,10))
+plt.plot(online_thresholds, mapping_dict['wp95_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
+plt.plot(online_thresholds, mapping_dict['wp95_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
+plt.plot(online_thresholds, mapping_dict['wp95_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.xlabel('L1 Threshold [GeV]')
+plt.ylabel('Offline threshold [GeV]')
+plt.xlim(20, 100)
+plt.ylim(20, 200)
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/online2offline_WP95.pdf')
+plt.close()
+
+plt.figure(figsize=(10,10))
+plt.plot(online_thresholds, mapping_dict['wp90_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
+plt.plot(online_thresholds, mapping_dict['wp90_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
+plt.plot(online_thresholds, mapping_dict['wp90_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.xlabel('L1 Threshold [GeV]')
+plt.ylabel('Offline threshold [GeV]')
+plt.xlim(20, 100)
+plt.ylim(20, 200)
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/online2offline_WP90.pdf')
+plt.close()
+
+plt.figure(figsize=(10,10))
+plt.plot(online_thresholds, mapping_dict['wp85_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
+plt.plot(online_thresholds, mapping_dict['wp85_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
+plt.plot(online_thresholds, mapping_dict['wp85_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.xlabel('L1 Threshold [GeV]')
+plt.ylabel('Offline threshold [GeV]')
+plt.xlim(20, 100)
+plt.ylim(20, 200)
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/online2offline_WP85.pdf')
+plt.close()
+
+plt.figure(figsize=(10,10))
+plt.plot(online_thresholds, mapping_dict['wp80_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
+plt.plot(online_thresholds, mapping_dict['wp80_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
+plt.plot(online_thresholds, mapping_dict['wp80_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.xlabel('L1 Threshold [GeV]')
+plt.ylabel('Offline threshold [GeV]')
+plt.xlim(20, 100)
+plt.ylim(20, 200)
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/online2offline_WP80.pdf')
+plt.close()
+
+plt.figure(figsize=(10,10))
+plt.plot(online_thresholds, mapping_dict['wp75_pt95'], label='@ 95% efficiency', linewidth=2, color='blue')
+plt.plot(online_thresholds, mapping_dict['wp75_pt90'], label='@ 90% efficiency', linewidth=2, color='red')
+plt.plot(online_thresholds, mapping_dict['wp75_pt50'], label='@ 50% efficiency', linewidth=2, color='green')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.xlabel('L1 Threshold [GeV]')
+plt.ylabel('Offline threshold [GeV]')
+plt.xlim(20, 100)
+plt.ylim(20, 200)
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/online2offline_WP75.pdf')
+plt.close()
+
+
+# ##################################################################################
+# # PLOT TURNONS PER DM
+# i = 0
+# plt.figure(figsize=(10,10))
+# for thr in plotting_thresholds:
+#     if not thr%10:
+#         plt.errorbar(offline_pts,turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][1], turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+#         p0 = [1, thr, 1] 
+#         popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dm_dict['dm0TurnonAt99wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+#         plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+#         i+=1 
+# plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+# plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+# plt.legend(loc = 'lower right', fontsize=14)
+# plt.ylim(0., 1.05)
+# plt.xlim(0., 150.)
+# plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+# plt.ylabel(r'Efficiency')
+# plt.grid()
+# mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+# plt.savefig(perfdir+'/turnons'+tag+'/dm0_turnons_WP99.pdf')
+# plt.close()
+
+# i = 0
+# plt.figure(figsize=(10,10))
+# for thr in plotting_thresholds:
+#     if not thr%10:
+#         plt.errorbar(offline_pts,turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][1], turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+#         p0 = [1, thr, 1] 
+#         popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dm_dict['dm1TurnonAt99wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+#         plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+#         i+=1 
+# plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+# plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+# plt.legend(loc = 'lower right', fontsize=14)
+# plt.ylim(0., 1.05)
+# plt.xlim(0., 150.)
+# plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+# plt.ylabel(r'Efficiency')
+# plt.grid()
+# mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+# plt.savefig(perfdir+'/turnons'+tag+'/dm1_turnons_WP99.pdf')
+# plt.close()
+
+# i = 0
+# plt.figure(figsize=(10,10))
+# for thr in plotting_thresholds:
+#     if not thr%10:
+#         plt.errorbar(offline_pts,turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][1], turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+#         p0 = [1, thr, 1] 
+#         popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dm_dict['dm10TurnonAt99wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+#         plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+#         i+=1 
+# plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+# plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+# plt.legend(loc = 'lower right', fontsize=14)
+# plt.ylim(0., 1.05)
+# plt.xlim(0., 150.)
+# plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+# plt.ylabel(r'Efficiency')
+# plt.grid()
+# mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+# plt.savefig(perfdir+'/turnons'+tag+'/dm10_turnons_WP99.pdf')
+# plt.close()
+
+# i = 0
+# plt.figure(figsize=(10,10))
+# for thr in plotting_thresholds:
+#     if not thr%10:
+#         plt.errorbar(offline_pts,turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][0],xerr=1,yerr=[turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][1], turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (thr), lw=2, marker='o', color=cmap(i))
+
+#         p0 = [1, thr, 1] 
+#         popt, pcov = curve_fit(sigmoid, offline_pts, turnons_dm_dict['dm11TurnonAt99wpAt'+str(thr)+'GeV'][0], p0, maxfev=5000)
+#         plt.plot(offline_pts, sigmoid(offline_pts, *popt), '-', label='_', lw=1.5, color=cmap(i))
+
+#         i+=1 
+# plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+# plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+# plt.legend(loc = 'lower right', fontsize=14)
+# plt.ylim(0., 1.05)
+# plt.xlim(0., 150.)
+# plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+# plt.ylabel(r'Efficiency')
+# plt.grid()
+# mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+# plt.savefig(perfdir+'/turnons'+tag+'/dm11_turnons_WP99.pdf')
+# plt.close()
+
+
+##################################################################################
+# PLOT EFFICIENCIES VS ETA
+i = 0
+plt.figure(figsize=(10,10))
+plt.errorbar(eta_bins_centers,etaeffs_dict['efficiencyVsEtaAt99wpAt32GeV'][0],yerr=[etaeffs_dict['efficiencyVsEtaAt99wpAt32GeV'][1], etaeffs_dict['efficiencyVsEtaAt99wpAt32GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (32), lw=2, marker='o', color=cmap(i))
+plt.hlines(0.90, -3.0, 3.0, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, -3.0, 3.0, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(-3.0, 3.0)
+plt.xlabel(r'$\eta^{gen,\tau}$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/efficiencyVSeta_WP99.pdf')
+plt.close()
+
+i = 0
+plt.figure(figsize=(10,10))
+plt.errorbar(eta_bins_centers,etaeffs_dict['efficiencyVsEtaAt95wpAt32GeV'][0],yerr=[etaeffs_dict['efficiencyVsEtaAt95wpAt32GeV'][1], etaeffs_dict['efficiencyVsEtaAt95wpAt32GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (32), lw=2, marker='o', color=cmap(i))
+plt.hlines(0.90, -3.0, 3.0, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, -3.0, 3.0, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(-3.0, 3.0)
+plt.xlabel(r'$\eta^{gen,\tau}$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/efficiencyVSeta_WP95.pdf')
+plt.close()
+
+i = 0
+plt.figure(figsize=(10,10))
+plt.errorbar(eta_bins_centers,etaeffs_dict['efficiencyVsEtaAt90wpAt32GeV'][0],yerr=[etaeffs_dict['efficiencyVsEtaAt90wpAt32GeV'][1], etaeffs_dict['efficiencyVsEtaAt90wpAt32GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > %i$ GeV' % (32), lw=2, marker='o', color=cmap(i))
+plt.hlines(0.90, -3.0, 3.0, lw=2, color='dimgray', label='0.90 Eff.')
+plt.hlines(0.95, -3.0, 3.0, lw=2, color='black', label='0.95 Eff.')
+plt.legend(loc = 'lower right', fontsize=14)
+plt.ylim(0., 1.05)
+plt.xlim(-3.0, 3.0)
+plt.xlabel(r'$\eta^{gen,\tau}$')
+plt.ylabel(r'Efficiency')
+plt.grid()
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig(perfdir+'/turnons'+tag+'/efficiencyVSeta_WP90.pdf')
+plt.close()
 
 
 
