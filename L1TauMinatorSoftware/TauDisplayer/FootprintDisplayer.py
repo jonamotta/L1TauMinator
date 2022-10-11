@@ -9,6 +9,11 @@ import matplotlib.cm as cm
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
+def inputQuantizer(inputF, LSB, nbits):
+    if LSB: return min( np.floor(inputF/LSB), 2**nbits-1 ) * LSB
+    else:   return inputF
+inputQuantizer_vctd = np.vectorize(inputQuantizer)
+
 
 def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, NxM, saveTo):
     if len(dfFlatTowClus) == 0 or len(dfFlatGenJets) == 0:
@@ -64,6 +69,9 @@ def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, N
         if i%1 == 0:
             print(i/len(dfCluJet.index)*100, '%')
 
+        # skip low pT jets for the display
+        if dfCluTau.jet_pt.loc[idx] < 20: continue
+
         # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
         if len(dfCluJet.cl_towerIeta.loc[idx]) != N*M: continue
 
@@ -71,9 +79,9 @@ def DisplayForJets(dfFlatTowClus, dfFlatGenJets, uJetPtCut, lJetPtCut, etacut, N
         cnt += 1
 
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
-        HADdeposit = np.transpose(np.array(dfCluJet.cl_towerHad.loc[idx]).reshape(N,M))
-        EMdeposit  = np.transpose(np.array(dfCluJet.cl_towerEm.loc[idx]).reshape(N,M))
-        EGdeposit  = np.transpose(np.array(dfCluJet.cl_towerEgEt.loc[idx]).reshape(N,M))
+        HADdeposit = np.transpose(inputQuantizer_vctd(np.array(dfCluJet.cl_towerHad.loc[idx]), 0.25, 10).reshape(N,M))
+        EMdeposit  = np.transpose(inputQuantizer_vctd(np.array(dfCluJet.cl_towerEm.loc[idx]), 0.25, 10).reshape(N,M))
+        EGdeposit  = np.transpose(inputQuantizer_vctd(np.array(dfCluJet.cl_towerEgEt.loc[idx]), 0.25, 10).reshape(N,M))
 
         if cnt == 30: break
         cnt += 1
@@ -217,6 +225,9 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         if i%1 == 0:
             print(i/len(dfCluTau.index)*100, '%')
         
+        # skip low pT taus for the display
+        if dfCluTau.tau_visPt.loc[idx] < 20: continue
+
         # for some reason some events have some problems with some barrel towers getting ieta=-1016 and iphi=-962 --> skip out-of-shape TowerClusters
         if len(dfCluTau.cl_towerIeta.loc[idx]) != N*M: continue
 
@@ -224,9 +235,9 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         cnt += 1
 
         # need to transpose the arrays to have eta on x-axis and phi on y-axis
-        HADdeposit = np.transpose(np.array(dfCluTau.cl_towerHad.loc[idx]).reshape(N,M))
-        EMdeposit  = np.transpose(np.array(dfCluTau.cl_towerEm.loc[idx]).reshape(N,M))
-        EGdeposit  = np.transpose(np.array(dfCluTau.cl_towerEgEt.loc[idx]).reshape(N,M))
+        HADdeposit = np.transpose(inputQuantizer_vctd(np.array(dfCluTau.cl_towerHad.loc[idx]), 0.25, 10).reshape(N,M))
+        EMdeposit  = np.transpose(inputQuantizer_vctd(np.array(dfCluTau.cl_towerEm.loc[idx]), 0.25, 10).reshape(N,M))
+        EGdeposit  = np.transpose(inputQuantizer_vctd(np.array(dfCluTau.cl_towerEgEt.loc[idx]), 0.25, 10).reshape(N,M))
 
         if cnt == 30: break
         cnt += 1
@@ -275,7 +286,7 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         colorbar.ax.yaxis.set_label_coords(1.2,1)
         for i in range(EGdeposit.shape[0]):
             for j in range(EGdeposit.shape[1]):
-                if EGdeposit[i, j] >= 1.0: axs[0].text(j+0.5, i+0.5, format(EGdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EGdeposit[i, j] > EGmax*0.8 else "black")
+                if EGdeposit[i, j] >= 0.25: axs[0].text(j+0.5, i+0.5, format(EGdeposit[i, j], '.2f'), ha="center", va="center", fontsize=14, color='white' if EGdeposit[i, j] > EGmax*0.8 else "black")
         axs[0].set_xticks(Xticksshifter)
         axs[0].set_xticklabels(etalabels)
         axs[0].set_yticks(Yticksshifter)
@@ -293,7 +304,7 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         colorbar.ax.yaxis.set_label_coords(1.2,1)
         for i in range(EMdeposit.shape[0]):
             for j in range(EMdeposit.shape[1]):
-                if EMdeposit[i, j] >= 1.0: axs[1].text(j+0.5, i+0.5, format(EMdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if EMdeposit[i, j] > EMmax*0.8 else "black")
+                if EMdeposit[i, j] >= 0.25: axs[1].text(j+0.5, i+0.5, format(EMdeposit[i, j], '.2f'), ha="center", va="center", fontsize=14, color='white' if EMdeposit[i, j] > EMmax*0.8 else "black")
         axs[1].set_xticks(Xticksshifter)
         axs[1].set_xticklabels(etalabels)
         axs[1].set_yticks(Yticksshifter)
@@ -311,7 +322,7 @@ def DisplayForTaus(dfFlatTowClus, dfFlatGenTaus, uTauPtCut, lTauPtCut, etacut, N
         colorbar.ax.yaxis.set_label_coords(1.2,1)
         for i in range(HADdeposit.shape[0]):
             for j in range(HADdeposit.shape[1]):
-                if HADdeposit[i, j] >= 1.0: axs[2].text(j+0.5, i+0.5, format(HADdeposit[i, j], '.0f'), ha="center", va="center", fontsize=14, color='white' if HADdeposit[i, j] > HADmax*0.8 else "black")
+                if HADdeposit[i, j] >= 0.25: axs[2].text(j+0.5, i+0.5, format(HADdeposit[i, j], '.2f'), ha="center", va="center", fontsize=14, color='white' if HADdeposit[i, j] > HADmax*0.8 else "black")
         axs[2].set_xticks(Xticksshifter)
         axs[2].set_xticklabels(etalabels)
         axs[2].set_yticks(Yticksshifter)
