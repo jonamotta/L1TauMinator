@@ -8,6 +8,7 @@ from sklearn import metrics
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import pickle
 import cmsml
 import sys
 import os
@@ -64,6 +65,10 @@ def inspectWeights(model, which):
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauCNNIdentifier_plots/modelSparsity'+which+'.pdf')
     plt.close()
+
+def save_obj(obj,dest):
+    with open(dest,'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
 #######################################################################
@@ -241,6 +246,25 @@ if __name__ == "__main__" :
     valid_ident = TauIdentifierModel.predict([X1_valid, X2_valid])
     FPRvalid, TPRvalid, THRvalid = metrics.roc_curve(Y_valid, valid_ident)
     AUCvalid = metrics.roc_auc_score(Y_valid, valid_ident)
+
+    # save ID working points
+    WP99 = np.interp(0.99, TPRvalid, THRvalid)
+    WP95 = np.interp(0.95, TPRvalid, THRvalid)
+    WP90 = np.interp(0.90, TPRvalid, THRvalid)
+    WP85 = np.interp(0.85, TPRvalid, THRvalid)
+    WP80 = np.interp(0.80, TPRvalid, THRvalid)
+    WP75 = np.interp(0.75, TPRvalid, THRvalid)
+    wp_dict = {
+        'wp99' : WP99,
+        'wp95' : WP95,
+        'wp90' : WP90,
+        'wp85' : WP85,
+        'wp80' : WP80,
+        'wp75' : WP75
+    }
+    save_obj(wp_dict, outdir+'/TauCNNIdentifier_plots/CLTW_TauIdentifier_WPs.pkl')
+
+    exit()
 
     inspectWeights(TauIdentifierModel, 'kernel')
     # inspectWeights(TauIdentifierModel, 'bias')
