@@ -24,7 +24,7 @@ def splitInBlocks (l, n):
 
 ##################################################################
 
-version = "2"
+version = "2.2"
 
 filedir="/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/inputFiles/"
 
@@ -68,9 +68,9 @@ list_filelists.append(open(filedir+"VBFHToTauTau_M125_14TeV_powheg_pythia8_corre
 list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
 list_njobs.append(1057)
 
-list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
-list_njobs.append(49)
+# list_filelists.append(open(filedir+"GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph-pythia8_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
+# list_njobs.append(49)
 
 # list_filelists.append(open(filedir+"ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/ZprimeToTauTau_M-500_TuneCP5_14TeV-pythia8-tauola__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__GEN-SIM-DIGI-RAW-MINIAOD/")
@@ -82,11 +82,11 @@ list_njobs.append(49)
 
 # list_filelists.append(open(filedir+"QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT.txt"))
 # list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_castor_111X_mcRun4_realistic_T15_v1-v1__FEVT/")
-# list_njobs.append(250)
+# list_njobs.append(309)
 
-# list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT.txt"))
-# list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT/")
-# list_njobs.append(968)
+list_filelists.append(open(filedir+"MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT.txt"))
+list_folders.append("/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v"+version+"/MinBias_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_withNewMB_111X_mcRun4_realistic_T15_v1_ext1-v2__FEVT/")
+list_njobs.append(4840)
 
 os.system('mkdir -p /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version)
 os.system('cp listAll.sh /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version)
@@ -118,7 +118,7 @@ for i in range(len(list_folders)):
         for f in block: jobfilelist.write(f+"\n")
         jobfilelist.close()
 
-        cmsRun = "cmsRun test_L1CaloTauNtuplizer.py maxEvents=20 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
+        cmsRun = "cmsRun test_L1CaloTauNtuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
         # cmsRun = "cmsRun test_Ntuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
 
         skimjob = open (outJobName, 'w')
@@ -132,8 +132,8 @@ for i in range(len(list_folders)):
         skimjob.close ()
 
         os.system ('chmod u+rwx ' + outJobName)
-        command = ('/home/llr/cms/motta/t3submit -long \'' + outJobName +"\'")
-        # command = ('/home/llr/cms/motta/t3submit -short \'' + outJobName +"\'")
+        # command = ('/home/llr/cms/motta/t3submit -long \'' + outJobName +"\'")
+        command = ('/home/llr/cms/motta/t3submit -short \'' + outJobName +"\'")
         print(command)
         os.system (command)
         # break
