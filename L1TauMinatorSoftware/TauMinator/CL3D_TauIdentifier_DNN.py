@@ -8,6 +8,7 @@ from sklearn import metrics
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import pickle
 import cmsml
 import sys
 import os
@@ -66,6 +67,14 @@ def inspectWeights(model, which):
     plt.savefig(outdir+'/TauDNNIdentifier_plots/modelSparsity'+which+'.pdf')
     plt.close()
 
+def save_obj(obj,dest):
+    with open(dest,'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_obj(source):
+    with open(source,'rb') as f:
+        return pickle.load(f)
+
 
 #######################################################################
 ######################### SCRIPT BODY #################################
@@ -81,21 +90,23 @@ if __name__ == "__main__" :
     (options, args) = parser.parse_args()
     print(options)
 
+    basedir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauBDTIdentifierTraining'+options.inTag
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNIdentifierTraining'+options.inTag
     os.system('mkdir -p '+outdir+'/TauDNNIdentifier_plots')
-    os.system('mkdir -p /data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/CMSSWmodels')
+    os.system('mkdir -p '+basedir+'/CMSSWmodels')
 
     dfTr = pd.read_pickle(indir+'/X_Ident_BDT_forIdentifier.pkl')
-    dfTr['cl3d_abseta'] = abs(dfTr['cl3d_eta']).copy(deep=True)
 
+    pt = ['cl3d_pt']
     feats = ['cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
 
-    scaler = StandardScaler()
-    scaled = pd.DataFrame(scaler.fit_transform(dfTr[feats]), columns=feats)
+    scaler = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNOptimization/dnn_features_scaler.pkl')
+    scaled = pd.DataFrame(scaler.transform(dfTr[pt+feats]), columns=pt+feats)
 
     TrTensorizedInput  = scaled[feats].to_numpy()
     TrTensorizedTarget = dfTr['targetId'].to_numpy()
+
 
     ############################# Models definition ##############################
 
@@ -135,8 +146,8 @@ if __name__ == "__main__" :
         history = TauIdentifierModel.fit(TrTensorizedInput, TrTensorizedTarget, epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
 
         TauIdentifierModel.save(outdir + '/TauDNNIdentifier')
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNident.pb', TauIdentifierModel, variables_to_constants=True)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNident.pb.txt', TauIdentifierModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(basedir+'/CMSSWmodels/CL3D_DNNident.pb', TauIdentifierModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(basedir+'/CMSSWmodels/CL3D_DNNident.pb.txt', TauIdentifierModel, variables_to_constants=True)
 
         for metric in history.history.keys():
             if metric == 'lr':
@@ -174,9 +185,8 @@ if __name__ == "__main__" :
     ############################## Model validation ##############################
 
     dfVal = pd.read_pickle(indir+'/X_Ident_BDT_forEvaluator.pkl')
-    dfVal['cl3d_abseta'] = abs(dfVal['cl3d_eta']).copy(deep=True)
 
-    scaled = pd.DataFrame(scaler.transform(dfVal[feats]), columns=feats)
+    scaled = pd.DataFrame(scaler.transform(dfVal[pt+feats]), columns=pt+feats)
     ValTensorizedInput  = scaled[feats].to_numpy()
     ValTensorizedTarget = dfVal['targetId'].to_numpy()
 
@@ -187,6 +197,17 @@ if __name__ == "__main__" :
     valid_ident = TauIdentifierModel.predict(ValTensorizedInput)
     FPRvalid, TPRvalid, THRvalid = metrics.roc_curve(ValTensorizedTarget, valid_ident)
     AUCvalid = metrics.roc_auc_score(ValTensorizedTarget, valid_ident)
+
+    # save ID working points
+    WP99 = np.interp(0.99, TPRvalid, THRvalid)
+    WP95 = np.interp(0.95, TPRvalid, THRvalid)
+    WP90 = np.interp(0.90, TPRvalid, THRvalid)
+    wp_dict = {
+        'wp99' : WP99,
+        'wp95' : WP95,
+        'wp90' : WP90
+    }
+    save_obj(wp_dict, outdir+'/TauDNNIdentifier_plots/CL3D_TauIdentifier_WPs.pkl')
 
     inspectWeights(TauIdentifierModel, 'kernel')
     # inspectWeights(TauIdentifierModel, 'bias')

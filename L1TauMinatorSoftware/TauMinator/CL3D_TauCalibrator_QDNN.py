@@ -12,6 +12,7 @@ from qkeras import qlayers
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import pickle
 import sys
 import os
 
@@ -69,6 +70,10 @@ def inspectWeights(model, which):
     plt.savefig(outdir+'/TauQDNNCalibrator_plots/modelSparsity'+which+'.pdf')
     plt.close()
 
+def load_obj(source):
+    with open(source,'rb') as f:
+        return pickle.load(f)
+
 
 #######################################################################
 ######################### SCRIPT BODY #################################
@@ -92,8 +97,8 @@ if __name__ == "__main__" :
 
     feats = ['cl3d_pt', 'cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
 
-    scaler = StandardScaler()
-    scaled = pd.DataFrame(scaler.fit_transform(dfTr[feats]), columns=feats)
+    scaler = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNOptimization/dnn_features_scaler.pkl')
+    scaled = pd.DataFrame(scaler.transform(dfTr[feats]), columns=feats)
 
     TrTensorizedInput  = scaled[feats].to_numpy()
     TrTensorizedTarget = dfTr['tau_visPt'].to_numpy()

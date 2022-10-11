@@ -8,6 +8,7 @@ from sklearn import metrics
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import pickle
 import cmsml
 import sys
 import os
@@ -66,6 +67,10 @@ def inspectWeights(model, which):
     plt.savefig(outdir+'/TauDNNCalibrator_plots/modelSparsity'+which+'.pdf')
     plt.close()
 
+def load_obj(source):
+    with open(source,'rb') as f:
+        return pickle.load(f)
+
 
 #######################################################################
 ######################### SCRIPT BODY #################################
@@ -84,14 +89,14 @@ if __name__ == "__main__" :
     indir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauBDTCalibratorTraining'+options.inTag
     outdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNCalibratorTraining'+options.inTag
     os.system('mkdir -p '+outdir+'/TauDNNCalibrator_plots')
-    os.system('mkdir -p /data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/CMSSWmodels')
+    os.system('mkdir -p '+basedir+'/CMSSWmodels')
 
     dfTr = pd.read_pickle(indir+'/X_Calib_BDT_forCalibrator.pkl')
 
     feats = ['cl3d_pt', 'cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
 
-    scaler = StandardScaler()
-    scaled = pd.DataFrame(scaler.fit_transform(dfTr[feats]), columns=feats)
+    scaler = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNOptimization/dnn_features_scaler.pkl')
+    scaled = pd.DataFrame(scaler.transform(dfTr[feats]), columns=feats)
 
     TrTensorizedInput  = scaled[feats].to_numpy()
     TrTensorizedTarget = dfTr['tau_visPt'].to_numpy()
@@ -133,8 +138,8 @@ if __name__ == "__main__" :
         history = TauCalibratorModel.fit(TrTensorizedInput, TrTensorizedTarget, epochs=200, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
 
         TauCalibratorModel.save(outdir + '/TauDNNCalibrator')
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNcalib.pb', TauCalibratorModel, variables_to_constants=True)
-        cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CL3D_DNNcalib.pb.txt', TauCalibratorModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(basedir+'/CMSSWmodels/CL3D_DNNcalib.pb', TauCalibratorModel, variables_to_constants=True)
+        cmsml.tensorflow.save_graph(basedir+'/CMSSWmodels/CL3D_DNNcalib.pb.txt', TauCalibratorModel, variables_to_constants=True)
 
         for metric in history.history.keys():
             if metric == 'lr':

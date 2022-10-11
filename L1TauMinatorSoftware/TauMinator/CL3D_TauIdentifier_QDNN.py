@@ -12,6 +12,7 @@ from qkeras import qlayers
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import pickle
 import sys
 import os
 
@@ -69,6 +70,10 @@ def inspectWeights(model, which):
     plt.savefig(outdir+'/TauQDNNIdentifier_plots/modelSparsity'+which+'.pdf')
     plt.close()
 
+def load_obj(source):
+    with open(source,'rb') as f:
+        return pickle.load(f)
+
 
 #######################################################################
 ######################### SCRIPT BODY #################################
@@ -91,10 +96,11 @@ if __name__ == "__main__" :
     dfTr = pd.read_pickle(indir+'/X_Ident_BDT_forIdentifier.pkl')
     dfTr['cl3d_abseta'] = abs(dfTr['cl3d_eta']).copy(deep=True)
 
+    pt= ['cl3d_pt']
     feats = ['cl3d_localAbsEta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_localAbsMeanZ']
 
-    scaler = StandardScaler()
-    scaled = pd.DataFrame(scaler.fit_transform(dfTr[feats]), columns=feats)
+    scaler = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNOptimization/dnn_features_scaler.pkl')
+    scaled = pd.DataFrame(scaler.transform(dfTr[pt+feats]), columns=pt+feats)
 
     TrTensorizedInput  = scaled[feats].to_numpy()
     TrTensorizedTarget = dfTr['targetId'].to_numpy()
@@ -179,7 +185,7 @@ if __name__ == "__main__" :
     dfVal = pd.read_pickle(indir+'/X_Ident_BDT_forEvaluator.pkl')
     dfVal['cl3d_abseta'] = abs(dfVal['cl3d_eta']).copy(deep=True)
 
-    scaled = pd.DataFrame(scaler.transform(dfVal[feats]), columns=feats)
+    scaled = pd.DataFrame(scaler.transform(dfVal[pt+feats]), columns=pt+feats)
     ValTensorizedInput  = scaled[feats].to_numpy()
     ValTensorizedTarget = dfVal['targetId'].to_numpy()
 
