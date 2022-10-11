@@ -96,11 +96,19 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '123X_mcRun4_realistic_v3', '')
 from L1Trigger.L1CaloTrigger.L1EGammaCrystalsEmulatorProducer_cfi import *
 L1TowerProducer_task = cms.Task(L1EGammaClusterEmuProducer)
 
+from L1Trigger.L1CaloTrigger.L1TowerCalibrationProducer_cfi import *
+L1TowerCalibration_task = cms.Task(L1TowerCalibrationProducer)
+
+from L1Trigger.L1CaloTrigger.L1CaloJetProducer_cfi import *
+L1CaloJetProducer_task = cms.Task(L1CaloJetProducer)
+
 # Path and EndPath definitions
 process.raw2digi_path     = cms.Path(process.RawToDigi)
 process.caloTpg_path      = cms.Path(L1TowerProducer_task)
 process.hgcTpg_path       = cms.Path(process.hgcalTriggerPrimitives)
 process.tauMinator_path   = cms.Path(process.L1CaloTauProducer_seq)
+process.caloTpc_path      = cms.Path(L1TowerCalibration_task)
+process.squareTau_path    = cms.Path(L1CaloJetProducer_task)
 process.generator_path    = cms.Path(process.GenHandler_seq)
 process.ntuplizer_path    = cms.Path(process.L1CaloTauNtuplizer_seq)
 
@@ -109,6 +117,8 @@ process.schedule = cms.Schedule(process.raw2digi_path,
                                 process.caloTpg_path,
                                 process.hgcTpg_path,
                                 process.tauMinator_path,
+                                process.caloTpc_path,
+                                process.squareTau_path,
                                 process.generator_path,
                                 process.ntuplizer_path)
 
