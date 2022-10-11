@@ -658,46 +658,46 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     {
         for (int i = 0; i < nmb_ident_feats; ++i)
         {
-            if (CL3D_DNNident_feats[i] == "cl3d_pt")               { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.pt, 0.25, 14); }
+            if (CL3D_DNNident_feats[i] == "cl3d_pt")               { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.pt, 0.25, 14) - 20.241386991916283)/23.01837359563478; }
             if (CL3D_DNNident_feats[i] == "cl3d_e")                { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.energy, 0.25, 14); }
             if (CL3D_DNNident_feats[i] == "cl3d_eta")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.eta; }
-            if (CL3D_DNNident_feats[i] == "cl3d_localAbsEta")      { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9); }
+            if (CL3D_DNNident_feats[i] == "cl3d_localAbsEta")      { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9) - 1.0074996364465862)/0.49138567390141064; }
             if (CL3D_DNNident_feats[i] == "cl3d_phi")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.phi; }
-            if (CL3D_DNNident_feats[i] == "cl3d_showerlength")     { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.showerlength; }
-            if (CL3D_DNNident_feats[i] == "cl3d_coreshowerlength") { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.coreshowerlength; }
-            if (CL3D_DNNident_feats[i] == "cl3d_firstlayer")       { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.firstlayer; }
-            if (CL3D_DNNident_feats[i] == "cl3d_seetot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seetot, 0.0000153, 16); }
+            if (CL3D_DNNident_feats[i] == "cl3d_showerlength")     { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.showerlength - 35.80472904577922)/7.440518440086627; }
+            if (CL3D_DNNident_feats[i] == "cl3d_coreshowerlength") { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.coreshowerlength - 11.933355669294706)/4.791972733791438; }
+            if (CL3D_DNNident_feats[i] == "cl3d_firstlayer")       { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.firstlayer - 1.3720078128341484)/1.6893861207515388; }
+            if (CL3D_DNNident_feats[i] == "cl3d_seetot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.seetot, 0.0000153, 16) - 0.03648582652086512)/0.020407089049271552; }
             if (CL3D_DNNident_feats[i] == "cl3d_seemax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seemax, 0.0000153, 16); }
             if (CL3D_DNNident_feats[i] == "cl3d_spptot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.spptot, 0.0000153, 16); }
             if (CL3D_DNNident_feats[i] == "cl3d_sppmax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.sppmax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_szz")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.szz, 0.002, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrtot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrtot, 0.0000153, 16); }
+            if (CL3D_DNNident_feats[i] == "cl3d_szz")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.szz, 0.002, 16) - 20.51621627863874)/11.633317917896875; }
+            if (CL3D_DNNident_feats[i] == "cl3d_srrtot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrtot, 0.0000153, 16) - 0.00534390307737272)/0.001325129860675611; }
             if (CL3D_DNNident_feats[i] == "cl3d_srrmax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrmean")          { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmean, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_hoe")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.hoe, 0.002, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_localAbsMeanZ")    { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(10*abs(HGCluster.meanz)-320, 0.5, 12); }
+            if (CL3D_DNNident_feats[i] == "cl3d_srrmean")          { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrmean, 0.0000153, 16) - 0.00365570411813347367)/0.0009327963551387752; }
+            if (CL3D_DNNident_feats[i] == "cl3d_hoe")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.hoe, 0.002, 16) - 1.3676566630073708)/7.978238945457623; }
+            if (CL3D_DNNident_feats[i] == "cl3d_localAbsMeanZ")    { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(10*(abs(HGCluster.meanz)-320), 0.5, 12) - 291.6762877632198)/178.8235004591792; }
         }
 
         for (int i = 0; i < nmb_calib_feats; ++i)
         {
-            if (CL3D_DNNcalib_feats[i] == "cl3d_pt")               { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.pt, 0.25, 14); }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_pt")               { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.pt, 0.25, 14) - 20.241386991916283)/23.01837359563478; }
             if (CL3D_DNNcalib_feats[i] == "cl3d_e")                { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.energy, 0.25, 14); }
             if (CL3D_DNNcalib_feats[i] == "cl3d_eta")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.eta; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_abseta")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9); }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_localAbsEta")      { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9) - 1.0074996364465862)/0.49138567390141064; }
             if (CL3D_DNNcalib_feats[i] == "cl3d_phi")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.phi; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_showerlength")     { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.showerlength; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_coreshowerlength") { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.coreshowerlength; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_firstlayer")       { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.firstlayer; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_seetot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seetot, 0.0000153, 16); }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_showerlength")     { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.showerlength - 35.80472904577922)/7.440518440086627; }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_coreshowerlength") { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.coreshowerlength - 11.933355669294706)/4.791972733791438; }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_firstlayer")       { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.firstlayer - 1.3720078128341484)/1.6893861207515388; }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_seetot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.seetot, 0.0000153, 16) - 0.03648582652086512)/0.020407089049271552; }
             if (CL3D_DNNcalib_feats[i] == "cl3d_seemax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seemax, 0.0000153, 16); }
             if (CL3D_DNNcalib_feats[i] == "cl3d_spptot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.spptot, 0.0000153, 16); }
             if (CL3D_DNNcalib_feats[i] == "cl3d_sppmax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.sppmax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_szz")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.szz, 0.002, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrtot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrtot, 0.0000153, 16); }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_szz")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.szz, 0.002, 16) - 20.51621627863874)/11.633317917896875; }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_srrtot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrtot, 0.0000153, 16) - 0.00534390307737272)/0.001325129860675611; }
             if (CL3D_DNNcalib_feats[i] == "cl3d_srrmax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrmean")          { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmean, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_hoe")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.hoe, 0.002, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_meanz")            { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(10*(abs(HGCluster.meanz)-320), 0.5, 12); }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_srrmean")          { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrmean, 0.0000153, 16) - 0.00365570411813347367)/0.0009327963551387752; }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_hoe")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.hoe, 0.002, 16) - 1.3676566630073708)/7.978238945457623; }
+            if (CL3D_DNNcalib_feats[i] == "cl3d_localAbsMeanZ")    { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(10*(abs(HGCluster.meanz)-320), 0.5, 12) - 291.6762877632198)/178.8235004591792; }
         }
 
         cluIdx += 1; // increase index of cluster in batch
@@ -706,12 +706,12 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     // Apply DNN for identification
     tensorflow::NamedTensorList CL3D_DNNIdentInputsList = {{"CL3DFeatures", Cl3dIdentInput}};
     std::vector<tensorflow::Tensor> CL3D_DNNoutputsIdent;
-    tensorflow::run(CLTW_DNNsessionIdent, CL3D_DNNIdentInputsList, {"TauDNNIdentifier/sigmoid_DNNout/Sigmoid"}, &CL3D_DNNoutputsIdent);
+    tensorflow::run(CL3D_DNNsessionIdent, CL3D_DNNIdentInputsList, {"TauDNNIdentifier/sigmoid_DNNout/Sigmoid"}, &CL3D_DNNoutputsIdent);
 
     // Apply DNN for calibration
     tensorflow::NamedTensorList CL3D_DNNCalibInputsList = {{"CL3DFeatures", Cl3dCalibInput}};
     std::vector<tensorflow::Tensor> CL3D_DNNoutputsCalib;
-    tensorflow::run(CLTW_DNNsessionCalib, CL3D_DNNCalibInputsList, {"TauDNNCalibrator/DNNout/MatMul"}, &CL3D_DNNoutputsCalib);
+    tensorflow::run(CL3D_DNNsessionCalib, CL3D_DNNCalibInputsList, {"TauDNNCalibrator/DNNout/MatMul"}, &CL3D_DNNoutputsCalib);
 
     // Fill CNN+DNN output variables of TowerClusters
     cluIdx = 0;
@@ -735,10 +735,13 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         TauHelper::Tau Tau;
 
         // treat endcap and barrel separartely
-        if (abs(cluNxM.seedIeta>15)){
+        if (abs(cluNxM.seedIeta)>15)
+        {
             int matchedCluIdx = -99;
-            float dR2min = 0.2225; // set min dR at 0.47^2 = 0.25^2 + 0.4^2
+            // float dR2min = 0.2225; // set min dR at 0.47^2 = 0.25^2 + 0.4^2
+            float IDmax = 0.0;
             int cl3dIdx = -1;
+            HGClusterHelper::HGCluster HGCluster2store; 
             for (auto& HGCluster : *HGClustersCollection)
             {
                 cl3dIdx += 1;
@@ -749,22 +752,25 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
                 float dPhi = reco::deltaPhi(cluNxM.seedPhi, HGCluster.phi);
                 if (dEta > 0.25 && dPhi > 0.4) { continue; } //FIXME
 
-                float dR2 = dEta * dEta + dPhi * dPhi;
-                if (dR2 <= dR2min)
+                // float dR2 = dEta * dEta + dPhi * dPhi;
+                // if (dR2 <= dR2min)
+                if (HGCluster.IDscore > IDmax)
                 {
-                    dR2min = dR2;
+                    // dR2min = dR2;
+                    IDmax = HGCluster.IDscore;
                     matchedCluIdx = cl3dIdx;
+                    HGCluster2store = HGCluster;
                 }
-                if (matchedCluIdx != -99)
-                {
-                    // set tau information for the endcap area
-                    Tau.pt  = HGCluster.calibPt;
-                    Tau.eta = HGCluster.eta;
-                    Tau.phi = HGCluster.phi;
-                    Tau.clusterIdx = matchedCluIdx;
-                    Tau.isEndcap = true;
-                    Tau.IDscore = HGCluster.IDscore;
-                }
+            }
+            if (matchedCluIdx != -99)
+            {
+                // set tau information for the endcap area
+                Tau.pt  = HGCluster2store.calibPt;
+                Tau.eta = HGCluster2store.eta;
+                Tau.phi = HGCluster2store.phi;
+                Tau.clusterIdx = matchedCluIdx;
+                Tau.isEndcap = true;
+                Tau.IDscore = HGCluster2store.IDscore;
             }
         }
         else
