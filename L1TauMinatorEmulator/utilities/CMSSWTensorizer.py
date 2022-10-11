@@ -8,9 +8,10 @@ import glob
 import sys
 import os
 
-def inputQuantizer(inputE, inputPrecision):
-    if inputPrecision: return min( np.floor(inputE/inputPrecision), 511 ) * inputPrecision
-    else:              return inputE
+def inputQuantizer(inputF, LSB, nbits):
+    if LSB: return min( np.floor(inputF/LSB), 2**nbits-1 ) * LSB
+    else:   return inputF
+inputQuantizer_vctd = np.vectorize(inputQuantizer)
 
 
 def Tensorize(dfFlatTowClus, dfFlatHGClus, uEtacut, lEtacut,  NxM, inputPrecision):
@@ -64,9 +65,9 @@ def Tensorize(dfFlatTowClus, dfFlatHGClus, uEtacut, lEtacut,  NxM, inputPrecisio
         # features for the CNN
         x1l = []
         for j in range(N*M):
-            x1l.append(inputQuantizer(dfTowClus.cl_towerEgEt.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfTowClus.cl_towerEm.loc[idx][j], inputPrecision))
-            x1l.append(inputQuantizer(dfTowClus.cl_towerHad.loc[idx][j], inputPrecision))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerEgEt.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerEm.loc[idx][j], 0.25, 10))
+            x1l.append(inputQuantizer(dfTowClus.cl_towerHad.loc[idx][j], 0.25, 10))
         x1 = np.array(x1l).reshape(N,M,3)
         
         # "targets" of the NN -> the ones produced by CMSSW thta have to match the predictions
@@ -93,6 +94,28 @@ def Tensorize(dfFlatTowClus, dfFlatHGClus, uEtacut, lEtacut,  NxM, inputPrecisio
     np.savez_compressed(saveTensTo['inputsCNN'], X1)
     np.savez_compressed(saveTensTo['inputsDNN'], X2)
     np.savez_compressed(saveTensTo['targetsCNN+DNN'], Y)
+
+    # compute variables in HGCAL local reference frame
+    dfHGClus['cl3d_localAbsEta']   = abs(dfHGClus['cl3d_eta']) - 1.45 # not sure if this 1.45 is correct
+    dfHGClus['cl3d_localAbsMeanZ'] = 10*( abs(dfHGClus['cl3d_meanz']) - 320 ) # not sure if this 320 is correct
+    
+    # target the current foreseen precisions for clusters variables
+    dfHGClus['cl3d_pt'] = inputQuantizer_vctd(dfHGClus['cl3d_pt'], 0.25, 14)
+    dfHGClus['cl3d_localAbsEta'] = inputQuantizer_vctd(dfHGClus['cl3d_localAbsEta'], 0.004, 9)
+    dfHGClus['cl3d_localAbsMeanZ'] = inputQuantizer_vctd(dfHGClus['cl3d_localAbsMeanZ'], 0.5, 12)
+
+    # custom precision based on the 8x16bits available
+    # all targeting ufixed<16,0>  -->  0.0000153 ~ 1/2^16
+    dfHGClus['cl3d_seetot'] = inputQuantizer_vctd(dfHGClus['cl3d_seetot'], 0.0000153, 16)
+    dfHGClus['cl3d_seemax'] = inputQuantizer_vctd(dfHGClus['cl3d_seemax'], 0.0000153, 16)
+    dfHGClus['cl3d_spptot'] = inputQuantizer_vctd(dfHGClus['cl3d_spptot'], 0.0000153, 16)
+    dfHGClus['cl3d_sppmax'] = inputQuantizer_vctd(dfHGClus['cl3d_sppmax'], 0.0000153, 16)
+    dfHGClus['cl3d_srrtot'] = inputQuantizer_vctd(dfHGClus['cl3d_srrtot'], 0.0000153, 16)
+    dfHGClus['cl3d_srrmax'] = inputQuantizer_vctd(dfHGClus['cl3d_srrmax'], 0.0000153, 16)
+    dfHGClus['cl3d_srrmean'] = inputQuantizer_vctd(dfHGClus['cl3d_srrmean'], 0.0000153, 16)
+    # targeting ufixed<16,7>  -->  0.002 ~ 1/2^9
+    dfHGClus['cl3d_hoe'] = inputQuantizer_vctd(dfHGClus['cl3d_hoe'], 0.002, 16)
+    dfHGClus['cl3d_szz'] = inputQuantizer_vctd(dfHGClus['cl3d_szz'], 0.002, 16)
 
     # save .pkl file with formatted datasets
     dfHGClus.to_pickle(saveTensTo['inputsBDT'])
@@ -127,10 +150,10 @@ if __name__ == "__main__" :
     key = 'L1CaloTauNtuplizer/L1TauMinatorTree'
     branches_event  = ['EventNumber']
     branches_gentau = ['tau_Idx', 'tau_eta', 'tau_phi', 'tau_pt', 'tau_e', 'tau_m', 'tau_visEta', 'tau_visPhi', 'tau_visPt', 'tau_visE', 'tau_visM', 'tau_visPtEm', 'tau_visPtHad', 'tau_visEEm', 'tau_visEHad', 'tau_DM']
-    branches_cl3d   = ['cl3d_pt', 'cl3d_eta', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_spptot', 'cl3d_srrtot', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz', 'cl3d_tauMatchIdx', 'cl3d_calibPt', 'cl3d_IDscore']
+    branches_cl3d   = ['cl3d_pt', 'cl3d_energy', 'cl3d_eta', 'cl3d_phi', 'cl3d_showerlength', 'cl3d_coreshowerlength', 'cl3d_firstlayer', 'cl3d_seetot', 'cl3d_seemax', 'cl3d_spptot', 'cl3d_sppmax', 'cl3d_szz', 'cl3d_srrtot', 'cl3d_srrmax', 'cl3d_srrmean', 'cl3d_hoe', 'cl3d_meanz', 'cl3d_quality', 'cl3d_tauMatchIdx', 'cl3d_jetMatchIdx', 'cl3d_calibPt', 'cl3d_IDscore']
     NxM = options.caloClNxM
     branches_clNxM = ['cl'+NxM+'_seedEta', 'cl'+NxM+'_seedPhi', 'cl'+NxM+'_tauMatchIdx', 'cl'+NxM+'_towerEm', 'cl'+NxM+'_towerHad', 'cl'+NxM+'_towerEgEt', 'cl'+NxM+'_calibPt', 'cl'+NxM+'_IDscore']
-    branches_l1tau  = ['l1tau_pt', 'l1tau_eta', 'l1tau_phi', 'l1tau_clusterIdx', 'l1tau_isBarrel', 'l1tau_isEndcap', 'l1tau_IDscore', 'l1tau_tauMatchIdx']
+    branches_l1tau  = ['minatedl1tau_pt', 'minatedl1tau_eta', 'minatedl1tau_phi', 'minatedl1tau_clusterIdx', 'minatedl1tau_isBarrel', 'minatedl1tau_isEndcap', 'minatedl1tau_IDscore', 'minatedl1tau_tauMatchIdx']
 
     # define the two paths where to store the hdf5 files
     saveDfsTo = {
@@ -186,29 +209,38 @@ if __name__ == "__main__" :
         })
 
     dfFlatL1Taus = pd.DataFrame({
-        'event'        : np.repeat(dfL1Taus[b'EventNumber'].values, dfL1Taus[b'l1tau_eta'].str.len()), # event IDs are copied to keep proper track of what is what
-        'l1tau_pt'          : list(chain.from_iterable(dfL1Taus[b'l1tau_pt'])),
-        'l1tau_eta'         : list(chain.from_iterable(dfL1Taus[b'l1tau_eta'])),
-        'l1tau_phi'         : list(chain.from_iterable(dfL1Taus[b'l1tau_phi'])),
-        'l1tau_clusterIdx'  : list(chain.from_iterable(dfL1Taus[b'l1tau_clusterIdx'])),
-        'l1tau_isBarrel'    : list(chain.from_iterable(dfL1Taus[b'l1tau_isBarrel'])),
-        'l1tau_isEndcap'    : list(chain.from_iterable(dfL1Taus[b'l1tau_isEndcap'])),
-        'l1tau_IDscore'     : list(chain.from_iterable(dfL1Taus[b'l1tau_IDscore'])),
-        'l1tau_tauMatchIdx' : list(chain.from_iterable(dfL1Taus[b'l1tau_tauMatchIdx'])),
+        'event'        : np.repeat(dfL1Taus[b'EventNumber'].values, dfL1Taus[b'minatedl1tau_eta'].str.len()), # event IDs are copied to keep proper track of what is what
+        'minatedl1tau_pt'          : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_pt'])),
+        'minatedl1tau_eta'         : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_eta'])),
+        'minatedl1tau_phi'         : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_phi'])),
+        'minatedl1tau_clusterIdx'  : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_clusterIdx'])),
+        'minatedl1tau_isBarrel'    : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_isBarrel'])),
+        'minatedl1tau_isEndcap'    : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_isEndcap'])),
+        'minatedl1tau_IDscore'     : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_IDscore'])),
+        'minatedl1tau_tauMatchIdx' : list(chain.from_iterable(dfL1Taus[b'minatedl1tau_tauMatchIdx'])),
         })
 
     # flatten out the hgcal clusters dataframe
     dfFlatHGClus = pd.DataFrame({
         'event'                 : np.repeat(dfHGClus[b'EventNumber'].values, dfHGClus[b'cl3d_eta'].str.len()), # event IDs are copied to keep proper track of what is what
         'cl3d_pt'               : list(chain.from_iterable(dfHGClus[b'cl3d_pt'])),
+        'cl3d_energy'           : list(chain.from_iterable(dfHGClus[b'cl3d_energy'])),
         'cl3d_eta'              : list(chain.from_iterable(dfHGClus[b'cl3d_eta'])),
+        'cl3d_phi'              : list(chain.from_iterable(dfHGClus[b'cl3d_phi'])),
         'cl3d_showerlength'     : list(chain.from_iterable(dfHGClus[b'cl3d_showerlength'])),
         'cl3d_coreshowerlength' : list(chain.from_iterable(dfHGClus[b'cl3d_coreshowerlength'])),
+        'cl3d_firstlayer'       : list(chain.from_iterable(dfHGClus[b'cl3d_firstlayer'])),
+        'cl3d_seetot'           : list(chain.from_iterable(dfHGClus[b'cl3d_seetot'])),
+        'cl3d_seemax'           : list(chain.from_iterable(dfHGClus[b'cl3d_seemax'])),
         'cl3d_spptot'           : list(chain.from_iterable(dfHGClus[b'cl3d_spptot'])),
+        'cl3d_sppmax'           : list(chain.from_iterable(dfHGClus[b'cl3d_sppmax'])),
+        'cl3d_szz'              : list(chain.from_iterable(dfHGClus[b'cl3d_szz'])),
         'cl3d_srrtot'           : list(chain.from_iterable(dfHGClus[b'cl3d_srrtot'])),
+        'cl3d_srrmax'           : list(chain.from_iterable(dfHGClus[b'cl3d_srrmax'])),
         'cl3d_srrmean'          : list(chain.from_iterable(dfHGClus[b'cl3d_srrmean'])),
         'cl3d_hoe'              : list(chain.from_iterable(dfHGClus[b'cl3d_hoe'])),
         'cl3d_meanz'            : list(chain.from_iterable(dfHGClus[b'cl3d_meanz'])),
+        'cl3d_quality'          : list(chain.from_iterable(dfHGClus[b'cl3d_quality'])),
         'cl3d_tauMatchIdx'      : list(chain.from_iterable(dfHGClus[b'cl3d_tauMatchIdx'])),
         'cl3d_IDscore'          : list(chain.from_iterable(dfHGClus[b'cl3d_IDscore'])),
         'cl3d_calibPt'          : list(chain.from_iterable(dfHGClus[b'cl3d_calibPt']))
