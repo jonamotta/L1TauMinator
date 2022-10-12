@@ -70,10 +70,10 @@ if __name__ == "__main__" :
     ptBins=[15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 175, 200, 500]
     offline_pts = [17.5,  22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5, 67.5, 72.5, 77.5, 82.5, 87.5, 92.5, 97.5, 102.5, 107.5, 112.5, 117.5, 122.5, 127.5, 132.5, 137.5, 142.5, 147.5, 152.5, 157.5, 170, 187.5, 350]
 
-    if etaEr==3.0:
+    if options.etaEr==3.0:
         etaBins=[-3.0, -2.7, -2.4, -2.1, -1.8, -1.5, -1.305, -1.0, -0.66, -0.33, 0.0, 0.33, 0.66, 1.0, 1.305, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0]
         eta_bins_centers = [-2.85, -2.55, -2.25, -1.95, -1.65, -1.4025, -1.1525, -0.825, -0.495, -0.165, 0.165, 0.495, 0.825, 1.1525, 1.4025, 1.65, 1.95, 2.25, 2.55, 2.85]
-    elif etaEr==2.4:
+    elif options.etaEr==2.4:
         etaBins=[-2.4, -2.1, -1.8, -1.5, -1.305, -1.0, -0.66, -0.33, 0.0, 0.33, 0.66, 1.0, 1.305, 1.5, 1.8, 2.1, 2.4]
         eta_bins_centers = [-2.25, -1.95, -1.65, -1.4025, -1.1525, -0.825, -0.495, -0.165, 0.165, 0.495, 0.825, 1.1525, 1.4025, 1.65, 1.95, 2.25]
     else:
@@ -158,7 +158,7 @@ if __name__ == "__main__" :
             _squarel1tau_iso = list(inChain.squarel1tau_qual) # iso is called quality in the ntuples of square taus
 
             for tauPt, tauEta, tauPhi in zip(_gentau_visPt, _gentau_visEta, _gentau_visPhi):
-                if abs(tauEta) > etaEr: continue # skip taus out of acceptance
+                if abs(tauEta) > options.etaEr: continue # skip taus out of acceptance
 
                 denominator_ptBins.Fill(tauPt)
                 if tauPt > 40: denominator_etaBins.Fill(tauEta)
@@ -296,7 +296,7 @@ if __name__ == "__main__" :
 
         # save to file 
 
-        fileout = ROOT.TFile(perfdir+"/turnons"+tag+"/efficiency_graphs"+tag+"_er"+str(etaEr)+".root","RECREATE")
+        fileout = ROOT.TFile(perfdir+"/turnons"+tag+"/efficiency_graphs"+tag+"_er"+str(options.etaEr)+".root","RECREATE")
         denominator_ptBins.Write()
         denominator_etaBins.Write()
         for i, thr in enumerate(online_thresholds): 
@@ -327,7 +327,7 @@ if __name__ == "__main__" :
         fileout.Close()
 
 else:
-    filein = ROOT.TFile(perfdir+"/turnons"+tag+"/efficiency_graphs"+tag+"_er"+str(etaEr)+".root","READ")
+    filein = ROOT.TFile(perfdir+"/turnons"+tag+"/efficiency_graphs"+tag+"_er"+str(options.etaEr)+".root","READ")
 
     # TGraphAsymmErrors for efficiency turn-ons
     turnonsMinated99 = []

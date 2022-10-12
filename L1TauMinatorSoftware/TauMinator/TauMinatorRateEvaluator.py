@@ -138,7 +138,7 @@ if __name__ == "__main__" :
 
             # loop over TauMinator taus
             for l1tauPt, l1tauEta, l1tauPhi, l1tauId, isBarrel in zip(_l1tau_pt, _l1tau_eta, _l1tau_phi, _l1tau_IDscore, _l1tau_isBarrel):
-                if abs(l1tauEta) > etaEr: continue # skip taus out of acceptance
+                if abs(l1tauEta) > options.etaEr: continue # skip taus out of acceptance
                 
                 if options.doMinator:
                     if (isBarrel and l1tauId < CLTW_ID_WP['wp'+WP]): continue
@@ -206,7 +206,7 @@ if __name__ == "__main__" :
             diTau_offline50Rate.SetBinContent(i+1,diTau_offline50PtProgression.Integral(i+1,241,i+1,241)/denominator*scale);
 
         # save to file 
-        fileout = ROOT.TFile(perfdir+"/rate"+tag+"/rate_graphs"+tag+"_er"+str(etaEr)+"_wp"+WP+".root","RECREATE")
+        fileout = ROOT.TFile(perfdir+"/rate"+tag+"/rate_graphs"+tag+"_er"+str(options.etaEr)+"_wp"+WP+".root","RECREATE")
         singleTau_onlinePtProgression.Write()
         singleTau_offline95PtProgression.Write()
         singleTau_offline90PtProgression.Write()
@@ -228,7 +228,7 @@ if __name__ == "__main__" :
         fileout.Close()
 
     else:
-        filein = ROOT.TFile(perfdir+"/rate"+tag+"/rate_graphs"+tag+"_er"+str(etaEr)+"_wp"+WP+".root","READ")
+        filein = ROOT.TFile(perfdir+"/rate"+tag+"/rate_graphs"+tag+"_er"+str(options.etaEr)+"_wp"+WP+".root","READ")
 
         # singleTau_onlinePtProgression = filein.Get("singleTau_onlinePtProgression")
         # singleTau_offline95PtProgression = filein.Get("singleTau_offline95PtProgression")
