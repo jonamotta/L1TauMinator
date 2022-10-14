@@ -1,4 +1,4 @@
-![Alt text](https://cernbox.cern.ch/index.php/apps/files/?dir=/&#//TAUminator_logo.png)
+![Alt text](https://cernbox.cern.ch/index.php/s/Czwj0noP4pBJRQN)
 
 # L1TauMinator
 
@@ -32,14 +32,14 @@ The package has two sub-packages:
 ## The CMSSW-based sub-package
 
 `L1TauMinatorEmuator` has the usual structure of a CMSSW package:
-    * `inputFiles` contains the list of files to be used as input to the Ntuple producers
-    * `plugins` contains the producers and analyzers:
-        * the `*Handlers.cc` produce the singe objects
-        * the `Ntuplizer.cc` takes all the `*Handlers.cc` inputs and produces Ntuples to be used for the trainings
-        * the `L1CaloTau*.cc` produce the tau objects in the standard manner, applying the full algorithm 
-    * the `python` folder contains all the configuration files
-    * the `test` folder contains the `cmsRun` configuration and the code to submit condor jobs
-    * the `utilities` folder contains some code to do debugging
+* `inputFiles` contains the list of files to be used as input to the Ntuple producers
+* `plugins` contains the producers and analyzers:
+    * the `*Handlers.cc` produce the singe objects
+    * the `Ntuplizer.cc` takes all the `*Handlers.cc` inputs and produces Ntuples to be used for the trainings
+    * the `L1CaloTau*.cc` produce the tau objects in the standard manner, applying the full algorithm 
+* the `python` folder contains all the configuration files
+* the `test` folder contains the `cmsRun` configuration and the code to submit condor jobs
+* the `utilities` folder contains some code to do debugging
 
 ## The Python-based sub-package
 
