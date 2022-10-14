@@ -1,4 +1,4 @@
-![Alt text](https://cernbox.cern.ch/index.php/s/Czwj0noP4pBJRQN)
+![Alt text](TAUminator_logo.png)
 
 # L1TauMinator
 
