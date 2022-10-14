@@ -1,4 +1,5 @@
 from tensorflow.keras.initializers import RandomNormal as RN
+from sklearn.linear_model import LinearRegression
 from tensorflow.keras import layers, models
 from optparse import OptionParser
 import matplotlib.pyplot as plt
@@ -195,6 +196,30 @@ if __name__ == "__main__" :
         CNN = keras.models.load_model(indir+'/TauCNNIdentifier'+options.caloClNxM+'Training'+options.inTagCNN+'/CNNmodel', compile=False)
         TauCalibratorModel = keras.models.load_model(outdir+'/TauCNNCalibrator', compile=False)
 
+    
+    ############################## Log linearisation ##############################
+
+    dfLL = pd.DataFrame()
+    dfLL['calib_pt'] = TauCalibratorModel.predict(CNN([X1, X2])).ravel()
+    dfLL['gen_pt']   = Y[:,0].ravel()
+    dfLL['response'] = dfLL['calib_pt'] / dfLL['gen_pt']
+    # dfLL['gen_pt_binned']  = pd.cut(dfLL['gen_pt'],
+    #                                 bins=[18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 200, 500],
+    #                                 labels=False,
+    #                                 include_lowest=True)
+
+    dfLL['gen_pt_binned']  = ((dfLL['gen_pt'] - 18)/5).astype('int32')
+
+    meansTrainPt = dfLL.groupby('gen_pt_binned').mean()
+    meansTrainPt['logpt1'] = np.log(meansTrainPt['calib_pt'])
+    meansTrainPt['logpt2'] = meansTrainPt.logpt1**2
+    meansTrainPt['logpt3'] = meansTrainPt.logpt1**3
+    meansTrainPt['logpt4'] = meansTrainPt.logpt1**4
+
+    input_LL = meansTrainPt[['logpt1', 'logpt2', 'logpt3', 'logpt4']]
+    target_LL = meansTrainPt['response']
+    LogLinearizer = LinearRegression().fit(input_LL, target_LL)
+
     ############################## Model validation ##############################
 
     X1_valid = np.load(outdir+'/X_CNN_'+options.caloClNxM+'_forEvaluator.npz')['arr_0']
@@ -211,6 +236,12 @@ if __name__ == "__main__" :
     dfTrain['gen_eta']    = Y[:,1].ravel()
     dfTrain['gen_phi']    = Y[:,2].ravel()
     dfTrain['gen_dm']     = Y[:,3].ravel()
+    
+    logpt1 = np.log(abs(dfTrain['calib_pt']))
+    logpt2 = logpt1**2
+    logpt3 = logpt1**3
+    logpt4 = logpt1**4
+    dfTrain['calib_pt_LL'] = dfTrain['calib_pt'] / LogLinearizer.predict(np.vstack([logpt1, logpt2, logpt3, logpt4]).T)
 
     dfValid = pd.DataFrame()
     dfValid['uncalib_pt'] = np.sum(np.sum(np.sum(X1_valid, axis=3), axis=2), axis=1).ravel()
@@ -219,6 +250,12 @@ if __name__ == "__main__" :
     dfValid['gen_eta']    = Y_valid[:,1].ravel()
     dfValid['gen_phi']    = Y_valid[:,2].ravel()
     dfValid['gen_dm']     = Y_valid[:,3].ravel()
+
+    logpt1 = np.log(abs(dfValid['calib_pt']))
+    logpt2 = logpt1**2
+    logpt3 = logpt1**3
+    logpt4 = logpt1**4
+    dfValid['calib_pt_LL'] = dfValid['calib_pt'] / LogLinearizer.predict(np.vstack([logpt1, logpt2, logpt3, logpt4]).T)
 
     inspectWeights(TauCalibratorModel, 'kernel')
     # inspectWeights(TauCalibratorModel, 'bias')
@@ -367,6 +404,45 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauCNNCalibrator_plots/GenToUncalinL1_pt.pdf')
     plt.close()
 
+    # PLOTS LOGLINEARIZER
+    plt.figure(figsize=(10,10))
+    plt.hist(dfValid['uncalib_pt']/dfValid['gen_pt'], bins=np.arange(0,5,0.1), label=r'Uncalibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['uncalib_pt']/dfValid['gen_pt']), np.std(dfValid['uncalib_pt']/dfValid['gen_pt'])),  color='red',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfValid['calib_pt']/dfValid['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['calib_pt']/dfValid['gen_pt']), np.std(dfValid['calib_pt']/dfValid['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfValid['calib_pt_LL']/dfValid['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated LogLinearized response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['calib_pt_LL']/dfValid['gen_pt']), np.std(dfValid['calib_pt_LL']/dfValid['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/responses_comparison_valid_LL.pdf')
+    plt.close()
+
+    # PLOTS LOGLINEARIZER
+    plt.figure(figsize=(10,10))
+    plt.hist(dfTrain['uncalib_pt']/dfTrain['gen_pt'], bins=np.arange(0,5,0.1), label=r'Uncalibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['uncalib_pt']/dfTrain['gen_pt']), np.std(dfTrain['uncalib_pt']/dfTrain['gen_pt'])),  color='red',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfTrain['calib_pt']/dfTrain['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['calib_pt']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt']/dfTrain['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfTrain['calib_pt_LL']/dfTrain['gen_pt'],   bins=np.arange(0,5,0.1), label=r'Valid. Calibrated LogLinearized response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['calib_pt_LL']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt_LL']/dfTrain['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/responses_comparison_train_LL.pdf')
+    plt.close()
+
+    # 2D REPOSNSE VS PT
+    plt.figure(figsize=(10,10))
+    plt.scatter(dfValid['calib_pt'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_pt'].head(1000), label=r'Calibrated', alpha=0.2, color='red')
+    plt.scatter(dfValid['calib_pt_LL'].head(1000)/dfValid['gen_pt'].head(1000), dfValid['gen_pt'].head(1000), label=r'Calibrated LogLinearized', alpha=0.2, color='green')
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'$p_{T}^{Gen \tau}$')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    # plt.xlim(-0.1,5)
+    plt.xlim(0.0,2.0)
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauCNNCalibrator_plots/response_vs_pt_comparison_LL.pdf')
+    plt.close()
 
     ############################## Feature importance ##############################
 
