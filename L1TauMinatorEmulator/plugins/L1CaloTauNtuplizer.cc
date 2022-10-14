@@ -94,11 +94,9 @@ class L1CaloTauNtuplizer : public edm::EDAnalyzer {
         std::vector<float>  _minatedl1tau_pt;
         std::vector<float>  _minatedl1tau_eta;
         std::vector<float>  _minatedl1tau_phi;
-        std::vector<int>    _minatedl1tau_clusterIdx;
         std::vector<bool>   _minatedl1tau_isBarrel;
         std::vector<bool>   _minatedl1tau_isEndcap;
         std::vector<float>  _minatedl1tau_IDscore;
-        std::vector<int>    _minatedl1tau_tauMatchIdx;
 
         std::vector<float>  _squarel1tau_pt;
         std::vector<float>  _squarel1tau_eta;
@@ -222,11 +220,9 @@ void L1CaloTauNtuplizer::Initialize()
     _minatedl1tau_pt.clear();
     _minatedl1tau_eta.clear();
     _minatedl1tau_phi.clear();
-    _minatedl1tau_clusterIdx.clear();
     _minatedl1tau_isBarrel.clear();
     _minatedl1tau_isEndcap.clear();
     _minatedl1tau_IDscore.clear();
-    _minatedl1tau_tauMatchIdx.clear();
 
     _squarel1tau_pt.clear();
     _squarel1tau_eta.clear();
@@ -323,11 +319,9 @@ void L1CaloTauNtuplizer::beginJob()
     _tree -> Branch("minatedl1tau_pt",          &_minatedl1tau_pt);
     _tree -> Branch("minatedl1tau_eta",         &_minatedl1tau_eta);
     _tree -> Branch("minatedl1tau_phi",         &_minatedl1tau_phi);
-    _tree -> Branch("minatedl1tau_clusterIdx",  &_minatedl1tau_clusterIdx);
     _tree -> Branch("minatedl1tau_isBarrel",    &_minatedl1tau_isBarrel);
     _tree -> Branch("minatedl1tau_isEndcap",    &_minatedl1tau_isEndcap);
     _tree -> Branch("minatedl1tau_IDscore",     &_minatedl1tau_IDscore);
-    _tree -> Branch("minatedl1tau_tauMatchIdx", &_minatedl1tau_tauMatchIdx);
 
     _tree -> Branch("squarel1tau_pt",    &_squarel1tau_pt);
     _tree -> Branch("squarel1tau_eta",   &_squarel1tau_eta);
@@ -524,43 +518,6 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
             writable_hgclu.tauMatchIdx = tauIdx;
         }
 
-        if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
-        
-        // Perform geometrical matching of minatedl1Taus clusters
-        matchedCluIdx = -99;
-        dR2min = 0.25;
-        for (long unsigned int minatedl1tauIdx = 0; minatedl1tauIdx < minatedTaus.size(); minatedl1tauIdx++)
-        {
-            TauHelper::Tau minatedl1tau = minatedTaus[minatedl1tauIdx];
-
-            float dEta = minatedl1tau.eta - tau.visEta;
-            float dPhi = reco::deltaPhi(minatedl1tau.phi, tau.visPhi);
-            float dR2 = dEta * dEta + dPhi * dPhi;
-
-            if (dR2 <= dR2min)
-            {
-                dR2min = dR2;
-                matchedCluIdx = minatedl1tauIdx;
-            }
-
-            if (DEBUG)
-            {
-                printf("         - HGC CLU pt %f eta %f phi %f dEta %f dPhi %f dR2 %f (%i)\n",
-                    minatedl1tau.pt,
-                    minatedl1tau.eta,
-                    minatedl1tau.phi,
-                    dEta,
-                    dPhi,
-                    dR2,
-                    matchedCluIdx);
-            }
-        }
-        if (matchedCluIdx != -99)
-        {
-            TauHelper::Tau& writable_minatedl1tau =  const_cast<TauHelper::Tau&>(minatedTaus[matchedCluIdx]);
-            writable_minatedl1tau.tauMatchIdx = tauIdx;
-        }
-
         if (DEBUG) { std::cout << "\n       *********************************************************************************************************** \n" << std::endl; }
 
     } // end loop on GenTaus
@@ -600,11 +557,9 @@ void L1CaloTauNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup
         _minatedl1tau_pt.push_back(tau.pt);
         _minatedl1tau_eta.push_back(tau.eta);
         _minatedl1tau_phi.push_back(tau.phi);
-        _minatedl1tau_clusterIdx.push_back(tau.clusterIdx);
         _minatedl1tau_isBarrel.push_back(tau.isBarrel);
         _minatedl1tau_isEndcap.push_back(tau.isEndcap);
         _minatedl1tau_IDscore.push_back(tau.IDscore);
-        _minatedl1tau_tauMatchIdx.push_back(tau.tauMatchIdx);
     }
 
     // Fill baseline square L1Taus

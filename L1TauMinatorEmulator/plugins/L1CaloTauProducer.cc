@@ -725,50 +725,42 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     // Create and Fill the collection of L1 taus and their usefull attributes
     std::unique_ptr<TauHelper::TausCollection> TausCollection(new TauHelper::TausCollection);
 
-    // at the same time: cross loop over NxM TowerClusters and CL3D to do matching in the endcap
-    int cluNxMIdx = -1;
+    // cross loop over NxM TowerClusters and CL3D to do matching in the endcap
     for (auto& cluNxM : *l1TowerClustersNxM)
     {
-        cluNxMIdx += 1;
         if (cluNxM.IDscore<0/*FIXME*/) { continue; } // consider only clusters that pass the minimal 99% efficiency cut
 
         TauHelper::Tau Tau;
 
         // treat endcap and barrel separartely
-        if (abs(cluNxM.seedIeta)>15)
+        if (abs(cluNxM.seedEta)>1.5)
         {
-            int matchedCluIdx = -99;
-            // float dR2min = 0.2225; // set min dR at 0.47^2 = 0.25^2 + 0.4^2
+            bool matched = false;
             float IDmax = 0.0;
-            int cl3dIdx = -1;
             HGClusterHelper::HGCluster HGCluster2store; 
             for (auto& HGCluster : *HGClustersCollection)
             {
-                cl3dIdx += 1;
                 if (HGCluster.IDscore<0/*FIXME*/) { continue; } // consider only clusters that pass the minimal 99% efficiency cut
 
                 // apply geometrical match between cluNxM and cl3d
                 float dEta = cluNxM.seedEta - HGCluster.eta;
                 float dPhi = reco::deltaPhi(cluNxM.seedPhi, HGCluster.phi);
-                if (dEta > 0.25 && dPhi > 0.4) { continue; } //FIXME
+                float dR2 = dEta * dEta + dPhi * dPhi;
+                if (dR2 > 0.25) { continue; } // require the cluster to be within dR 0.5 
 
-                // float dR2 = dEta * dEta + dPhi * dPhi;
-                // if (dR2 <= dR2min)
                 if (HGCluster.IDscore > IDmax)
                 {
-                    // dR2min = dR2;
                     IDmax = HGCluster.IDscore;
-                    matchedCluIdx = cl3dIdx;
                     HGCluster2store = HGCluster;
+                    matched = true;
                 }
             }
-            if (matchedCluIdx != -99)
+            if (matched)
             {
                 // set tau information for the endcap area
                 Tau.pt  = HGCluster2store.calibPt;
                 Tau.eta = HGCluster2store.eta;
                 Tau.phi = HGCluster2store.phi;
-                Tau.clusterIdx = matchedCluIdx;
                 Tau.isEndcap = true;
                 Tau.IDscore = HGCluster2store.IDscore;
             }
@@ -779,12 +771,11 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
             Tau.pt  = cluNxM.calibPt;
             Tau.eta = cluNxM.seedEta;
             Tau.phi = cluNxM.seedPhi;
-            Tau.clusterIdx = cluNxMIdx;
             Tau.isBarrel = true;
             Tau.IDscore = cluNxM.IDscore;
         }
 
-        TausCollection->push_back(Tau);
+        if (Tau.isBarrel || Tau.isEndcap) { TausCollection->push_back(Tau); }
     }
 
     iEvent.put(std::move(l1TowerClustersNxM), "l1TowerClustersNxM");
