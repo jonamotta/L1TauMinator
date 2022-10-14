@@ -1,4 +1,5 @@
 from scipy.optimize import curve_fit
+from optparse import OptionParser
 from array import array
 import numpy as np
 import pickle
@@ -44,26 +45,27 @@ def sigmoid(x , a, x0, k):
 
 if __name__ == "__main__" :
     parser = OptionParser()
-    parser.add_option("--NtupleV",          dest="NtupleV",                default=None)
-    parser.add_option("--v",                dest="v",                      default=None)
-    parser.add_option("--date",             dest="date",                   default=None)
-    parser.add_option('--loop',             dest='loop',                   default=False)
-    parser.add_option('--etaEr',            dest='etaEr',      type=float, default=3.0)
-    parser.add_option('--doMinator',        dest='doMinator',              default=False)
-    parser.add_option('--doCLTWonly',       dest='doCLTWonly',             default=False)
-    parser.add_option("--inTagCNN_clNxM",   dest="inTagCNN_clNxM",         default="")
-    parser.add_option("--inTagDNN_cl3d",    dest="inTagDNN_cl3d",          default="")
-    parser.add_option('--caloClNxM',        dest='caloClNxM',              default="5x9")
+    parser.add_option("--NtupleV",          dest="NtupleV",                         default=None)
+    parser.add_option("--v",                dest="v",                               default=None)
+    parser.add_option("--date",             dest="date",                            default=None)
+    parser.add_option('--loop',             dest='loop',       action="store_true", default=False)
+    parser.add_option('--etaEr',            dest='etaEr',      type=float,          default=3.0)
+    parser.add_option('--doMinator',        dest='doMinator',  action="store_true", default=False)
+    parser.add_option('--doCLTWonly',       dest='doCLTWonly', action="store_true", default=False)
+    parser.add_option('--doCL3Donly',       dest='doCL3Donly', action="store_true", default=False)
+    parser.add_option("--inTagCNN_clNxM",   dest="inTagCNN_clNxM",                  default="")
+    parser.add_option("--inTagDNN_cl3d",    dest="inTagDNN_cl3d",                   default="")
+    parser.add_option('--caloClNxM',        dest='caloClNxM',                       default="5x9")
     (options, args) = parser.parse_args()
     print(options)
 
-    if not options.doMinator and not options.doCLTWonly:
-        print('** ERROR : no target evaluation psecified, select doMinator or doCLTWonly')
+    if not options.doMinator and not options.doCLTWonly and not options.doCL3Donly:
+        print('** ERROR : no target evaluation psecified, select doMinator, doCLTWonly, or doCL3Donly')
         print('** EXITING!')
         exit()
 
-    if options.doMinator and options.doCLTWonly:
-        print('** ERROR : two target evaluation psecified, select only one between doMinator and doCLTWonly')
+    if options.doMinator and options.doCLTWonly and options.doCL3Donly:
+        print('** ERROR : two target evaluation psecified, select only one between doMinator, doCLTWonly, and doCL3Donly')
         print('** EXITING!')
         exit()
 
@@ -85,6 +87,7 @@ if __name__ == "__main__" :
     perfdir = '/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauMinatorPerformanceEvaluator'
     if options.doMinator:  tag = '_minator'
     if options.doCLTWonly: tag = '_cltwOnly'
+    if options.doCL3Donly: tag = '_cl3dOnly'
     os.system('mkdir -p '+perfdir+'/turnons'+tag)
 
     if options.loop:
@@ -95,11 +98,11 @@ if __name__ == "__main__" :
         minated85_passing_ptBins = []
         minated80_passing_ptBins = []
         minated75_passing_ptBins = []
-        square_passing_ptBins = []
+        # square_passing_ptBins = []
         minated99_passing_etaBins = []
         minated95_passing_etaBins = []
         minated90_passing_etaBins = []
-        square_passing_etaBins = []
+        # square_passing_etaBins = []
         for threshold in online_thresholds:
             minated99_passing_ptBins.append(ROOT.TH1F("minated99_passing_thr"+str(int(threshold))+"_ptBins","minated99_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
             minated95_passing_ptBins.append(ROOT.TH1F("minated95_passing_thr"+str(int(threshold))+"_ptBins","minated95_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
@@ -107,12 +110,12 @@ if __name__ == "__main__" :
             minated85_passing_ptBins.append(ROOT.TH1F("minated85_passing_thr"+str(int(threshold))+"_ptBins","minated85_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
             minated80_passing_ptBins.append(ROOT.TH1F("minated80_passing_thr"+str(int(threshold))+"_ptBins","minated80_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
             minated75_passing_ptBins.append(ROOT.TH1F("minated75_passing_thr"+str(int(threshold))+"_ptBins","minated75_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
-            square_passing_ptBins.append(ROOT.TH1F("square_passing_thr"+str(int(threshold))+"_ptBins","square_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
+            # square_passing_ptBins.append(ROOT.TH1F("square_passing_thr"+str(int(threshold))+"_ptBins","square_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
 
             minated99_passing_etaBins.append(ROOT.TH1F("minated99_passing_thr"+str(int(threshold))+"_etaBins","minated99_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
             minated95_passing_etaBins.append(ROOT.TH1F("minated95_passing_thr"+str(int(threshold))+"_etaBins","minated95_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
             minated90_passing_etaBins.append(ROOT.TH1F("minated90_passing_thr"+str(int(threshold))+"_etaBins","minated90_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
-            square_passing_etaBins.append(ROOT.TH1F("square_passing_thr"+str(int(threshold))+"_etaBins","square_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
+            # square_passing_etaBins.append(ROOT.TH1F("square_passing_thr"+str(int(threshold))+"_etaBins","square_passing_thr"+str(int(threshold))+"_etaBins",len(etaBins)-1, array('f',etaBins)))
 
         #denominator
         denominator_ptBins = ROOT.TH1F("denominator_ptBins","denominator_ptBins",len(ptBins)-1, array('f',ptBins))
@@ -122,14 +125,16 @@ if __name__ == "__main__" :
         CLTW_ID_WP = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauCNNIdentifier5x9Training'+options.inTagCNN_clNxM+'/TauCNNIdentifier_plots/CLTW_TauIdentifier_WPs.pkl')
         CL3D_ID_WP = load_obj('/data_CMS/cms/motta/Phase2L1T/'+options.date+'_v'+options.v+'/TauDNNIdentifierTraining'+options.inTagDNN_cl3d+'/TauDNNIdentifier_plots/CL3D_TauIdentifier_WPs.pkl')
 
+        tot = 0
+
         # loop over the events to fill all the histograms
-        directory = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+options.NtuleV+'/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/'
+        directory = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+options.NtupleV+'/VBFHToTauTau_M125_14TeV_powheg_pythia8_correctedGridpack_tuneCP5__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_111X_mcRun4_realistic_T15_v1-v1__FEVT/'
         inChain = ROOT.TChain("L1CaloTauNtuplizer/L1TauMinatorTree");
-        inChain.Add(directory+'/Ntuple_*.root');
+        inChain.Add(directory+'/Ntuple_*9*.root');
         nEntries = inChain.GetEntries()
         for evt in range(0, nEntries):
             if evt%1000==0: print('--> ',evt)
-            # if evt == 2000: break
+            if evt == 20000: break
 
             entry = inChain.GetEntry(evt)
 
@@ -145,6 +150,8 @@ if __name__ == "__main__" :
                 _l1tau_IDscore = list(inChain.minatedl1tau_IDscore)
                 _l1tau_isBarrel = list(inChain.minatedl1tau_isBarrel)
 
+            print(_l1tau_isBarrel)
+
             if options.doCLTWonly:
                 _l1tau_pt = list(inChain.cl5x9_calibPt)
                 _l1tau_eta = list(inChain.cl5x9_seedEta)
@@ -152,13 +159,23 @@ if __name__ == "__main__" :
                 _l1tau_IDscore = list(inChain.cl5x9_IDscore)
                 _l1tau_isBarrel = list(inChain.cl5x9_isBarrel)
 
-            _squarel1tau_pt = list(inChain.squarel1tau_pt)
-            _squarel1tau_eta = list(inChain.squarel1tau_eta)
-            _squarel1tau_phi = list(inChain.squarel1tau_phi)
-            _squarel1tau_iso = list(inChain.squarel1tau_qual) # iso is called quality in the ntuples of square taus
+            if options.doCL3Donly:
+                _l1tau_pt = list(inChain.cl3d_calibPt)
+                _l1tau_eta = list(inChain.cl3d_eta)
+                _l1tau_phi = list(inChain.cl3d_phi)
+                _l1tau_IDscore = list(inChain.cl3d_IDscore)
+                _l1tau_isBarrel = list(inChain.cl3d_IDscore)
+
+            # _squarel1tau_pt = list(inChain.squarel1tau_pt)
+            # _squarel1tau_eta = list(inChain.squarel1tau_eta)
+            # _squarel1tau_phi = list(inChain.squarel1tau_phi)
+            # _squarel1tau_iso = list(inChain.squarel1tau_qual) # iso is called quality in the ntuples of square taus
 
             for tauPt, tauEta, tauPhi in zip(_gentau_visPt, _gentau_visEta, _gentau_visPhi):
                 if abs(tauEta) > options.etaEr: continue # skip taus out of acceptance
+
+                if options.doCL3Donly:
+                    if abs(tauEta) < 1.5: continue # skip taus out of HGCAL acceptance
 
                 denominator_ptBins.Fill(tauPt)
                 if tauPt > 40: denominator_etaBins.Fill(tauEta)
@@ -167,9 +184,9 @@ if __name__ == "__main__" :
                 gentau.SetPtEtaPhiM(tauPt, tauEta, tauPhi, 0)
 
                 minatedMatched = False
-                squareMatched = False
                 highestMinatedL1Pt = -99.9
-                highestSquaredL1Pt = -99.9
+                highestMinatedL1Id = 0.0
+                highestMinatedL1isBarrel = False
 
                 # loop over TauMinator taus
                 for l1tauPt, l1tauEta, l1tauPhi, l1tauId, isBarrel in zip(_l1tau_pt, _l1tau_eta, _l1tau_phi, _l1tau_IDscore, _l1tau_isBarrel):
@@ -178,27 +195,28 @@ if __name__ == "__main__" :
 
                     # check matching
                     if gentau.DeltaR(l1tau)<0.5:
-                        minatedMatched = True
                         # keep only L1 match with highest pT
                         if l1tau.Pt()>highestMinatedL1Pt:
+                            minatedMatched = True
                             highestMinatedL1Pt = l1tau.Pt()
                             highestMinatedL1Id = l1tauId
                             highestMinatedL1isBarrel = isBarrel
 
-                # loop over SquareCalo taus
-                for l1tauPt, l1tauEta, l1tauPhi, l1tauIso in zip(_squarel1tau_pt, _squarel1tau_eta, _squarel1tau_phi, _squarel1tau_iso):
-                    if not l1tauIso: continue # skip all the non iso taus
+                # squareMatched = False
+                # highestSquaredL1Pt = -99.9
+                # # loop over SquareCalo taus
+                # for l1tauPt, l1tauEta, l1tauPhi, l1tauIso in zip(_squarel1tau_pt, _squarel1tau_eta, _squarel1tau_phi, _squarel1tau_iso):
+                #     if not l1tauIso: continue # skip all the non iso taus
 
-                    l1tau = ROOT.TLorentzVector()
-                    l1tau.SetPtEtaPhiM(l1tauPt, l1tauEta, l1tauPhi, 0)
+                #     l1tau = ROOT.TLorentzVector()
+                #     l1tau.SetPtEtaPhiM(l1tauPt, l1tauEta, l1tauPhi, 0)
 
-                    # check matching
-                    if gentau.DeltaR(l1tau)<0.5:
-                        squareMatched = True
-                        # keep only L1 match with highest pT
-                        if l1tau.Pt()>highestMinatedL1Pt:
-                            highestSquaredL1Pt = l1tau.Pt()
-                            highestSquaredL1Eta = l1tau.Eta()
+                #     # check matching
+                #     if gentau.DeltaR(l1tau)<0.5:
+                #         # keep only L1 match with highest pT
+                #         if l1tau.Pt()>highestMinatedL1Pt:
+                #            squareMatched = True
+                #             highestSquaredL1Pt = l1tau.Pt()
 
                 # fill numerator histograms for every thresholds
                 for i, thr in enumerate(online_thresholds): 
@@ -225,6 +243,19 @@ if __name__ == "__main__" :
                             if highestMinatedL1Id >= CLTW_ID_WP['wp75']: # or highestMinatedL1Pt>75.: 
                                 minated75_passing_ptBins[i].Fill(gentau.Pt())
 
+                        if options.doCL3Donly:
+                            if highestMinatedL1Id >= CL3D_ID_WP['wp99']: # or highestMinatedL1Pt>75.: 
+                                minated99_passing_ptBins[i].Fill(gentau.Pt())
+                                minated99_passing_etaBins[i].Fill(gentau.Eta())
+                            
+                            if highestMinatedL1Id >= CL3D_ID_WP['wp95']: # or highestMinatedL1Pt>75.: 
+                                minated95_passing_ptBins[i].Fill(gentau.Pt())
+                                minated95_passing_etaBins[i].Fill(gentau.Eta())
+
+                            if highestMinatedL1Id >= CL3D_ID_WP['wp90']: # or highestMinatedL1Pt>75.: 
+                                minated90_passing_ptBins[i].Fill(gentau.Pt())
+                                minated90_passing_etaBins[i].Fill(gentau.Eta())
+
                         if options.doMinator:
                             if highestMinatedL1isBarrel:
                                 if highestMinatedL1Id >= CLTW_ID_WP['wp99']: # or highestMinatedL1Pt>75.: 
@@ -248,22 +279,21 @@ if __name__ == "__main__" :
                                 if highestMinatedL1Id >= CLTW_ID_WP['wp75']: # or highestMinatedL1Pt>75.: 
                                     minated75_passing_ptBins[i].Fill(gentau.Pt())
                             else:
-                                if highestMinatedL1Id >= CL3D_ID_WP['wp99'] or highestMinatedL1Pt>75.: 
+                                if highestMinatedL1Id >= CL3D_ID_WP['wp99']: # or highestMinatedL1Pt>75.: 
                                     minated99_passing_ptBins[i].Fill(gentau.Pt())
                                     minated99_passing_etaBins[i].Fill(gentau.Eta())
                                 
-                                if highestMinatedL1Id >= CL3D_ID_WP['wp95'] or highestMinatedL1Pt>75.: 
+                                if highestMinatedL1Id >= CL3D_ID_WP['wp95']: # or highestMinatedL1Pt>75.: 
                                     minated95_passing_ptBins[i].Fill(gentau.Pt())
                                     minated95_passing_etaBins[i].Fill(gentau.Eta())
 
-                                if highestMinatedL1Id >= CL3D_ID_WP['wp90'] or highestMinatedL1Pt>75.: 
+                                if highestMinatedL1Id >= CL3D_ID_WP['wp90']: # or highestMinatedL1Pt>75.: 
                                     minated90_passing_ptBins[i].Fill(gentau.Pt())
                                     minated90_passing_etaBins[i].Fill(gentau.Eta())
 
-
-                    if squareMatched and highestSquaredL1Pt>float(thr):
-                        square_passing_ptBins[i].Fill(gentau.Pt())
-                        square_passing_etaBins[i].Fill(gentau.Eta())
+                    # if squareMatched and highestSquaredL1Pt>float(thr):
+                    #     square_passing_ptBins[i].Fill(gentau.Pt())
+                    #     square_passing_etaBins[i].Fill(gentau.Eta())
 
         # end of the loop over the events
         #################################
@@ -275,11 +305,11 @@ if __name__ == "__main__" :
         turnonsMinated85 = []
         turnonsMinated80 = []
         turnonsMinated75 = []
-        turnonsSquare = []
+        # turnonsSquare = []
         etaEffMinated99 = []
         etaEffMinated95 = []
         etaEffMinated90 = []
-        etaEffSquare = []
+        # etaEffSquare = []
         for i, thr in enumerate(online_thresholds):
             turnonsMinated99.append(ROOT.TGraphAsymmErrors(minated99_passing_ptBins[i], denominator_ptBins, "cp"))
             turnonsMinated95.append(ROOT.TGraphAsymmErrors(minated95_passing_ptBins[i], denominator_ptBins, "cp"))
@@ -287,12 +317,12 @@ if __name__ == "__main__" :
             turnonsMinated85.append(ROOT.TGraphAsymmErrors(minated85_passing_ptBins[i], denominator_ptBins, "cp"))
             turnonsMinated80.append(ROOT.TGraphAsymmErrors(minated80_passing_ptBins[i], denominator_ptBins, "cp"))
             turnonsMinated75.append(ROOT.TGraphAsymmErrors(minated75_passing_ptBins[i], denominator_ptBins, "cp"))
-            turnonsSquare.append(ROOT.TGraphAsymmErrors(square_passing_ptBins[i], denominator_ptBins, "cp"))
+            # turnonsSquare.append(ROOT.TGraphAsymmErrors(square_passing_ptBins[i], denominator_ptBins, "cp"))
 
             etaEffMinated99.append(ROOT.TGraphAsymmErrors(minated99_passing_etaBins[i], denominator_etaBins, "cp"))
             etaEffMinated95.append(ROOT.TGraphAsymmErrors(minated95_passing_etaBins[i], denominator_etaBins, "cp"))
             etaEffMinated90.append(ROOT.TGraphAsymmErrors(minated90_passing_etaBins[i], denominator_etaBins, "cp"))
-            etaEffSquare.append(ROOT.TGraphAsymmErrors(square_passing_etaBins[i], denominator_etaBins, "cp"))
+            # etaEffSquare.append(ROOT.TGraphAsymmErrors(square_passing_etaBins[i], denominator_etaBins, "cp"))
 
         # save to file 
 
@@ -306,11 +336,11 @@ if __name__ == "__main__" :
             minated85_passing_ptBins[i].Write()
             minated80_passing_ptBins[i].Write()
             minated75_passing_ptBins[i].Write()
-            square_passing_ptBins[i].Write()
+            # square_passing_ptBins[i].Write()
             minated99_passing_etaBins[i].Write()
             minated95_passing_etaBins[i].Write()
             minated90_passing_etaBins[i].Write()
-            square_passing_etaBins[i].Write()
+            # square_passing_etaBins[i].Write()
 
             turnonsMinated99[i].Write()
             turnonsMinated95[i].Write()
@@ -318,11 +348,11 @@ if __name__ == "__main__" :
             turnonsMinated85[i].Write()
             turnonsMinated80[i].Write()
             turnonsMinated75[i].Write()
-            turnonsSquare[i].Write()
+            # turnonsSquare[i].Write()
             etaEffMinated99[i].Write()
             etaEffMinated95[i].Write()
             etaEffMinated90[i].Write()
-            etaEffSquare[i].Write()
+            # etaEffSquare[i].Write()
 
         fileout.Close()
 
@@ -336,11 +366,11 @@ else:
     turnonsMinated85 = []
     turnonsMinated80 = []
     turnonsMinated75 = []
-    turnonsSquare = []
+    # turnonsSquare = []
     etaEffMinated99 = []
     etaEffMinated95 = []
     etaEffMinated90 = []
-    etaEffSquare = []
+    # etaEffSquare = []
     for i, thr in enumerate(online_thresholds):
         turnonsMinated99.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
         turnonsMinated95.append(filein.Get("divide_minated95_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
@@ -348,12 +378,12 @@ else:
         turnonsMinated85.append(filein.Get("divide_minated85_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
         turnonsMinated80.append(filein.Get("divide_minated80_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
         turnonsMinated75.append(filein.Get("divide_minated75_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
-        turnonsSquare.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
+        # turnonsSquare.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_ptBins_by_denominator_ptBins"))
 
         etaEffMinated99.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
         etaEffMinated95.append(filein.Get("divide_minated95_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
         etaEffMinated90.append(filein.Get("divide_minated90_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
-        etaEffSquare.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
+        # etaEffSquare.append(filein.Get("divide_minated99_passing_thr"+str(int(thr))+"_etaBins_by_denominator_etaBins"))
 
 
 
@@ -442,27 +472,27 @@ save_obj(mapping_dict, perfdir+'/turnons'+tag+'/online2offline_mapping.pkl')
 
 
 
-X_square = [2.8468899521531092, 8.875598086124402, 15.0, 20.933014354066984, 26.794258373205736, 32.99043062200957, 39.01913875598086, 44.88038277511962, 50.909090909090914, 57.10526315789473, 63.0, 68.99521531100478, 75.1, 81.0, 87.0, 93.0, 99.13875598086125, 105.0, 111.1, 117.0, 123.1, 129.0, 135.0, 141.17224880382778, 147.0334928229665]
-Y_square = [0.20067385444743946, 0.08301886792452828, 0.10727762803234508, 0.28557951482479793, 0.55, 0.8035040431266847, 0.9247978436657682, 0.9721024258760108, 0.9757412398921833, 0.992722371967655, 0.9987870619946092, 0.9939353099730459, 0.9987870619946092, 0.9987870619946092, 0.9987870619946092, 1.0, 1.0, 0.9987870619946092, 0.9987870619946092, 0.9975741239892184, 1.0, 1.0, 1.0, 1.0, 1.0]
-X_puppi = [8.875598086124402, 15.0, 20.933014354066984, 26.794258373205736, 32.99043062200957, 39.01913875598086, 44.88038277511962, 50.909090909090914, 57.10526315789473, 63.0, 68.99521531100478, 75.1, 81.0, 87.0, 93.0, 99.13875598086125, 105.0, 111.1, 117.0, 123.1, 129.0, 135.0, 141.17224880382778, 147.0334928229665]
-Y_puppi = [0.0, 0.005390835579514919, 0.013881401617250821, 0.10242587601078168, 0.5827493261455526, 0.8047169811320755, 0.8629380053908356, 0.9150943396226415, 0.9478436657681941, 0.9684636118598383, 0.9733153638814016, 0.9842318059299192, 0.9757412398921833, 0.9842318059299192, 0.9769541778975741, 0.9951482479784367, 0.9890835579514825, 0.9939353099730459, 0.9975741239892184, 0.9951482479784367, 0.992722371967655, 1.0, 0.9915094339622642, 1.0]
+# X_square = [2.8468899521531092, 8.875598086124402, 15.0, 20.933014354066984, 26.794258373205736, 32.99043062200957, 39.01913875598086, 44.88038277511962, 50.909090909090914, 57.10526315789473, 63.0, 68.99521531100478, 75.1, 81.0, 87.0, 93.0, 99.13875598086125, 105.0, 111.1, 117.0, 123.1, 129.0, 135.0, 141.17224880382778, 147.0334928229665]
+# Y_square = [0.20067385444743946, 0.08301886792452828, 0.10727762803234508, 0.28557951482479793, 0.55, 0.8035040431266847, 0.9247978436657682, 0.9721024258760108, 0.9757412398921833, 0.992722371967655, 0.9987870619946092, 0.9939353099730459, 0.9987870619946092, 0.9987870619946092, 0.9987870619946092, 1.0, 1.0, 0.9987870619946092, 0.9987870619946092, 0.9975741239892184, 1.0, 1.0, 1.0, 1.0, 1.0]
+# X_puppi = [8.875598086124402, 15.0, 20.933014354066984, 26.794258373205736, 32.99043062200957, 39.01913875598086, 44.88038277511962, 50.909090909090914, 57.10526315789473, 63.0, 68.99521531100478, 75.1, 81.0, 87.0, 93.0, 99.13875598086125, 105.0, 111.1, 117.0, 123.1, 129.0, 135.0, 141.17224880382778, 147.0334928229665]
+# Y_puppi = [0.0, 0.005390835579514919, 0.013881401617250821, 0.10242587601078168, 0.5827493261455526, 0.8047169811320755, 0.8629380053908356, 0.9150943396226415, 0.9478436657681941, 0.9684636118598383, 0.9733153638814016, 0.9842318059299192, 0.9757412398921833, 0.9842318059299192, 0.9769541778975741, 0.9951482479784367, 0.9890835579514825, 0.9939353099730459, 0.9975741239892184, 0.9951482479784367, 0.992722371967655, 1.0, 0.9915094339622642, 1.0]
 
-plt.figure(figsize=(10,10))
-plt.errorbar(offline_pts,turnons_dict['turnonAt90wpAt28GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt90wpAt28GeV'][1], turnons_dict['turnonAt90wpAt28GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='green')
-plt.errorbar(X_square,Y_square,xerr=1, ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='blue')
-plt.errorbar(X_puppi,Y_puppi,xerr=1, ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='red')
-plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
-plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
-plt.legend(loc = 'lower right', fontsize=14)
-plt.ylim(0., 1.05)
-plt.xlim(15., 160.)
-# plt.xscale('log')
-plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
-plt.ylabel(r'Efficiency')
-plt.grid()
-mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-plt.savefig(perfdir+'/turnons'+tag+'/turnons_hacky.pdf')
-plt.close()
+# plt.figure(figsize=(10,10))
+# plt.errorbar(offline_pts,turnons_dict['turnonAt90wpAt28GeV'][0],xerr=1,yerr=[turnons_dict['turnonAt90wpAt28GeV'][1], turnons_dict['turnonAt90wpAt28GeV'][2]], ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='green')
+# plt.errorbar(X_square,Y_square,xerr=1, ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='blue')
+# plt.errorbar(X_puppi,Y_puppi,xerr=1, ls='None', label=r'$p_{T}^{L1 \tau} > 32 GeV', lw=2, marker='o', color='red')
+# plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', label='0.90 Eff.')
+# plt.hlines(0.95, 0, 2000, lw=2, color='black', label='0.95 Eff.')
+# plt.legend(loc = 'lower right', fontsize=14)
+# plt.ylim(0., 1.05)
+# plt.xlim(15., 160.)
+# # plt.xscale('log')
+# plt.xlabel(r'$p_{T}^{gen,\tau}\ [GeV]$')
+# plt.ylabel(r'Efficiency')
+# plt.grid()
+# mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+# plt.savefig(perfdir+'/turnons'+tag+'/turnons_hacky.pdf')
+# plt.close()
 
 
 
