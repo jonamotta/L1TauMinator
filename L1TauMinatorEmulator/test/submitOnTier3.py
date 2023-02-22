@@ -24,7 +24,7 @@ def splitInBlocks (l, n):
 
 ##################################################################
 
-version = "2.2"
+version = "2.3"
 
 filedir="/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/inputFiles/"
 
@@ -137,3 +137,4 @@ for i in range(len(list_folders)):
         print(command)
         os.system (command)
         # break
+        if idx==1057: break
