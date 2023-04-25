@@ -21,7 +21,7 @@
 #include "L1Trigger/L1TCalorimeter/interface/CaloTools.h"
 
 #include "L1TauMinator/DataFormats/interface/TowerHelper.h"
-// #include "L1TauMinator/L1TauMinatorEmulator/interface/TowerHelper.h"
+
 
 class CaloTowerHandler : public edm::stream::EDProducer<> {
     public:

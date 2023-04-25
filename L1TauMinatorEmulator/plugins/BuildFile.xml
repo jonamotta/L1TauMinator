@@ -6,6 +6,7 @@
 <use   name="FWCore/Utilities"/>
 <use   name="CommonTools/Utils"/>
 <use   name="CommonTools/UtilAlgos"/>
+<use   name="CommonTools/MVAUtils"/>
 <use   name="Geometry/CaloGeometry"/>
 <use   name="Geometry/HcalTowerAlgo"/>
 <use   name="Geometry/EcalAlgo"/>
@@ -16,10 +17,13 @@
 <use   name="DataFormats/HcalDigi"/>
 <use   name="DataFormats/JetReco"/>
 <use   name="DataFormats/L1THGCal"/>
+<use   name="DataFormats/L1TParticleFlow"/>
 <use   name="L1Trigger/L1CaloTrigger"/>
 <use   name="L1Trigger/L1TCalorimeter"/>
+<use   name="L1Trigger/Phase2L1ParticleFlow"/>
 <use   name="CalibFormats/CaloTPG"/>
 <use   name="L1TauMinator/DataFormats"/>
 <use   name="PhysicsTools/TensorFlow"/>
 <use   name="xgboost"/>
+<use   name="roottmva"/>
 <flags EDM_PLUGIN="1"/>
