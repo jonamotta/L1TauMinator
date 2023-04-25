@@ -26,6 +26,10 @@ namespace HGClusterHelper
         float hoe = 0.;
         float meanz = 0.;
         int   quality = 0;
+        int   puId = -1;
+        int   pionId = -1;
+        float puIdScore = -99;
+        float pionIdScore = -99;
 
         int tauMatchIdx = -99;
         int jetMatchIdx = -99;
