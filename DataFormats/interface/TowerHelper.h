@@ -64,6 +64,7 @@ namespace TowerHelper
 
         int tauMatchIdx = -99;
         int jetMatchIdx = -99;
+        int cl3dMatchIdx = -99;
 
         float IDscore = 0.;
         float calibPt = 0.;

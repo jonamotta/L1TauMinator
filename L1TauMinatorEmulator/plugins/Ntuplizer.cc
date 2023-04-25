@@ -127,6 +127,10 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<float> _cl3d_hoe;
         std::vector<float> _cl3d_meanz;
         std::vector<int>   _cl3d_quality;
+        std::vector<int>   _cl3d_puid;
+        std::vector<float> _cl3d_puidscore;
+        std::vector<int>   _cl3d_pionid;
+        std::vector<float> _cl3d_pionidscore;
         std::vector<int>   _cl3d_tauMatchIdx;
         std::vector<int>   _cl3d_jetMatchIdx;
 
@@ -142,6 +146,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl9x9_isEndcap;
         std::vector<int>   _cl9x9_tauMatchIdx;
         std::vector<int>   _cl9x9_jetMatchIdx;
+        std::vector<int>   _cl9x9_cl3dMatchIdx;
         std::vector<float> _cl9x9_totalEm;
         std::vector<float> _cl9x9_totalHad;
         std::vector<float> _cl9x9_totalEt;
@@ -176,6 +181,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl7x7_isEndcap;
         std::vector<int>   _cl7x7_tauMatchIdx;
         std::vector<int>   _cl7x7_jetMatchIdx;
+        std::vector<int>   _cl7x7_cl3dMatchIdx;
         std::vector<float> _cl7x7_totalEm;
         std::vector<float> _cl7x7_totalHad;
         std::vector<float> _cl7x7_totalEt;
@@ -210,6 +216,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl5x5_isEndcap;
         std::vector<int>   _cl5x5_tauMatchIdx;
         std::vector<int>   _cl5x5_jetMatchIdx;
+        std::vector<int>   _cl5x5_cl3dMatchIdx;
         std::vector<float> _cl5x5_totalEm;
         std::vector<float> _cl5x5_totalHad;
         std::vector<float> _cl5x5_totalEt;
@@ -244,6 +251,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl5x9_isEndcap;
         std::vector<int>   _cl5x9_tauMatchIdx;
         std::vector<int>   _cl5x9_jetMatchIdx;
+        std::vector<int>   _cl5x9_cl3dMatchIdx;
         std::vector<float> _cl5x9_totalEm;
         std::vector<float> _cl5x9_totalHad;
         std::vector<float> _cl5x9_totalEt;
@@ -278,6 +286,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl5x7_isEndcap;
         std::vector<int>   _cl5x7_tauMatchIdx;
         std::vector<int>   _cl5x7_jetMatchIdx;
+        std::vector<int>   _cl5x7_cl3dMatchIdx;
         std::vector<float> _cl5x7_totalEm;
         std::vector<float> _cl5x7_totalHad;
         std::vector<float> _cl5x7_totalEt;
@@ -312,6 +321,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl3x7_isEndcap;
         std::vector<int>   _cl3x7_tauMatchIdx;
         std::vector<int>   _cl3x7_jetMatchIdx;
+        std::vector<int>   _cl3x7_cl3dMatchIdx;
         std::vector<float> _cl3x7_totalEm;
         std::vector<float> _cl3x7_totalHad;
         std::vector<float> _cl3x7_totalEt;
@@ -346,6 +356,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl3x5_isEndcap;
         std::vector<int>   _cl3x5_tauMatchIdx;
         std::vector<int>   _cl3x5_jetMatchIdx;
+        std::vector<int>   _cl3x5_cl3dMatchIdx;
         std::vector<float> _cl3x5_totalEm;
         std::vector<float> _cl3x5_totalHad;
         std::vector<float> _cl3x5_totalEt;
@@ -449,6 +460,10 @@ void Ntuplizer::Initialize()
     _cl3d_hoe.clear();
     _cl3d_meanz.clear();
     _cl3d_quality.clear();
+    _cl3d_puid.clear();
+    _cl3d_puidscore.clear();
+    _cl3d_pionid.clear();
+    _cl3d_pionidscore.clear();
     _cl3d_tauMatchIdx.clear();
     _cl3d_jetMatchIdx.clear();
 
@@ -464,6 +479,7 @@ void Ntuplizer::Initialize()
     _cl9x9_isEndcap.clear();
     _cl9x9_tauMatchIdx.clear();
     _cl9x9_jetMatchIdx.clear();
+    _cl9x9_cl3dMatchIdx.clear();
     _cl9x9_totalEm.clear();
     _cl9x9_totalHad.clear();
     _cl9x9_totalEt.clear();
@@ -498,6 +514,7 @@ void Ntuplizer::Initialize()
     _cl7x7_isEndcap.clear();
     _cl7x7_tauMatchIdx.clear();
     _cl7x7_jetMatchIdx.clear();
+    _cl7x7_cl3dMatchIdx.clear();
     _cl7x7_totalEm.clear();
     _cl7x7_totalHad.clear();
     _cl7x7_totalEt.clear();
@@ -532,6 +549,7 @@ void Ntuplizer::Initialize()
     _cl5x5_isEndcap.clear();
     _cl5x5_tauMatchIdx.clear();
     _cl5x5_jetMatchIdx.clear();
+    _cl5x5_cl3dMatchIdx.clear();
     _cl5x5_totalEm.clear();
     _cl5x5_totalHad.clear();
     _cl5x5_totalEt.clear();
@@ -566,6 +584,7 @@ void Ntuplizer::Initialize()
     _cl5x9_isEndcap.clear();
     _cl5x9_tauMatchIdx.clear();
     _cl5x9_jetMatchIdx.clear();
+    _cl5x9_cl3dMatchIdx.clear();
     _cl5x9_totalEm.clear();
     _cl5x9_totalHad.clear();
     _cl5x9_totalEt.clear();
@@ -600,6 +619,7 @@ void Ntuplizer::Initialize()
     _cl5x7_isEndcap.clear();
     _cl5x7_tauMatchIdx.clear();
     _cl5x7_jetMatchIdx.clear();
+    _cl5x7_cl3dMatchIdx.clear();
     _cl5x7_totalEm.clear();
     _cl5x7_totalHad.clear();
     _cl5x7_totalEt.clear();
@@ -634,6 +654,7 @@ void Ntuplizer::Initialize()
     _cl3x7_isEndcap.clear();
     _cl3x7_tauMatchIdx.clear();
     _cl3x7_jetMatchIdx.clear();
+    _cl3x7_cl3dMatchIdx.clear();
     _cl3x7_totalEm.clear();
     _cl3x7_totalHad.clear();
     _cl3x7_totalEt.clear();
@@ -668,6 +689,7 @@ void Ntuplizer::Initialize()
     _cl3x5_isEndcap.clear();
     _cl3x5_tauMatchIdx.clear();
     _cl3x5_jetMatchIdx.clear();
+    _cl3x5_cl3dMatchIdx.clear();
     _cl3x5_totalEm.clear();
     _cl3x5_totalHad.clear();
     _cl3x5_totalEt.clear();
@@ -743,6 +765,10 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl3d_hoe",              &_cl3d_hoe);
     _tree -> Branch("cl3d_meanz",            &_cl3d_meanz);
     _tree -> Branch("cl3d_quality",          &_cl3d_quality);
+    _tree -> Branch("cl3d_puid",             &_cl3d_puid);
+    _tree -> Branch("cl3d_puidscore",        &_cl3d_puidscore);
+    _tree -> Branch("cl3d_pionid",           &_cl3d_pionid);
+    _tree -> Branch("cl3d_pionidscore",      &_cl3d_pionidscore);
     _tree -> Branch("cl3d_tauMatchIdx",      &_cl3d_tauMatchIdx);
     _tree -> Branch("cl3d_jetMatchIdx",      &_cl3d_jetMatchIdx);
 
@@ -758,14 +784,15 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl9x9_isEndcap",     &_cl9x9_isEndcap);
     _tree -> Branch("cl9x9_tauMatchIdx",  &_cl9x9_tauMatchIdx);
     _tree -> Branch("cl9x9_jetMatchIdx",  &_cl9x9_jetMatchIdx);
+    _tree -> Branch("cl9x9_cl3dMatchIdx", &_cl9x9_cl3dMatchIdx);
     _tree -> Branch("cl9x9_totalEm",      &_cl9x9_totalEm);
     _tree -> Branch("cl9x9_totalHad",     &_cl9x9_totalHad);
     _tree -> Branch("cl9x9_totalEt",      &_cl9x9_totalEt);
-    _tree -> Branch("cl9x9_totalEgEt",      &_cl9x9_totalEgEt);
+    _tree -> Branch("cl9x9_totalEgEt",    &_cl9x9_totalEgEt);
     _tree -> Branch("cl9x9_totalIem",     &_cl9x9_totalIem);
     _tree -> Branch("cl9x9_totalIhad",    &_cl9x9_totalIhad);
     _tree -> Branch("cl9x9_totalIet",     &_cl9x9_totalIet);
-    _tree -> Branch("cl9x9_totalEgIet",     &_cl9x9_totalEgIet);
+    _tree -> Branch("cl9x9_totalEgIet",   &_cl9x9_totalEgIet);
     _tree -> Branch("cl9x9_towerEta",     &_cl9x9_towerEta);
     _tree -> Branch("cl9x9_towerPhi",     &_cl9x9_towerPhi);
     _tree -> Branch("cl9x9_towerEm",      &_cl9x9_towerEm);
@@ -792,6 +819,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl7x7_isEndcap",     &_cl7x7_isEndcap);
     _tree -> Branch("cl7x7_tauMatchIdx",  &_cl7x7_tauMatchIdx);
     _tree -> Branch("cl7x7_jetMatchIdx",  &_cl7x7_jetMatchIdx);
+    _tree -> Branch("cl7x7_cl3dMatchIdx", &_cl7x7_cl3dMatchIdx);
     _tree -> Branch("cl7x7_totalEm",      &_cl7x7_totalEm);
     _tree -> Branch("cl7x7_totalHad",     &_cl7x7_totalHad);
     _tree -> Branch("cl7x7_totalEt",      &_cl7x7_totalEt);
@@ -826,6 +854,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x5_isEndcap",     &_cl5x5_isEndcap);
     _tree -> Branch("cl5x5_tauMatchIdx",  &_cl5x5_tauMatchIdx);
     _tree -> Branch("cl5x5_jetMatchIdx",  &_cl5x5_jetMatchIdx);
+    _tree -> Branch("cl5x5_cl3dMatchIdx", &_cl5x5_cl3dMatchIdx);
     _tree -> Branch("cl5x5_totalEm",      &_cl5x5_totalEm);
     _tree -> Branch("cl5x5_totalHad",     &_cl5x5_totalHad);
     _tree -> Branch("cl5x5_totalEt",      &_cl5x5_totalEt);
@@ -860,6 +889,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x9_isEndcap",     &_cl5x9_isEndcap);
     _tree -> Branch("cl5x9_tauMatchIdx",  &_cl5x9_tauMatchIdx);
     _tree -> Branch("cl5x9_jetMatchIdx",  &_cl5x9_jetMatchIdx);
+    _tree -> Branch("cl5x9_cl3dMatchIdx", &_cl5x9_cl3dMatchIdx);
     _tree -> Branch("cl5x9_totalEm",      &_cl5x9_totalEm);
     _tree -> Branch("cl5x9_totalHad",     &_cl5x9_totalHad);
     _tree -> Branch("cl5x9_totalEt",      &_cl5x9_totalEt);
@@ -894,6 +924,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x7_isEndcap",     &_cl5x7_isEndcap);
     _tree -> Branch("cl5x7_tauMatchIdx",  &_cl5x7_tauMatchIdx);
     _tree -> Branch("cl5x7_jetMatchIdx",  &_cl5x7_jetMatchIdx);
+    _tree -> Branch("cl5x7_cl3dMatchIdx", &_cl5x7_cl3dMatchIdx);
     _tree -> Branch("cl5x7_totalEm",      &_cl5x7_totalEm);
     _tree -> Branch("cl5x7_totalHad",     &_cl5x7_totalHad);
     _tree -> Branch("cl5x7_totalEt",      &_cl5x7_totalEt);
@@ -928,6 +959,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl3x7_isEndcap",     &_cl3x7_isEndcap);
     _tree -> Branch("cl3x7_tauMatchIdx",  &_cl3x7_tauMatchIdx);
     _tree -> Branch("cl3x7_jetMatchIdx",  &_cl3x7_jetMatchIdx);
+    _tree -> Branch("cl3x7_cl3dMatchIdx", &_cl3x7_cl3dMatchIdx);
     _tree -> Branch("cl3x7_totalEm",      &_cl3x7_totalEm);
     _tree -> Branch("cl3x7_totalHad",     &_cl3x7_totalHad);
     _tree -> Branch("cl3x7_totalEt",      &_cl3x7_totalEt);
@@ -962,6 +994,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl3x5_isEndcap",     &_cl3x5_isEndcap);
     _tree -> Branch("cl3x5_tauMatchIdx",  &_cl3x5_tauMatchIdx);
     _tree -> Branch("cl3x5_jetMatchIdx",  &_cl3x5_jetMatchIdx);
+    _tree -> Branch("cl3x5_cl3dMatchIdx", &_cl3x5_cl3dMatchIdx);
     _tree -> Branch("cl3x5_totalEm",      &_cl3x5_totalEm);
     _tree -> Branch("cl3x5_totalHad",     &_cl3x5_totalHad);
     _tree -> Branch("cl3x5_totalEt",      &_cl3x5_totalEt);
@@ -1716,6 +1749,318 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
 
     //***************************************************************************************
     //***************************************************************************************
+    // PERFORM GEOMETRICAL MATCHING BETWEEN CL3D AND CLTW IN THE ENDCAP
+
+    // Perform geometrical matching of 9x9 CaloClusters
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters9x9.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
+
+        if (abs(clu9x9.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+
+        int matchedHGCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = clu9x9.seedEta - hgclu.eta;
+            float dPhi = reco::deltaPhi(clu9x9.seedPhi, hgclu.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedHGCluIdx = hgcluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 9x9 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu9x9.totalIet,
+                    clu9x9.seedEta,
+                    clu9x9.seedPhi,
+                    clu9x9.totalIem,
+                    clu9x9.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedHGCluIdx);
+            }
+        }
+        if (matchedHGCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[cluIdx]);
+            writable_clu9x9.cl3dMatchIdx = matchedHGCluIdx;
+        }
+    }
+
+    // Perform geometrical matching of 7x7 CaloClusters
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters7x7.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
+
+        if (abs(clu7x7.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+
+        int matchedHGCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = clu7x7.seedEta - hgclu.eta;
+            float dPhi = reco::deltaPhi(clu7x7.seedPhi, hgclu.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedHGCluIdx = hgcluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 7x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu7x7.totalIet,
+                    clu7x7.seedEta,
+                    clu7x7.seedPhi,
+                    clu7x7.totalIem,
+                    clu7x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedHGCluIdx);
+            }
+        }
+        if (matchedHGCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[cluIdx]);
+            writable_clu7x7.cl3dMatchIdx = matchedHGCluIdx;
+        }
+    }
+
+    // Perform geometrical matching of 5x5 CaloClusters
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x5.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
+
+        if (abs(clu5x5.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+
+        int matchedHGCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = clu5x5.seedEta - hgclu.eta;
+            float dPhi = reco::deltaPhi(clu5x5.seedPhi, hgclu.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedHGCluIdx = hgcluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 5x5 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x5.totalIet,
+                    clu5x5.seedEta,
+                    clu5x5.seedPhi,
+                    clu5x5.totalIem,
+                    clu5x5.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedHGCluIdx);
+            }
+        }
+        if (matchedHGCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[cluIdx]);
+            writable_clu5x5.cl3dMatchIdx = matchedHGCluIdx;
+        }
+    }
+
+    // Perform geometrical matching of 5x9 CaloClusters
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x9.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
+
+        if (abs(clu5x9.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+
+        int matchedHGCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = clu5x9.seedEta - hgclu.eta;
+            float dPhi = reco::deltaPhi(clu5x9.seedPhi, hgclu.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedHGCluIdx = hgcluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 5x9 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x9.totalIet,
+                    clu5x9.seedEta,
+                    clu5x9.seedPhi,
+                    clu5x9.totalIem,
+                    clu5x9.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedHGCluIdx);
+            }
+        }
+        if (matchedHGCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[cluIdx]);
+            writable_clu5x9.cl3dMatchIdx = matchedHGCluIdx;
+        }
+    }
+
+    // Perform geometrical matching of 5x7 CaloClusters
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x7.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu5x7 = CaloClusters5x7[cluIdx];
+
+        if (abs(clu5x7.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+
+        int matchedHGCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = clu5x7.seedEta - hgclu.eta;
+            float dPhi = reco::deltaPhi(clu5x7.seedPhi, hgclu.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedHGCluIdx = hgcluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 5x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu5x7.totalIet,
+                    clu5x7.seedEta,
+                    clu5x7.seedPhi,
+                    clu5x7.totalIem,
+                    clu5x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedHGCluIdx);
+            }
+        }
+        if (matchedHGCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu5x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[cluIdx]);
+            writable_clu5x7.cl3dMatchIdx = matchedHGCluIdx;
+        }
+    }
+
+    // Perform geometrical matching of 3x7 CaloClusters
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x7.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu3x7 = CaloClusters3x7[cluIdx];
+
+        if (abs(clu3x7.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+
+        int matchedHGCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = clu3x7.seedEta - hgclu.eta;
+            float dPhi = reco::deltaPhi(clu3x7.seedPhi, hgclu.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedHGCluIdx = hgcluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 3x7 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu3x7.totalIet,
+                    clu3x7.seedEta,
+                    clu3x7.seedPhi,
+                    clu3x7.totalIem,
+                    clu3x7.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedHGCluIdx);
+            }
+        }
+        if (matchedHGCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu3x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[cluIdx]);
+            writable_clu3x7.cl3dMatchIdx = matchedHGCluIdx;
+        }
+    }
+
+    // Perform geometrical matching of 3x5 CaloClusters
+    for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x5.size(); cluIdx++)
+    {
+        TowerHelper::TowerCluster clu3x5 = CaloClusters3x5[cluIdx];
+
+        if (abs(clu3x5.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+
+        int matchedHGCluIdx = -99;
+        float dR2min = 0.25;
+        for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
+        {
+            HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
+
+            float dEta = clu3x5.seedEta - hgclu.eta;
+            float dPhi = reco::deltaPhi(clu3x5.seedPhi, hgclu.phi);
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 <= dR2min)
+            {
+                dR2min = dR2;
+                matchedHGCluIdx = hgcluIdx;
+            }
+
+            if (DEBUG)
+            {
+                printf("         - 3x5 TOWER CLU et %i eta %f phi %f em %i had %i dEta %f dPhi %f dR2 %f (%i)\n",
+                    clu3x5.totalIet,
+                    clu3x5.seedEta,
+                    clu3x5.seedPhi,
+                    clu3x5.totalIem,
+                    clu3x5.totalIhad,
+                    dEta,
+                    dPhi,
+                    dR2,
+                    matchedHGCluIdx);
+            }
+        }
+        if (matchedHGCluIdx != -99)
+        {
+            TowerHelper::TowerCluster& writable_clu3x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[cluIdx]);
+            writable_clu3x5.cl3dMatchIdx = matchedHGCluIdx;
+        }
+    }
+
+    //***************************************************************************************
+    //***************************************************************************************
     // FILL TTREE 
 
     // Fill GenTau branches
@@ -1772,6 +2117,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl9x9_isEndcap.push_back(clu9x9.isEndcap);
         _cl9x9_tauMatchIdx.push_back(clu9x9.tauMatchIdx);
         _cl9x9_jetMatchIdx.push_back(clu9x9.jetMatchIdx);
+        _cl9x9_cl3dMatchIdx.push_back(clu9x9.cl3dMatchIdx);
         _cl9x9_totalEm.push_back(clu9x9.totalEm);
         _cl9x9_totalHad.push_back(clu9x9.totalHad);
         _cl9x9_totalEt.push_back(clu9x9.totalEt);
@@ -1848,6 +2194,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl7x7_isEndcap.push_back(clu7x7.isEndcap);
         _cl7x7_tauMatchIdx.push_back(clu7x7.tauMatchIdx);
         _cl7x7_jetMatchIdx.push_back(clu7x7.jetMatchIdx);
+        _cl7x7_cl3dMatchIdx.push_back(clu7x7.cl3dMatchIdx);
         _cl7x7_totalEm.push_back(clu7x7.totalEm);
         _cl7x7_totalHad.push_back(clu7x7.totalHad);
         _cl7x7_totalEt.push_back(clu7x7.totalEt);
@@ -1924,6 +2271,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x5_isEndcap.push_back(clu5x5.isEndcap);
         _cl5x5_tauMatchIdx.push_back(clu5x5.tauMatchIdx);
         _cl5x5_jetMatchIdx.push_back(clu5x5.jetMatchIdx);
+        _cl5x5_cl3dMatchIdx.push_back(clu5x5.cl3dMatchIdx);
         _cl5x5_totalEm.push_back(clu5x5.totalEm);
         _cl5x5_totalHad.push_back(clu5x5.totalHad);
         _cl5x5_totalEt.push_back(clu5x5.totalEt);
@@ -2000,6 +2348,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x9_isEndcap.push_back(clu5x9.isEndcap);
         _cl5x9_tauMatchIdx.push_back(clu5x9.tauMatchIdx);
         _cl5x9_jetMatchIdx.push_back(clu5x9.jetMatchIdx);
+        _cl5x9_cl3dMatchIdx.push_back(clu5x9.cl3dMatchIdx);
         _cl5x9_totalEm.push_back(clu5x9.totalEm);
         _cl5x9_totalHad.push_back(clu5x9.totalHad);
         _cl5x9_totalEt.push_back(clu5x9.totalEt);
@@ -2076,6 +2425,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x7_isEndcap.push_back(clu5x7.isEndcap);
         _cl5x7_tauMatchIdx.push_back(clu5x7.tauMatchIdx);
         _cl5x7_jetMatchIdx.push_back(clu5x7.jetMatchIdx);
+        _cl5x7_cl3dMatchIdx.push_back(clu5x7.cl3dMatchIdx);
         _cl5x7_totalEm.push_back(clu5x7.totalEm);
         _cl5x7_totalHad.push_back(clu5x7.totalHad);
         _cl5x7_totalEt.push_back(clu5x7.totalEt);
@@ -2152,6 +2502,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl3x7_isEndcap.push_back(clu3x7.isEndcap);
         _cl3x7_tauMatchIdx.push_back(clu3x7.tauMatchIdx);
         _cl3x7_jetMatchIdx.push_back(clu3x7.jetMatchIdx);
+        _cl3x7_cl3dMatchIdx.push_back(clu3x7.cl3dMatchIdx);
         _cl3x7_totalEm.push_back(clu3x7.totalEm);
         _cl3x7_totalHad.push_back(clu3x7.totalHad);
         _cl3x7_totalEt.push_back(clu3x7.totalEt);
@@ -2228,6 +2579,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl3x5_isEndcap.push_back(clu3x5.isEndcap);
         _cl3x5_tauMatchIdx.push_back(clu3x5.tauMatchIdx);
         _cl3x5_jetMatchIdx.push_back(clu3x5.jetMatchIdx);
+        _cl3x5_cl3dMatchIdx.push_back(clu3x5.cl3dMatchIdx);
         _cl3x5_totalEm.push_back(clu3x5.totalEm);
         _cl3x5_totalHad.push_back(clu3x5.totalHad);
         _cl3x5_totalEt.push_back(clu3x5.totalEt);
@@ -2311,6 +2663,10 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl3d_hoe.push_back(hgclu.hoe);
         _cl3d_meanz.push_back(hgclu.meanz);
         _cl3d_quality.push_back(hgclu.quality);
+        _cl3d_puid.push_back(hgclu.puId);
+        _cl3d_puidscore.push_back(hgclu.puIdScore);
+        _cl3d_pionid.push_back(hgclu.pionId);
+        _cl3d_pionidscore.push_back(hgclu.pionIdScore);
         _cl3d_tauMatchIdx.push_back(hgclu.tauMatchIdx);
         _cl3d_jetMatchIdx.push_back(hgclu.jetMatchIdx);
     }
