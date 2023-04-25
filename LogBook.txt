@@ -24,6 +24,11 @@ L1TauMinatorNtuples
         * fxed issue with the absolute value
         * efficiency in the endcap is very bad when requiring the geometrical matching of clusters
 
+    v3
+        * new ntuple version
+            -> same as v2 + cl3d puId + endcap clusters matching 
+        * new Phase2Fall22 125X MC samples
+
 
 **************************************************************
 **************************************************************
