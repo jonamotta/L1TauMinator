@@ -36,7 +36,8 @@ class CaloTowerHandler : public edm::stream::EDProducer<> {
         int tower_diEta(int &iEta_1, int &iEta_2) const;
         int endcap_iphi(float &phi) const;
         int endcap_ieta(float &eta) const;
-        std::vector<TowerHelper::TowerHit> sortPicLike(std::vector<TowerHelper::TowerHit>) const;
+        std::vector<TowerHelper::TowerHit> sortPicLikeI(std::vector<TowerHelper::TowerHit>) const;
+        std::vector<TowerHelper::TowerHit> sortPicLikeF(std::vector<TowerHelper::TowerHit>) const;
 
         //----tokens and handles----
         edm::EDGetTokenT<l1tp2::CaloTowerCollection> l1TowersToken;
@@ -84,7 +85,7 @@ CaloTowerHandler::CaloTowerHandler(const edm::ParameterSet& iConfig)
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters3x7");
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters3x5");
 
-    if (DEBUG) { std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , HcalTpEtMin = " << HcalEtMinForClustering << " , EcalTpEtMin = " << EcalEtMinForClustering << std::endl; }
+    std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , HcalTpEtMin = " << HcalEtMinForClustering << " , EcalTpEtMin = " << EcalEtMinForClustering << std::endl;
 }
 
 void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
@@ -96,7 +97,12 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     int warnings = 0;
     for (auto &hit : *l1CaloTowerHandle.product())
     {
-        if (hit.towerIEta() == -1016 && hit.towerIPhi() == -962) { warnings += 1; }
+        // skip this weird towers and store warning
+        if (hit.towerIEta() == -1016 && hit.towerIPhi() == -962)
+        {
+            warnings += 1;
+            continue;
+        }
 
         TowerHelper::TowerHit l1Hit;
         l1Hit.isBarrel     = true;
@@ -118,7 +124,6 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     }
     if (warnings != 0) { std::cout << " ** WARNING : FOUND " << warnings << " TOWERS WITH towerIeta=-1016 AND towerIphi=-962" << std::endl; }
 
-    int maxIetaHGCal = 0;
     iEvent.getByToken(hgcalTowersToken, hgcalTowersHandle);
     for (auto &hit : *hgcalTowersHandle.product())
     {
@@ -136,70 +141,22 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         l1Hit.towerIet     = floor( (l1Hit.towerEm + l1Hit.towerHad)/0.5 );
 
         l1CaloTowers.push_back(l1Hit);
-
-        if (l1Hit.towerIeta > maxIetaHGCal) { maxIetaHGCal = l1Hit.towerIeta; }
     }
 
-    iEvent.getByToken(hcalDigisToken, hcalDigisHandle);
-    const auto& decoder = eSetup.getData(decoderTag);
-    for (const auto& hit : *hcalDigisHandle.product())
-    {
-        HcalTrigTowerDetId id = hit.id();
-        
-        // Only doing HF so skip outside range
-        if (abs(id.ieta()) < l1t::CaloTools::kHFBegin) { continue; }
-        if (abs(id.ieta()) > l1t::CaloTools::kHFEnd)   { continue; }    
-
-        // get the energy deposit -> divide it by 2 to account fro iphi splitting
-        float hadEt = decoder.hcaletValue(hit.id(), hit.t0()) / 2.;
-        
-        // shift HF ieta to fit the HGCAL towers
-        int ietaShift = maxIetaHGCal - l1t::CaloTools::kHFBegin;
-
-        TowerHelper::TowerHit l1Hit_A;
-        l1Hit_A.isBarrel     = false;
-        l1Hit_A.towerEta     = l1t::CaloTools::towerEta(id.ieta());
-        l1Hit_A.towerPhi     = l1t::CaloTools::towerPhi(id.ieta(), id.iphi());
-        l1Hit_A.towerEm      = 0.;
-        l1Hit_A.towerHad     = hadEt;
-        l1Hit_A.towerEt      = hadEt;
-        l1Hit_A.towerIeta    = id.ieta() + ietaShift * std::copysign(1, l1Hit_A.towerEta);
-        l1Hit_A.towerIphi    = id.iphi();
-        l1Hit_A.towerIem     = 0;
-        l1Hit_A.towerIhad    = floor( hadEt/0.5 );
-        l1Hit_A.towerIet     = floor( hadEt/0.5 );
-
-        TowerHelper::TowerHit l1Hit_B;
-        l1Hit_B.isBarrel     = false;
-        l1Hit_B.towerEta     = l1t::CaloTools::towerEta(id.ieta());
-        l1Hit_B.towerPhi     = l1t::CaloTools::towerPhi(id.ieta(), id.iphi()) + 0.0872664; // account for iphi splitting
-        l1Hit_B.towerEm      = 0.;
-        l1Hit_B.towerHad     = hadEt;
-        l1Hit_B.towerEt      = hadEt;
-        l1Hit_B.towerIeta    = id.ieta() + ietaShift * std::copysign(1, l1Hit_B.towerEta);
-        l1Hit_B.towerIphi    = id.iphi() + 1; // account for iphi splitting
-        l1Hit_B.towerIem     = 0;
-        l1Hit_B.towerIhad    = floor( hadEt/0.5 );
-        l1Hit_B.towerIet     = floor( hadEt/0.5 );
-
-        // the seeding happens only up to ieta 35 (endcap limit) so no need to store TT for higher than that
-        if (abs(l1Hit_A.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_A);
-        if (abs(l1Hit_B.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_B);
-    }
-
-    // Fill missing towers in HGCAL due to current simulation limitation (because right now they are produced starting from modules and some TT do not have a centered module in front of them)
-    // --> just fill with zeros (JB approves)
+    // Fill missing towers in HGCal due to current simulation limitation (because right now they are produced starting from modules
+    // and some TT do not have a centered module in front of them) --> just fill with zeros (JB approves)
+    // At the same time this will fill the missing towers from IEta=-1016 IPhi=-962
     std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
     {
         if (a.towerIeta == b.towerIeta) { return a.towerIphi < b.towerIphi; }
         else                            { return a.towerIeta < b.towerIeta; }
     });
-    int iEtaProgression = -39;
+    int iEtaProgression = -35;
     int iPhiProgression = 1;
     for (auto &l1CaloTower : l1CaloTowers)
     {
         // skip towers with the weird IEta=-1016 IPhi=-962 values and they will also be filled with zeros
-        if (l1CaloTower.towerIeta < -39) { continue; }
+        if (l1CaloTower.towerIeta < -35) { continue; }
 
         int iPhiDiff = l1CaloTower.towerIphi - iPhiProgression;
         int max = iPhiProgression+iPhiDiff;
@@ -214,7 +171,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 l1Hit.l1egTowerEt  = 0;
                 l1Hit.l1egTowerIet = 0;
                 l1Hit.nL1eg        = 0;
-                l1Hit.towerEta     = iEtaProgression * 0.0845;
+                // 0.043650 == first tower eta
+                // 0.08730 == eta step in the barrel
+                // 0.08080 == eta step between barrel and endcap
+                // 0.08450 == eta step in the endcap
+                int absEta = abs(iEtaProgression);
+                int sgnEta = std::copysign(1,iEtaProgression);
+                if (absEta<=17) { l1Hit.towerEta = sgnEta * (0.043650 + (absEta-1) * 0.08730); }
+                else            { l1Hit.towerEta = sgnEta * (0.043650 + 16 * 0.08730 + 0.08080 + (absEta-18) * 0.08450); }
                 if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
                 else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
                 l1Hit.towerEm      = 0.0;
@@ -245,7 +209,14 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                     l1Hit.l1egTowerEt  = 0;
                     l1Hit.l1egTowerIet = 0;
                     l1Hit.nL1eg        = 0;
-                    l1Hit.towerEta     = iEtaProgression * 0.0845;
+                    // 0.043650 == first tower eta
+                    // 0.08730 == eta step in the barrel
+                    // 0.08080 == eta step between barrel and endcap
+                    // 0.08450 == eta step in the endcap
+                    int absEta = abs(iEtaProgression);
+                    int sgnEta = std::copysign(1,iEtaProgression);
+                    if (absEta<=17) { l1Hit.towerEta = sgnEta * (0.043650 + (absEta-1) * 0.08730); }
+                    else            { l1Hit.towerEta = sgnEta * (0.043650 + 16 * 0.08730 + 0.08080 + (absEta-18) * 0.08450); }
                     if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
                     else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
                     l1Hit.towerEm      = 0.0;
@@ -278,7 +249,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }
         if (max == 73) { iPhiProgression = l1CaloTower.towerIphi+1; } // hack to account for circularity 72->1
 
-        if (iEtaProgression>39) { break; }
+        if (iEtaProgression>35) { break; }
     }
 
     if (DEBUG)
@@ -328,8 +299,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
 
     // loop for 9x9 TowerClusters seeds finding
-    bool caloJetSeedingFinished = false;
-    while (!caloJetSeedingFinished)
+    bool caloTauSeedingFinished = false;
+    while (!caloTauSeedingFinished)
     {
         TowerHelper::TowerCluster clu9x9; clu9x9.InitHits();
 
@@ -337,8 +308,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         {
             if (DEBUG) { std::cout << " // Ieta " << l1CaloTower.towerIeta << " - Iphi " << l1CaloTower.towerIphi; }
 
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+            // skip seeding in towers that would make the cluster extend in HF
+            if (abs(l1CaloTower.towerEta) > 2.65) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -349,7 +320,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 // the leading unused tower has ET < min, stop jet clustering
                 if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    caloJetSeedingFinished = true;
+                    caloTauSeedingFinished = true;
                     break;
                 }
                 l1CaloTower.stale4seed = true;
@@ -387,11 +358,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu9x9.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu9x9.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu9x9.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu9x9.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu9x9.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu9x9.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu9x9.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= 8 && abs(d_iPhi) <= 8) { l1CaloTower.stale4seed = true; }
+            if ((abs(d_iEta) <= 8 && abs(d_iPhi) <= 8) || (abs(d_Eta) < 0.7 && abs(d_Phi) < 0.7)) { l1CaloTower.stale4seed = true; }
     
         } // end for loop over TPs
 
@@ -414,11 +399,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (l1CaloTower.stale) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu9x9.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu9x9.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu9x9.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu9x9.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu9x9.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu9x9.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu9x9.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // cluster all towers in a 9x9 towers mask
-            if (abs(d_iEta) <= 4 && abs(d_iPhi) <= 4)
+            if ((abs(d_iEta) <= 4 && abs(d_iPhi) <= 4) || (abs(d_Eta) < 0.4 && abs(d_Phi) < 0.4))
             {
                 if (DEBUG) { std::cout << " CLUSTERED"; }
 
@@ -442,7 +441,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }// end for loop of TP clustering
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu9x9.towerHits);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF(clu9x9.towerHits);
         clu9x9.InitHits(); clu9x9.towerHits = sortedHits;
 
         if (sortedHits.size() != 81) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 81 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
@@ -462,15 +461,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
 
     // loop for 7x7 TowerClusters seeds finding
-    caloJetSeedingFinished = false;
-    while (!caloJetSeedingFinished)
+    caloTauSeedingFinished = false;
+    while (!caloTauSeedingFinished)
     {
         TowerHelper::TowerCluster clu7x7; clu7x7.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+            // skip seeding in towers that would make the cluster extend in HF
+            if (abs(l1CaloTower.towerEta) > 2.75) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -481,7 +480,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 // the leading unused tower has ET < min, stop jet clustering
                 if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    caloJetSeedingFinished = true;
+                    caloTauSeedingFinished = true;
                     break;
                 }
                 l1CaloTower.stale4seed = true;
@@ -517,11 +516,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu7x7.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu7x7.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu7x7.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu7x7.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu7x7.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu7x7.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu7x7.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= 6 && abs(d_iPhi) <= 6) { l1CaloTower.stale4seed = true; }
+            if ((abs(d_iEta) <= 6 && abs(d_iPhi) <= 6) || (abs(d_Eta) < 0.55 && abs(d_Phi) < 0.55)) { l1CaloTower.stale4seed = true; }
     
         } // end for loop over TPs
 
@@ -538,11 +551,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (l1CaloTower.stale) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu7x7.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu7x7.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu7x7.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu7x7.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu7x7.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu7x7.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu7x7.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // cluster all towers in a 7x7 towers mask
-            if (abs(d_iEta) <= 3 && abs(d_iPhi) <= 3)
+            if ((abs(d_iEta) <= 3 && abs(d_iPhi) <= 3) || (abs(d_Eta) < 0.3 && abs(d_Phi) < 0.3))
             {
                 l1CaloTower.stale = true;
 
@@ -563,7 +590,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }// end for loop of TP clustering
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu7x7.towerHits);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF(clu7x7.towerHits);
         clu7x7.InitHits(); clu7x7.towerHits = sortedHits;
 
         if (sortedHits.size() != 49) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 49 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
@@ -583,15 +610,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
 
     // loop for 5x5 TowerClusters seeds finding
-    caloJetSeedingFinished = false;
-    while (!caloJetSeedingFinished)
+    caloTauSeedingFinished = false;
+    while (!caloTauSeedingFinished)
     {
         TowerHelper::TowerCluster clu5x5; clu5x5.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+            // skip seeding in towers that would make the cluster extend in HF
+            if (abs(l1CaloTower.towerEta) > 2.83) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -602,7 +629,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 // the leading unused tower has ET < min, stop jet clustering
                 if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    caloJetSeedingFinished = true;
+                    caloTauSeedingFinished = true;
                     break;
                 }
                 l1CaloTower.stale4seed = true;
@@ -638,11 +665,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu5x5.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu5x5.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu5x5.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu5x5.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu5x5.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu5x5.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu5x5.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= 4 && abs(d_iPhi) <= 4) { l1CaloTower.stale4seed = true; }
+            if ((abs(d_iEta) <= 4 && abs(d_iPhi) <= 4) || (abs(d_Eta) < 0.35 && abs(d_Phi) < 0.35)) { l1CaloTower.stale4seed = true; }
     
         } // end for loop over TPs
 
@@ -659,11 +700,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (l1CaloTower.stale) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu5x5.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu5x5.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu5x5.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu5x5.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu5x5.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu5x5.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu5x5.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // cluster all towers in a 5x5 towers mask
-            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 2)
+            if ((abs(d_iEta) <= 2 && abs(d_iPhi) <= 2) || (abs(d_Eta) < 0.2 && abs(d_Phi) < 0.2))
             {
                 l1CaloTower.stale = true;
 
@@ -684,7 +739,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }// end for loop of TP clustering
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x5.towerHits);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF(clu5x5.towerHits);
         clu5x5.InitHits(); clu5x5.towerHits = sortedHits;
 
         if (sortedHits.size() != 25) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 25 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
@@ -704,15 +759,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
 
     // loop for 5x9 TowerClusters seeds finding
-    caloJetSeedingFinished = false;
-    while (!caloJetSeedingFinished)
+    caloTauSeedingFinished = false;
+    while (!caloTauSeedingFinished)
     {
         TowerHelper::TowerCluster clu5x9; clu5x9.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+            // skip seeding in towers that would make the cluster extend in HF
+            if (abs(l1CaloTower.towerEta) > 2.83) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -723,7 +778,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 // the leading unused tower has ET < min, stop jet clustering
                 if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    caloJetSeedingFinished = true;
+                    caloTauSeedingFinished = true;
                     break;
                 }
                 l1CaloTower.stale4seed = true;
@@ -759,11 +814,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu5x9.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu5x9.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu5x9.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu5x9.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu5x9.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu5x9.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu5x9.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= 4 && abs(d_iPhi) <= 8) { l1CaloTower.stale4seed = true; }
+            if ((abs(d_iEta) <= 4 && abs(d_iPhi) <= 8) || (abs(d_Eta) < 0.35 && abs(d_Phi) < 0.7)) { l1CaloTower.stale4seed = true; }
     
         } // end for loop over TPs
 
@@ -780,11 +849,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (l1CaloTower.stale) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu5x9.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu5x9.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu5x9.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu5x9.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu5x9.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu5x9.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu5x9.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // cluster all towers in a 5x9 towers mask
-            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 4)
+            if ((abs(d_iEta) <= 2 && abs(d_iPhi) <= 4) || (abs(d_Eta) < 0.2 && abs(d_Phi) < 0.4))
             {
                 l1CaloTower.stale = true;
 
@@ -805,13 +888,12 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }// end for loop of TP clustering
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x9.towerHits);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF(clu5x9.towerHits);
         clu5x9.InitHits(); clu5x9.towerHits = sortedHits;
 
         if (sortedHits.size() != 45) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 45 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
 
     }// end while loop of 5x9 TowerClusters creation
-
 
     /********************************************************************************************
     * Begin with making TowerClusters in 5x7 grid based on all energy not included in L1EG Objs.
@@ -825,15 +907,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
 
     // loop for 5x7 TowerClusters seeds finding
-    caloJetSeedingFinished = false;
-    while (!caloJetSeedingFinished)
+    caloTauSeedingFinished = false;
+    while (!caloTauSeedingFinished)
     {
         TowerHelper::TowerCluster clu5x7; clu5x7.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+            // skip seeding in towers that would make the cluster extend in HF
+            if (abs(l1CaloTower.towerEta) > 2.83) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -844,7 +926,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 // the leading unused tower has ET < min, stop jet clustering
                 if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    caloJetSeedingFinished = true;
+                    caloTauSeedingFinished = true;
                     break;
                 }
                 l1CaloTower.stale4seed = true;
@@ -880,11 +962,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu5x7.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu5x7.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu5x7.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu5x7.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu5x7.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu5x7.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu5x7.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= 4 && abs(d_iPhi) <= 6) { l1CaloTower.stale4seed = true; }
+            if ((abs(d_iEta) <= 4 && abs(d_iPhi) <= 6) || (abs(d_Eta) < 0.35 && abs(d_Phi) < 0.55)) { l1CaloTower.stale4seed = true; }
     
         } // end for loop over TPs
 
@@ -901,11 +997,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (l1CaloTower.stale) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu5x7.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu5x7.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu5x7.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu5x7.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu5x7.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu5x7.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu5x7.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // cluster all towers in a 5x7 towers mask
-            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 3)
+            if ((abs(d_iEta) <= 2 && abs(d_iPhi) <= 3) || (abs(d_Eta) < 0.2 && abs(d_Phi) < 0.3))
             {
                 l1CaloTower.stale = true;
 
@@ -926,7 +1036,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }// end for loop of TP clustering
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu5x7.towerHits);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF(clu5x7.towerHits);
         clu5x7.InitHits(); clu5x7.towerHits = sortedHits;
 
         if (sortedHits.size() != 35) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 35 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
@@ -946,15 +1056,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
 
     // loop for 3x7 TowerClusters seeds finding
-    caloJetSeedingFinished = false;
-    while (!caloJetSeedingFinished)
+    caloTauSeedingFinished = false;
+    while (!caloTauSeedingFinished)
     {
         TowerHelper::TowerCluster clu3x7; clu3x7.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+            // skip seeding in towers that would make the cluster extend in HF
+            if (abs(l1CaloTower.towerEta) > 2.91) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -965,7 +1075,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 // the leading unused tower has ET < min, stop jet clustering
                 if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    caloJetSeedingFinished = true;
+                    caloTauSeedingFinished = true;
                     break;
                 }
                 l1CaloTower.stale4seed = true;
@@ -1001,11 +1111,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu3x7.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu3x7.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu3x7.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu3x7.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu3x7.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu3x7.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu3x7.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 6) { l1CaloTower.stale4seed = true; }
+            if ((abs(d_iEta) <= 2 && abs(d_iPhi) <= 6) || (abs(d_Eta) < 0.2 && abs(d_Phi) < 0.55)) { l1CaloTower.stale4seed = true; }
     
         } // end for loop over TPs
 
@@ -1022,11 +1146,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (l1CaloTower.stale) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu3x7.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu3x7.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu3x7.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu3x7.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu3x7.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu3x7.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu3x7.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // cluster all towers in a 3x7 towers mask
-            if (abs(d_iEta) <= 1 && abs(d_iPhi) <= 3)
+            if ((abs(d_iEta) <= 1 && abs(d_iPhi) <= 3) || (abs(d_Eta) < 0.13 && abs(d_Phi) < 0.3))
             {
                 l1CaloTower.stale = true;
 
@@ -1047,7 +1185,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }// end for loop of TP clustering
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu3x7.towerHits);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF(clu3x7.towerHits);
         clu3x7.InitHits(); clu3x7.towerHits = sortedHits;
 
         if (sortedHits.size() != 21) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 21 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
@@ -1067,15 +1205,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
 
     // loop for 3x5 TowerClusters seeds finding
-    caloJetSeedingFinished = false;
-    while (!caloJetSeedingFinished)
+    caloTauSeedingFinished = false;
+    while (!caloTauSeedingFinished)
     {
         TowerHelper::TowerCluster clu3x5; clu3x5.InitHits();
 
         for (auto &l1CaloTower : l1CaloTowers)
         {
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
+            // skip seeding in towers that would make the cluster extend in HF
+            if (abs(l1CaloTower.towerEta) > 2.91) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -1086,7 +1224,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 // the leading unused tower has ET < min, stop jet clustering
                 if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    caloJetSeedingFinished = true;
+                    caloTauSeedingFinished = true;
                     break;
                 }
                 l1CaloTower.stale4seed = true;
@@ -1122,11 +1260,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu3x5.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu3x5.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu3x5.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu3x5.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu3x5.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu3x5.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu3x5.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= 2 && abs(d_iPhi) <= 4) { l1CaloTower.stale4seed = true; }
+            if ((abs(d_iEta) <= 2 && abs(d_iPhi) <= 4) || (abs(d_Eta) < 0.2 && abs(d_Phi) < 0.35)) { l1CaloTower.stale4seed = true; }
     
         } // end for loop over TPs
 
@@ -1143,11 +1295,25 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (l1CaloTower.stale) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_diEta(clu3x5.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_diPhi(clu3x5.seedIphi, l1CaloTower.towerIphi);
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel
+            if (clu3x5.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_diEta(clu3x5.seedIeta, l1CaloTower.towerIeta);
+                d_iPhi = tower_diPhi(clu3x5.seedIphi, l1CaloTower.towerIphi);
+            }
+            // use eta/phi in HGCal
+            else
+            {
+                d_Eta = clu3x5.seedEta - l1CaloTower.towerEta;
+                d_Phi = reco::deltaPhi(clu3x5.seedPhi, l1CaloTower.towerPhi);
+            }
 
             // cluster all towers in a 3x5 towers mask
-            if (abs(d_iEta) <= 1 && abs(d_iPhi) <= 2)
+            if ((abs(d_iEta) <= 1 && abs(d_iPhi) <= 2) || (abs(d_Eta) < 0.13 && abs(d_Phi) < 0.22))
             {
                 l1CaloTower.stale = true;
 
@@ -1168,7 +1334,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         }// end for loop of TP clustering
 
         // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(clu3x5.towerHits);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF(clu3x5.towerHits);
         clu3x5.InitHits(); clu3x5.towerHits = sortedHits;
 
         if (sortedHits.size() != 15) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 15 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
@@ -1261,9 +1427,15 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             std::cout << " -- clu 5x9 seed " << " , eta " << clu5x9.seedIeta << " phi " << clu5x9.seedIphi << std::endl;
             std::cout << " -- clu 5x9 seed " << " , isBarrel " << clu5x9.isBarrel << " isEndcap " << clu5x9.isEndcap << " isOverlap " << clu5x9.isOverlap << std::endl;
             std::cout << " -- clu 5x9 towers etas (" << clu5x9.towerHits.size() << ") [";
-            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout  << ", " << clu5x9.towerHits[j].towerIeta; }
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout  << ", " << clu5x9.towerHits[j].towerEta; }
             std::cout << "]" << std::endl;
             std::cout << " -- clu 5x9 towers phis (" << clu5x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout << ", " << clu5x9.towerHits[j].towerPhi; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 5x9 towers ietas (" << clu5x9.towerHits.size() << ") [";
+            for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout  << ", " << clu5x9.towerHits[j].towerIeta; }
+            std::cout << "]" << std::endl;
+            std::cout << " -- clu 5x9 towers iphis (" << clu5x9.towerHits.size() << ") [";
             for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout << ", " << clu5x9.towerHits[j].towerIphi; }
             std::cout << "]" << std::endl;
             std::cout << " -- clu 5x9 towers ems (" << clu5x9.towerHits.size() << ") [";
@@ -1393,20 +1565,38 @@ int CaloTowerHandler::endcap_iphi(float &phi) const
 
 int CaloTowerHandler::endcap_ieta(float &eta) const
 {
-    float eta_step = 0.0845;
+    float eta_step = 0.08450;
     return floor(abs(eta)/eta_step) * std::copysign(1,eta);
 }
 
-std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLike(std::vector<TowerHelper::TowerHit> towerHits) const
+std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLikeF(std::vector<TowerHelper::TowerHit> towerHits) const
+{
+    std::sort(begin(towerHits), end(towerHits), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
+    { 
+        // compute the difference in eta instead of direct comparison to account for possible little differences in the eta position
+        // (mainly due to all the playing around that happens at the beginning to fill zeros and missing towers)
+        if (abs(a.towerEta - b.towerEta) < 0.001)
+        {
+            if ((a.towerPhi < -2.4 && b.towerPhi > 2.4) || (b.towerPhi < -2.4 && a.towerPhi > 2.4))
+            {
+                if (a.towerPhi * b.towerPhi < 0) { return a.towerPhi > b.towerPhi; }
+                else                             { return a.towerPhi < b.towerPhi; }
+            }
+            
+            else { return a.towerPhi < b.towerPhi; }
+        }
+        else { return a.towerEta < b.towerEta; }
+    });
+
+    return towerHits;
+}
+
+std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLikeI(std::vector<TowerHelper::TowerHit> towerHits) const
 {
     std::sort(begin(towerHits), end(towerHits), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
     { 
         if (a.towerIeta == b.towerIeta)
         {
-            // if      ((a.towerIphi>=65 && a.towerIphi<=72) && (b.towerIphi>=1 && b.towerIphi<=8)) { return a.towerIphi > b.towerIphi; }
-            // else if ((b.towerIphi>=65 && b.towerIphi<=72) && (a.towerIphi>=1 && a.towerIphi<=8)) { return a.towerIphi > b.towerIphi; }
-            // else                                                                                 { return a.towerIphi < b.towerIphi; }
-
             if (((a.towerIphi>=65 && a.towerIphi<=72) && (b.towerIphi>=1 && b.towerIphi<=8)) ||
                 ((b.towerIphi>=65 && b.towerIphi<=72) && (a.towerIphi>=1 && a.towerIphi<=8)))   { return a.towerIphi > b.towerIphi; }
             
