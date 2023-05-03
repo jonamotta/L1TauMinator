@@ -8,14 +8,14 @@ namespace TauHelper
 {
     class Tau {
         public:
-        float eta = 0.;
-        float phi = 0.;
-        float pt = 0.;
+        float eta = -99.;
+        float phi = -99.;
+        float pt = -99.;
 
         bool isBarrel = false;
         bool isEndcap = false;
 
-        float IDscore = 0.;
+        float IDscore = -99.;
     };
 
     typedef std::vector<Tau> TausCollection;
