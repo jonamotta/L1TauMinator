@@ -1,3 +1,4 @@
+from optparse import OptionParser
 import os
 
 def chunks(l, n):
@@ -24,6 +25,12 @@ def splitInBlocks (l, n):
 
 ##################################################################
 
+parser = OptionParser()
+parser.add_option("--seedEtCut", dest="seedEtCut", type=float, default=2.5)
+(options, args) = parser.parse_args()
+
+seedEtCutTag = 'seedEtCut'+str(int(options.seedEtCut))+'p'+str(int((options.seedEtCut-int(options.seedEtCut))*10))
+
 version = "3"
 
 infile_base  = os.getcwd()+'/../inputFiles/'
@@ -39,15 +46,19 @@ list_njobs = []
 # list_njobs.append(10)
 
 list_filelists.append(open(infile_base+"GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-list_folders.append(outfile_base+"GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_all/")
+list_folders.append(outfile_base+"GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+"/")
 list_njobs.append(350)
+
+list_filelists.append(open(infile_base+"VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append(outfile_base+"VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+"/")
+list_njobs.append(650)
 
 os.system('mkdir -p /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version)
 os.system('cp listAll.sh /data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+version)
 
 ##################################################################
 
-os.system ('source /opt/exp_soft/cms/t3/t3setup')
+# os.system ('source /opt/exp_soft/cms/t3/t3setup')
 
 for i in range(len(list_folders)):
     filelist = list_filelists[i]
@@ -73,7 +84,7 @@ for i in range(len(list_folders)):
         jobfilelist.close()
 
         # cmsRun = "cmsRun test_L1CaloTauNtuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
-        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " >& " + outLogName
+        cmsRun = "cmsRun test_Ntuplizer.py maxEvents=-1 inputFiles_load="+inListName + " outputFile="+outRootName + " minSeedEt=" + str(options.seedEtCut) + " >& " + outLogName
 
         skimjob = open (outJobName, 'w')
         skimjob.write ('#!/bin/bash\n')

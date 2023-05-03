@@ -1,9 +1,9 @@
 import FWCore.ParameterSet.VarParsing as VarParsing
 import FWCore.ParameterSet.Config as cms
 
-from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
+from Configuration.Eras.Era_Phase2C17I13M9_cff import Phase2C17I13M9
 
-process = cms.Process('L1TauMinatorNtuplizer',Phase2C9)
+process = cms.Process('L1TauMinatorNtuplizer', Phase2C17I13M9)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -38,6 +38,11 @@ options = VarParsing.VarParsing ('analysis')
 options.outputFile = 'Ntuple_L1TauMinator.root'
 options.inputFiles = []
 options.maxEvents  = -999
+options.register ('minSeedEt',
+                  2.5, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum seeding energy")
 options.parseArguments()
 
 process.maxEvents = cms.untracked.PSet(
@@ -81,6 +86,9 @@ process.configurationMetadata = cms.untracked.PSet(
 # GlobalTag Info
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '125X_mcRun4_realistic_v2', '')
+
+# minimum value of seeding energy
+process.CaloTowerHandler.EtMinForSeeding = cms.double(options.minSeedEt)
 
 # Path and EndPath definitions
 process.raw2digi_path     = cms.Path(process.RawToDigi)
