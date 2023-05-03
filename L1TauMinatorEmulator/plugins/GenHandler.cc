@@ -82,9 +82,6 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         if (!isGoodTau(particle)) { continue; }
 
-        // skip very forward taus
-        if (abs(particle.eta()) > 3.5) { continue; }
-
         GenHelper::GenTau GenTau;
 
         GenTau.pt = particle.pt();
@@ -202,6 +199,9 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
         GenTau.visPtHad = tau_p4had.Pt();
         GenTau.visEHad = tau_p4had.E();
 
+        // skip taus out of HGcal acceptance
+        if (abs(GenTau.visEta > 3.0)) { continue; }
+
         // Leptonic tau decays
         if (n_pi == 0 && n_piZero == 0 && n_ele == 1)     { GenTau.DM = -1; }
         else if (n_pi == 0 && n_piZero == 0 && n_mu == 1) { GenTau.DM = -1; }
@@ -232,7 +232,34 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
                 GenTau.DM);
         }
 
-        if (GenTau.DM >= 0) GenTausCollection->push_back(GenTau);
+        // skip non hadronic taus
+        if (GenTau.DM < 0) { continue; }
+
+        // // remove taus that are too close to one another
+        // bool tooClose = false;
+        // for (const auto& otherGenTau : GenTausCollection)
+        // {
+        //     float dEta = otherGenTau.visEta - GenTau.visEta;
+        //     float dPhi = reco::deltaPhi(otherGenTau.visPhi, GenTau.visPhi);
+        //     float dR2 = dEta*dEta + dPhi*dPhi;
+            
+        //     // if close and current pt smaller than previous one: skip current tau
+        //     if (dR2 < 0.25 && GenTau.visPt < otherGenTau.visPt)
+        //     {
+        //         tooClose = true;
+        //         break;
+        //     }
+        //     // if close and current pt larger than previous one: erase previous tau
+        //     else if (dR2 < 0.25 && GenTau.visPt > otherGenTau.visPt)
+        //     {
+        //         auto it = find(GenTausCollection.begin(), GenTausCollection.end(), otherGenTau);
+        //         GenTausCollection.erase(it);
+        //         break;
+        //     }
+        // }
+        // if (tooClose) { continue; }
+
+        GenTausCollection->push_back(GenTau);
 
     }
 
