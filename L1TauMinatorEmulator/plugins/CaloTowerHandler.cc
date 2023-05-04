@@ -895,6 +895,24 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
     }// end while loop of 5x9 TowerClusters creation
 
+    // cluster numpy array printout for nice displays
+    // int idxi = 0;
+    // for (auto& clu5x9 : *l1TowerClusters5x9)
+    // {
+    //     idxi += 1;
+    //     std::cout << "cluster_"<<idxi<<"_f = np.array([";
+    //     for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout<<"["<<clu5x9.towerHits[j].towerEta<<","<<clu5x9.towerHits[j].towerPhi<<"],"; }
+    //     std::cout << "]\n" << std::endl;
+    // }
+    // idxi = 0;
+    // for (auto& clu5x9 : *l1TowerClusters5x9)
+    // {
+    //     idxi += 1;
+    //     std::cout << "cluster_"<<idxi<<"_f = np.array([";
+    //     for (long unsigned int j = 0; j < clu5x9.towerHits.size(); ++j) { std::cout<<"["<<clu5x9.towerHits[j].towerIeta<<","<<clu5x9.towerHits[j].towerIphi<<"],"; }
+    //     std::cout << "]\n" << std::endl;
+    // }
+
     /********************************************************************************************
     * Begin with making TowerClusters in 5x7 grid based on all energy not included in L1EG Objs.
     * For reference, Run-I used 12x12 grid and Stage-2/Phase-I used 9x9 grid.
