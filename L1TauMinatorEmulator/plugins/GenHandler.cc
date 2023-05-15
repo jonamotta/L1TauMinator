@@ -235,7 +235,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
         // skip non hadronic taus
         if (GenTau.DM < 0) { continue; }
 
-        // // remove taus that are too close to one another
+        // remove taus that are too close to one another
         // bool tooClose = false;
         // for (const auto& otherGenTau : GenTausCollection)
         // {
