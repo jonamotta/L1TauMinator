@@ -16,7 +16,7 @@ HGClusterHandler = cms.EDProducer("HGClusterHandler",
             cms.PSet(name = cms.string("triggerCells67percent"), value = cms.string("triggerCells67percent()")),
         ),
         weightsFile = cms.string("L1Trigger/Phase2L1ParticleFlow/data/hgcal_egID/Photon_vs_Pion_BDTweights_1116.xml.gz"),
-        wp = cms.string("0.05")
+        wp = cms.string("-0.10")
     ),
     VsPuId = cms.PSet(
         isPUFilter = cms.bool(True),
@@ -30,7 +30,7 @@ HGClusterHandler = cms.EDProducer("HGClusterHandler",
             cms.PSet(name = cms.string("triggerCells90percent"), value = cms.string("triggerCells90percent()")),
         ),
         weightsFile = cms.string("L1Trigger/Phase2L1ParticleFlow/data/hgcal_egID/Photon_Pion_vs_Neutrino_BDTweights_1116.xml.gz"),
-        wp = cms.string("0.15")
+        wp = cms.string("-0.10")
     ),
     DEBUG = cms.bool(False)
 )

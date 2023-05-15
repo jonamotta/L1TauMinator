@@ -113,7 +113,7 @@ void HGClusterHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         if (!VsPuId.method().empty())
         { 
             int id = VsPuId.passID(*cl3dIt, cluster);
-            // if (!id) { continue; } // skip if it does not pass puid
+            if (!id) { continue; } // skip if it does not pass puid
             HGCluster.puId = id;
             HGCluster.puIdScore = cluster.egVsPUMVAOut();
         }
