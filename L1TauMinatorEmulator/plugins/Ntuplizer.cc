@@ -144,6 +144,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl9x9_isBarrel;
         std::vector<bool>  _cl9x9_isOverlap;
         std::vector<bool>  _cl9x9_isEndcap;
+        std::vector<bool>  _cl9x9_isPhiFlipped;
         std::vector<int>   _cl9x9_tauMatchIdx;
         std::vector<int>   _cl9x9_jetMatchIdx;
         std::vector<int>   _cl9x9_cl3dMatchIdx;
@@ -179,6 +180,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl7x7_isBarrel;
         std::vector<bool>  _cl7x7_isOverlap;
         std::vector<bool>  _cl7x7_isEndcap;
+        std::vector<bool>  _cl7x7_isPhiFlipped;
         std::vector<int>   _cl7x7_tauMatchIdx;
         std::vector<int>   _cl7x7_jetMatchIdx;
         std::vector<int>   _cl7x7_cl3dMatchIdx;
@@ -214,6 +216,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl5x5_isBarrel;
         std::vector<bool>  _cl5x5_isOverlap;
         std::vector<bool>  _cl5x5_isEndcap;
+        std::vector<bool>  _cl5x5_isPhiFlipped;
         std::vector<int>   _cl5x5_tauMatchIdx;
         std::vector<int>   _cl5x5_jetMatchIdx;
         std::vector<int>   _cl5x5_cl3dMatchIdx;
@@ -249,6 +252,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl5x9_isBarrel;
         std::vector<bool>  _cl5x9_isOverlap;
         std::vector<bool>  _cl5x9_isEndcap;
+        std::vector<bool>  _cl5x9_isPhiFlipped;
         std::vector<int>   _cl5x9_tauMatchIdx;
         std::vector<int>   _cl5x9_jetMatchIdx;
         std::vector<int>   _cl5x9_cl3dMatchIdx;
@@ -284,6 +288,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl5x7_isBarrel;
         std::vector<bool>  _cl5x7_isOverlap;
         std::vector<bool>  _cl5x7_isEndcap;
+        std::vector<bool>  _cl5x7_isPhiFlipped;
         std::vector<int>   _cl5x7_tauMatchIdx;
         std::vector<int>   _cl5x7_jetMatchIdx;
         std::vector<int>   _cl5x7_cl3dMatchIdx;
@@ -319,6 +324,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl3x7_isBarrel;
         std::vector<bool>  _cl3x7_isOverlap;
         std::vector<bool>  _cl3x7_isEndcap;
+        std::vector<bool>  _cl3x7_isPhiFlipped;
         std::vector<int>   _cl3x7_tauMatchIdx;
         std::vector<int>   _cl3x7_jetMatchIdx;
         std::vector<int>   _cl3x7_cl3dMatchIdx;
@@ -354,6 +360,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         std::vector<bool>  _cl3x5_isBarrel;
         std::vector<bool>  _cl3x5_isOverlap;
         std::vector<bool>  _cl3x5_isEndcap;
+        std::vector<bool>  _cl3x5_isPhiFlipped;
         std::vector<int>   _cl3x5_tauMatchIdx;
         std::vector<int>   _cl3x5_jetMatchIdx;
         std::vector<int>   _cl3x5_cl3dMatchIdx;
@@ -477,6 +484,7 @@ void Ntuplizer::Initialize()
     _cl9x9_isBarrel.clear();
     _cl9x9_isOverlap.clear();
     _cl9x9_isEndcap.clear();
+    _cl9x9_isPhiFlipped.clear();
     _cl9x9_tauMatchIdx.clear();
     _cl9x9_jetMatchIdx.clear();
     _cl9x9_cl3dMatchIdx.clear();
@@ -512,6 +520,7 @@ void Ntuplizer::Initialize()
     _cl7x7_isBarrel.clear();
     _cl7x7_isOverlap.clear();
     _cl7x7_isEndcap.clear();
+    _cl7x7_isPhiFlipped.clear();
     _cl7x7_tauMatchIdx.clear();
     _cl7x7_jetMatchIdx.clear();
     _cl7x7_cl3dMatchIdx.clear();
@@ -547,6 +556,7 @@ void Ntuplizer::Initialize()
     _cl5x5_isBarrel.clear();
     _cl5x5_isOverlap.clear();
     _cl5x5_isEndcap.clear();
+    _cl5x5_isPhiFlipped.clear();
     _cl5x5_tauMatchIdx.clear();
     _cl5x5_jetMatchIdx.clear();
     _cl5x5_cl3dMatchIdx.clear();
@@ -582,6 +592,7 @@ void Ntuplizer::Initialize()
     _cl5x9_isBarrel.clear();
     _cl5x9_isOverlap.clear();
     _cl5x9_isEndcap.clear();
+    _cl5x9_isPhiFlipped.clear();
     _cl5x9_tauMatchIdx.clear();
     _cl5x9_jetMatchIdx.clear();
     _cl5x9_cl3dMatchIdx.clear();
@@ -617,6 +628,7 @@ void Ntuplizer::Initialize()
     _cl5x7_isBarrel.clear();
     _cl5x7_isOverlap.clear();
     _cl5x7_isEndcap.clear();
+    _cl5x7_isPhiFlipped.clear();
     _cl5x7_tauMatchIdx.clear();
     _cl5x7_jetMatchIdx.clear();
     _cl5x7_cl3dMatchIdx.clear();
@@ -652,6 +664,7 @@ void Ntuplizer::Initialize()
     _cl3x7_isBarrel.clear();
     _cl3x7_isOverlap.clear();
     _cl3x7_isEndcap.clear();
+    _cl3x7_isPhiFlipped.clear();
     _cl3x7_tauMatchIdx.clear();
     _cl3x7_jetMatchIdx.clear();
     _cl3x7_cl3dMatchIdx.clear();
@@ -687,6 +700,7 @@ void Ntuplizer::Initialize()
     _cl3x5_isBarrel.clear();
     _cl3x5_isOverlap.clear();
     _cl3x5_isEndcap.clear();
+    _cl3x5_isPhiFlipped.clear();
     _cl3x5_tauMatchIdx.clear();
     _cl3x5_jetMatchIdx.clear();
     _cl3x5_cl3dMatchIdx.clear();
@@ -782,6 +796,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl9x9_isBarrel",     &_cl9x9_isBarrel);
     _tree -> Branch("cl9x9_isOverlap",    &_cl9x9_isOverlap);
     _tree -> Branch("cl9x9_isEndcap",     &_cl9x9_isEndcap);
+    _tree -> Branch("cl9x9_isPhiFlipped", &_cl9x9_isPhiFlipped);
     _tree -> Branch("cl9x9_tauMatchIdx",  &_cl9x9_tauMatchIdx);
     _tree -> Branch("cl9x9_jetMatchIdx",  &_cl9x9_jetMatchIdx);
     _tree -> Branch("cl9x9_cl3dMatchIdx", &_cl9x9_cl3dMatchIdx);
@@ -817,6 +832,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl7x7_isBarrel",     &_cl7x7_isBarrel);
     _tree -> Branch("cl7x7_isOverlap",    &_cl7x7_isOverlap);
     _tree -> Branch("cl7x7_isEndcap",     &_cl7x7_isEndcap);
+    _tree -> Branch("cl7x7_isPhiFlipped", &_cl7x7_isPhiFlipped);
     _tree -> Branch("cl7x7_tauMatchIdx",  &_cl7x7_tauMatchIdx);
     _tree -> Branch("cl7x7_jetMatchIdx",  &_cl7x7_jetMatchIdx);
     _tree -> Branch("cl7x7_cl3dMatchIdx", &_cl7x7_cl3dMatchIdx);
@@ -852,6 +868,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x5_isBarrel",     &_cl5x5_isBarrel);
     _tree -> Branch("cl5x5_isOverlap",    &_cl5x5_isOverlap);
     _tree -> Branch("cl5x5_isEndcap",     &_cl5x5_isEndcap);
+    _tree -> Branch("cl5x5_isPhiFlipped", &_cl5x5_isPhiFlipped);
     _tree -> Branch("cl5x5_tauMatchIdx",  &_cl5x5_tauMatchIdx);
     _tree -> Branch("cl5x5_jetMatchIdx",  &_cl5x5_jetMatchIdx);
     _tree -> Branch("cl5x5_cl3dMatchIdx", &_cl5x5_cl3dMatchIdx);
@@ -887,6 +904,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x9_isBarrel",     &_cl5x9_isBarrel);
     _tree -> Branch("cl5x9_isOverlap",    &_cl5x9_isOverlap);
     _tree -> Branch("cl5x9_isEndcap",     &_cl5x9_isEndcap);
+    _tree -> Branch("cl5x9_isPhiFlipped", &_cl5x9_isPhiFlipped);
     _tree -> Branch("cl5x9_tauMatchIdx",  &_cl5x9_tauMatchIdx);
     _tree -> Branch("cl5x9_jetMatchIdx",  &_cl5x9_jetMatchIdx);
     _tree -> Branch("cl5x9_cl3dMatchIdx", &_cl5x9_cl3dMatchIdx);
@@ -922,6 +940,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl5x7_isBarrel",     &_cl5x7_isBarrel);
     _tree -> Branch("cl5x7_isOverlap",    &_cl5x7_isOverlap);
     _tree -> Branch("cl5x7_isEndcap",     &_cl5x7_isEndcap);
+    _tree -> Branch("cl5x7_isPhiFlipped", &_cl5x7_isPhiFlipped);
     _tree -> Branch("cl5x7_tauMatchIdx",  &_cl5x7_tauMatchIdx);
     _tree -> Branch("cl5x7_jetMatchIdx",  &_cl5x7_jetMatchIdx);
     _tree -> Branch("cl5x7_cl3dMatchIdx", &_cl5x7_cl3dMatchIdx);
@@ -957,6 +976,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl3x7_isBarrel",     &_cl3x7_isBarrel);
     _tree -> Branch("cl3x7_isOverlap",    &_cl3x7_isOverlap);
     _tree -> Branch("cl3x7_isEndcap",     &_cl3x7_isEndcap);
+    _tree -> Branch("cl3x7_isPhiFlipped", &_cl3x7_isPhiFlipped);
     _tree -> Branch("cl3x7_tauMatchIdx",  &_cl3x7_tauMatchIdx);
     _tree -> Branch("cl3x7_jetMatchIdx",  &_cl3x7_jetMatchIdx);
     _tree -> Branch("cl3x7_cl3dMatchIdx", &_cl3x7_cl3dMatchIdx);
@@ -992,6 +1012,7 @@ void Ntuplizer::beginJob()
     _tree -> Branch("cl3x5_isBarrel",     &_cl3x5_isBarrel);
     _tree -> Branch("cl3x5_isOverlap",    &_cl3x5_isOverlap);
     _tree -> Branch("cl3x5_isEndcap",     &_cl3x5_isEndcap);
+    _tree -> Branch("cl3x5_isPhiFlipped", &_cl3x5_isPhiFlipped);
     _tree -> Branch("cl3x5_tauMatchIdx",  &_cl3x5_tauMatchIdx);
     _tree -> Branch("cl3x5_jetMatchIdx",  &_cl3x5_jetMatchIdx);
     _tree -> Branch("cl3x5_cl3dMatchIdx", &_cl3x5_cl3dMatchIdx);
@@ -1094,6 +1115,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
 
+            if (clu9x9.isPhiFlipped) { continue; }
+
             float dEta = clu9x9.seedEta - tau.visEta;
             float dPhi = reco::deltaPhi(clu9x9.seedPhi, tau.visPhi);
             float dR2 = dEta * dEta + dPhi * dPhi;
@@ -1122,6 +1145,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
             writable_clu9x9.tauMatchIdx = tauIdx;
+
+            TowerHelper::TowerCluster& writable_clu9x9_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx+CaloClusters9x9.size()/2]);
+            writable_clu9x9_phiFlipped.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << " ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1132,6 +1158,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters7x7.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
+
+            if (clu7x7.isPhiFlipped) { continue; }
 
             float dEta = clu7x7.seedEta - tau.visEta;
             float dPhi = reco::deltaPhi(clu7x7.seedPhi, tau.visPhi);
@@ -1161,6 +1189,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
             writable_clu7x7.tauMatchIdx = tauIdx;
+
+            TowerHelper::TowerCluster& writable_clu7x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx+CaloClusters7x7.size()/2]);
+            writable_clu7x7_phiFlipped.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << " ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1171,6 +1202,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x5.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
+
+            if (clu5x5.isPhiFlipped) { continue; }
 
             float dEta = clu5x5.seedEta - tau.visEta;
             float dPhi = reco::deltaPhi(clu5x5.seedPhi, tau.visPhi);
@@ -1200,6 +1233,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
             writable_clu5x5.tauMatchIdx = tauIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x5_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx+CaloClusters5x5.size()/2]);
+            writable_clu5x5_phiFlipped.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1210,6 +1246,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x9.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
+
+            if (clu5x9.isPhiFlipped) { continue; }
 
             float dEta = clu5x9.seedEta - tau.visEta;
             float dPhi = reco::deltaPhi(clu5x9.seedPhi, tau.visPhi);
@@ -1239,6 +1277,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
             writable_clu5x9.tauMatchIdx = tauIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x9_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx+CaloClusters5x9.size()/2]);
+            writable_clu5x9_phiFlipped.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1249,6 +1290,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x7.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu5x7 = CaloClusters5x7[cluIdx];
+
+            if (clu5x7.isPhiFlipped) { continue; }
 
             float dEta = clu5x7.seedEta - tau.visEta;
             float dPhi = reco::deltaPhi(clu5x7.seedPhi, tau.visPhi);
@@ -1278,6 +1321,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[matchedCluIdx]);
             writable_clu5x7.tauMatchIdx = tauIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[matchedCluIdx+CaloClusters5x7.size()/2]);
+            writable_clu5x7_phiFlipped.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1288,6 +1334,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x7.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu3x7 = CaloClusters3x7[cluIdx];
+
+            if (clu3x7.isPhiFlipped) { continue; }
 
             float dEta = clu3x7.seedEta - tau.visEta;
             float dPhi = reco::deltaPhi(clu3x7.seedPhi, tau.visPhi);
@@ -1317,6 +1365,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu3x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[matchedCluIdx]);
             writable_clu3x7.tauMatchIdx = tauIdx;
+
+            TowerHelper::TowerCluster& writable_clu3x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[matchedCluIdx+CaloClusters3x7.size()/2]);
+            writable_clu3x7_phiFlipped.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1327,6 +1378,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x5.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu3x5 = CaloClusters3x5[cluIdx];
+
+            if (clu3x5.isPhiFlipped) { continue; }
 
             float dEta = clu3x5.seedEta - tau.visEta;
             float dPhi = reco::deltaPhi(clu3x5.seedPhi, tau.visPhi);
@@ -1356,6 +1409,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu3x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[matchedCluIdx]);
             writable_clu3x5.tauMatchIdx = tauIdx;
+
+            TowerHelper::TowerCluster& writable_clu3x5_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[matchedCluIdx+CaloClusters3x5.size()/2]);
+            writable_clu3x5_phiFlipped.tauMatchIdx = tauIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1428,6 +1484,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
 
+            if (clu9x9.isPhiFlipped) { continue; }
+
             // give precedence to gen tau matching
             if (clu9x9.tauMatchIdx != -99) { continue; }
 
@@ -1459,6 +1517,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx]);
             writable_clu9x9.jetMatchIdx = jetIdx;
+
+            TowerHelper::TowerCluster& writable_clu9x9_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[matchedCluIdx+CaloClusters9x9.size()/2]);
+            writable_clu9x9_phiFlipped.jetMatchIdx = jetIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1469,6 +1530,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters7x7.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
+
+            if (clu7x7.isPhiFlipped) { continue; }
 
             // give precedence to gen tau matching
             if (clu7x7.tauMatchIdx != -99) { continue; }
@@ -1501,6 +1564,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx]);
             writable_clu7x7.jetMatchIdx = jetIdx;
+
+            TowerHelper::TowerCluster& writable_clu7x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[matchedCluIdx+CaloClusters7x7.size()/2]);
+            writable_clu7x7_phiFlipped.jetMatchIdx = jetIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1511,6 +1577,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x5.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
+
+            if (clu5x5.isPhiFlipped) { continue; }
 
             // give precedence to gen tau matching
             if (clu5x5.tauMatchIdx != -99) { continue; }
@@ -1543,6 +1611,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx]);
             writable_clu5x5.jetMatchIdx = jetIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x5_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[matchedCluIdx+CaloClusters5x5.size()/2]);
+            writable_clu5x5_phiFlipped.jetMatchIdx = jetIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1553,6 +1624,8 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x9.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
+
+            if (clu5x9.isPhiFlipped) { continue; }
 
             // give precedence to gen tau matching
             if (clu5x9.tauMatchIdx == -99) { continue; }
@@ -1585,6 +1658,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx]);
             writable_clu5x9.jetMatchIdx = jetIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x9_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[matchedCluIdx+CaloClusters5x9.size()/2]);
+            writable_clu5x9_phiFlipped.jetMatchIdx = jetIdx;
         }
 
         // Perform geometrical matching of 5x7 CaloClusters
@@ -1593,6 +1669,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters5x7.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu5x7 = CaloClusters5x7[cluIdx];
+
+            if (clu5x7.isPhiFlipped) { continue; }
+
+            // give precedence to gen tau matching
+            if (clu5x7.tauMatchIdx == -99) { continue; }
 
             float dEta = clu5x7.seedEta - jet.eta;
             float dPhi = reco::deltaPhi(clu5x7.seedPhi, jet.phi);
@@ -1622,6 +1703,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[matchedCluIdx]);
             writable_clu5x7.jetMatchIdx = jetIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[matchedCluIdx+CaloClusters5x7.size()/2]);
+            writable_clu5x7_phiFlipped.jetMatchIdx = jetIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1632,6 +1716,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x7.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu3x7 = CaloClusters3x7[cluIdx];
+
+            if (clu3x7.isPhiFlipped) { continue; }
+
+            // give precedence to gen tau matching
+            if (clu3x7.tauMatchIdx == -99) { continue; }
 
             float dEta = clu3x7.seedEta - jet.eta;
             float dPhi = reco::deltaPhi(clu3x7.seedPhi, jet.phi);
@@ -1661,6 +1750,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu3x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[matchedCluIdx]);
             writable_clu3x7.jetMatchIdx = jetIdx;
+
+            TowerHelper::TowerCluster& writable_clu3x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[matchedCluIdx+CaloClusters3x7.size()/2]);
+            writable_clu3x7_phiFlipped.jetMatchIdx = jetIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1671,6 +1763,11 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         for (long unsigned int cluIdx = 0; cluIdx < CaloClusters3x5.size(); cluIdx++)
         {
             TowerHelper::TowerCluster clu3x5 = CaloClusters3x5[cluIdx];
+
+            if (clu3x5.isPhiFlipped) { continue; }
+
+            // give precedence to gen tau matching
+            if (clu3x5.tauMatchIdx == -99) { continue; }
 
             float dEta = clu3x5.seedEta - jet.eta;
             float dPhi = reco::deltaPhi(clu3x5.seedPhi, jet.phi);
@@ -1700,6 +1797,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu3x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[matchedCluIdx]);
             writable_clu3x5.jetMatchIdx = jetIdx;
+
+            TowerHelper::TowerCluster& writable_clu3x5_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[matchedCluIdx+CaloClusters3x5.size()/2]);
+            writable_clu3x5_phiFlipped.jetMatchIdx = jetIdx;
         }
 
         if (DEBUG) { std::cout << "       ----------------------------------------------------------------------------------------------------------- " << std::endl; }
@@ -1756,10 +1856,12 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         TowerHelper::TowerCluster clu9x9 = CaloClusters9x9[cluIdx];
 
-        if (abs(clu9x9.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+        if (clu9x9.isPhiFlipped) { continue; }
+        
+        if (abs(clu9x9.seedEta) < 1.5) { continue; } // skip the cltw that by construction cannot be matched to cl3d
 
         int matchedHGCluIdx = -99;
-        float dR2min = 0.25;
+        float ptMax = -99.;
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
@@ -1768,9 +1870,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             float dPhi = reco::deltaPhi(clu9x9.seedPhi, hgclu.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (dR2 <= dR2min)
+            if (dR2 <= 0.25 && hgclu.pt > ptMax)
             {
-                dR2min = dR2;
+                ptMax = hgclu.pt;
                 matchedHGCluIdx = hgcluIdx;
             }
 
@@ -1792,6 +1894,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu9x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[cluIdx]);
             writable_clu9x9.cl3dMatchIdx = matchedHGCluIdx;
+
+            TowerHelper::TowerCluster& writable_clu9x9_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters9x9[cluIdx+CaloClusters9x9.size()/2]);
+            writable_clu9x9_phiFlipped.cl3dMatchIdx = matchedHGCluIdx;
         }
     }
 
@@ -1800,10 +1905,12 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         TowerHelper::TowerCluster clu7x7 = CaloClusters7x7[cluIdx];
 
-        if (abs(clu7x7.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+        if (clu7x7.isPhiFlipped) { continue; }
+
+        if (abs(clu7x7.seedEta) < 1.5) { continue; } // skip the cltw that by construction cannot be matched to cl3d
 
         int matchedHGCluIdx = -99;
-        float dR2min = 0.25;
+        float ptMax = -99.;
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
@@ -1812,9 +1919,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             float dPhi = reco::deltaPhi(clu7x7.seedPhi, hgclu.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (dR2 <= dR2min)
+            if (dR2 <= 0.25 && hgclu.pt > ptMax)
             {
-                dR2min = dR2;
+                ptMax = hgclu.pt;
                 matchedHGCluIdx = hgcluIdx;
             }
 
@@ -1836,6 +1943,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu7x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[cluIdx]);
             writable_clu7x7.cl3dMatchIdx = matchedHGCluIdx;
+
+            TowerHelper::TowerCluster& writable_clu7x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters7x7[cluIdx+CaloClusters7x7.size()/2]);
+            writable_clu7x7_phiFlipped.cl3dMatchIdx = matchedHGCluIdx;
         }
     }
 
@@ -1844,10 +1954,12 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         TowerHelper::TowerCluster clu5x5 = CaloClusters5x5[cluIdx];
 
-        if (abs(clu5x5.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+        if (clu5x5.isPhiFlipped) { continue; }
+
+        if (abs(clu5x5.seedEta) < 1.5) { continue; } // skip the cltw that by construction cannot be matched to cl3d
 
         int matchedHGCluIdx = -99;
-        float dR2min = 0.25;
+        float ptMax = -99.;
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
@@ -1856,9 +1968,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             float dPhi = reco::deltaPhi(clu5x5.seedPhi, hgclu.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (dR2 <= dR2min)
+            if (dR2 <= 0.25 && hgclu.pt > ptMax)
             {
-                dR2min = dR2;
+                ptMax = hgclu.pt;
                 matchedHGCluIdx = hgcluIdx;
             }
 
@@ -1880,6 +1992,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[cluIdx]);
             writable_clu5x5.cl3dMatchIdx = matchedHGCluIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x5_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x5[cluIdx+CaloClusters5x5.size()/2]);
+            writable_clu5x5_phiFlipped.cl3dMatchIdx = matchedHGCluIdx;
         }
     }
 
@@ -1888,10 +2003,12 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         TowerHelper::TowerCluster clu5x9 = CaloClusters5x9[cluIdx];
 
-        if (abs(clu5x9.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+        if (clu5x9.isPhiFlipped) { continue; }
+
+        if (abs(clu5x9.seedEta) < 1.5) { continue; } // skip the cltw that by construction cannot be matched to cl3d
 
         int matchedHGCluIdx = -99;
-        float dR2min = 0.25;
+        float ptMax = -99.;
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
@@ -1900,9 +2017,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             float dPhi = reco::deltaPhi(clu5x9.seedPhi, hgclu.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (dR2 <= dR2min)
+            if (dR2 <= 0.25 && hgclu.pt > ptMax)
             {
-                dR2min = dR2;
+                ptMax = hgclu.pt;
                 matchedHGCluIdx = hgcluIdx;
             }
 
@@ -1924,6 +2041,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x9 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[cluIdx]);
             writable_clu5x9.cl3dMatchIdx = matchedHGCluIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x9_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x9[cluIdx+CaloClusters5x9.size()/2]);
+            writable_clu5x9_phiFlipped.cl3dMatchIdx = matchedHGCluIdx;
         }
     }
 
@@ -1932,10 +2052,12 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         TowerHelper::TowerCluster clu5x7 = CaloClusters5x7[cluIdx];
 
-        if (abs(clu5x7.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+        if (clu5x7.isPhiFlipped) { continue; }
+
+        if (abs(clu5x7.seedEta) < 1.5) { continue; } // skip the cltw that by construction cannot be matched to cl3d
 
         int matchedHGCluIdx = -99;
-        float dR2min = 0.25;
+        float ptMax = -99.;
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
@@ -1944,9 +2066,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             float dPhi = reco::deltaPhi(clu5x7.seedPhi, hgclu.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (dR2 <= dR2min)
+            if (dR2 <= 0.25 && hgclu.pt > ptMax)
             {
-                dR2min = dR2;
+                ptMax = hgclu.pt;
                 matchedHGCluIdx = hgcluIdx;
             }
 
@@ -1968,6 +2090,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu5x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[cluIdx]);
             writable_clu5x7.cl3dMatchIdx = matchedHGCluIdx;
+
+            TowerHelper::TowerCluster& writable_clu5x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters5x7[cluIdx+CaloClusters5x7.size()/2]);
+            writable_clu5x7_phiFlipped.cl3dMatchIdx = matchedHGCluIdx;
         }
     }
 
@@ -1976,10 +2101,12 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         TowerHelper::TowerCluster clu3x7 = CaloClusters3x7[cluIdx];
 
-        if (abs(clu3x7.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+        if (clu3x7.isPhiFlipped) { continue; }
+
+        if (abs(clu3x7.seedEta) < 1.5) { continue; } // skip the cltw that by construction cannot be matched to cl3d
 
         int matchedHGCluIdx = -99;
-        float dR2min = 0.25;
+        float ptMax = -99.;
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
@@ -1988,9 +2115,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             float dPhi = reco::deltaPhi(clu3x7.seedPhi, hgclu.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (dR2 <= dR2min)
+            if (dR2 <= 0.25 && hgclu.pt > ptMax)
             {
-                dR2min = dR2;
+                ptMax = hgclu.pt;
                 matchedHGCluIdx = hgcluIdx;
             }
 
@@ -2012,6 +2139,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu3x7 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[cluIdx]);
             writable_clu3x7.cl3dMatchIdx = matchedHGCluIdx;
+
+            TowerHelper::TowerCluster& writable_clu3x7_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x7[cluIdx+CaloClusters3x7.size()/2]);
+            writable_clu3x7_phiFlipped.cl3dMatchIdx = matchedHGCluIdx;
         }
     }
 
@@ -2020,10 +2150,12 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     {
         TowerHelper::TowerCluster clu3x5 = CaloClusters3x5[cluIdx];
 
-        if (abs(clu3x5.seedEta) < 1.0) { continue; } // skip the cltw that by construction cannot be matched to cl3d
+        if (clu3x5.isPhiFlipped) { continue; }
+
+        if (abs(clu3x5.seedEta) < 1.5) { continue; } // skip the cltw that by construction cannot be matched to cl3d
 
         int matchedHGCluIdx = -99;
-        float dR2min = 0.25;
+        float ptMax = -99.;
         for (long unsigned int hgcluIdx = 0; hgcluIdx < HGClusters.size(); hgcluIdx++)
         {
             HGClusterHelper::HGCluster hgclu = HGClusters[hgcluIdx];
@@ -2032,9 +2164,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
             float dPhi = reco::deltaPhi(clu3x5.seedPhi, hgclu.phi);
             float dR2 = dEta * dEta + dPhi * dPhi;
 
-            if (dR2 <= dR2min)
+            if (dR2 <= 0.25 && hgclu.pt > ptMax)
             {
-                dR2min = dR2;
+                ptMax = hgclu.pt;
                 matchedHGCluIdx = hgcluIdx;
             }
 
@@ -2056,6 +2188,9 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         {
             TowerHelper::TowerCluster& writable_clu3x5 = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[cluIdx]);
             writable_clu3x5.cl3dMatchIdx = matchedHGCluIdx;
+
+            TowerHelper::TowerCluster& writable_clu3x5_phiFlipped = const_cast<TowerHelper::TowerCluster&>(CaloClusters3x5[cluIdx+CaloClusters3x5.size()/2]);
+            writable_clu3x5_phiFlipped.cl3dMatchIdx = matchedHGCluIdx;
         }
     }
 
@@ -2115,6 +2250,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl9x9_isBarrel.push_back(clu9x9.isBarrel);
         _cl9x9_isOverlap.push_back(clu9x9.isOverlap);
         _cl9x9_isEndcap.push_back(clu9x9.isEndcap);
+        _cl9x9_isPhiFlipped.push_back(clu9x9.isPhiFlipped);
         _cl9x9_tauMatchIdx.push_back(clu9x9.tauMatchIdx);
         _cl9x9_jetMatchIdx.push_back(clu9x9.jetMatchIdx);
         _cl9x9_cl3dMatchIdx.push_back(clu9x9.cl3dMatchIdx);
@@ -2192,6 +2328,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl7x7_isBarrel.push_back(clu7x7.isBarrel);
         _cl7x7_isOverlap.push_back(clu7x7.isOverlap);
         _cl7x7_isEndcap.push_back(clu7x7.isEndcap);
+        _cl7x7_isPhiFlipped.push_back(clu7x7.isPhiFlipped);
         _cl7x7_tauMatchIdx.push_back(clu7x7.tauMatchIdx);
         _cl7x7_jetMatchIdx.push_back(clu7x7.jetMatchIdx);
         _cl7x7_cl3dMatchIdx.push_back(clu7x7.cl3dMatchIdx);
@@ -2269,6 +2406,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x5_isBarrel.push_back(clu5x5.isBarrel);
         _cl5x5_isOverlap.push_back(clu5x5.isOverlap);
         _cl5x5_isEndcap.push_back(clu5x5.isEndcap);
+        _cl5x5_isPhiFlipped.push_back(clu5x5.isPhiFlipped);
         _cl5x5_tauMatchIdx.push_back(clu5x5.tauMatchIdx);
         _cl5x5_jetMatchIdx.push_back(clu5x5.jetMatchIdx);
         _cl5x5_cl3dMatchIdx.push_back(clu5x5.cl3dMatchIdx);
@@ -2346,6 +2484,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x9_isBarrel.push_back(clu5x9.isBarrel);
         _cl5x9_isOverlap.push_back(clu5x9.isOverlap);
         _cl5x9_isEndcap.push_back(clu5x9.isEndcap);
+        _cl5x9_isPhiFlipped.push_back(clu5x9.isPhiFlipped);
         _cl5x9_tauMatchIdx.push_back(clu5x9.tauMatchIdx);
         _cl5x9_jetMatchIdx.push_back(clu5x9.jetMatchIdx);
         _cl5x9_cl3dMatchIdx.push_back(clu5x9.cl3dMatchIdx);
@@ -2423,6 +2562,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl5x7_isBarrel.push_back(clu5x7.isBarrel);
         _cl5x7_isOverlap.push_back(clu5x7.isOverlap);
         _cl5x7_isEndcap.push_back(clu5x7.isEndcap);
+        _cl5x7_isPhiFlipped.push_back(clu5x7.isPhiFlipped);
         _cl5x7_tauMatchIdx.push_back(clu5x7.tauMatchIdx);
         _cl5x7_jetMatchIdx.push_back(clu5x7.jetMatchIdx);
         _cl5x7_cl3dMatchIdx.push_back(clu5x7.cl3dMatchIdx);
@@ -2500,6 +2640,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl3x7_isBarrel.push_back(clu3x7.isBarrel);
         _cl3x7_isOverlap.push_back(clu3x7.isOverlap);
         _cl3x7_isEndcap.push_back(clu3x7.isEndcap);
+        _cl3x7_isPhiFlipped.push_back(clu3x7.isPhiFlipped);
         _cl3x7_tauMatchIdx.push_back(clu3x7.tauMatchIdx);
         _cl3x7_jetMatchIdx.push_back(clu3x7.jetMatchIdx);
         _cl3x7_cl3dMatchIdx.push_back(clu3x7.cl3dMatchIdx);
@@ -2577,6 +2718,7 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
         _cl3x5_isBarrel.push_back(clu3x5.isBarrel);
         _cl3x5_isOverlap.push_back(clu3x5.isOverlap);
         _cl3x5_isEndcap.push_back(clu3x5.isEndcap);
+        _cl3x5_isPhiFlipped.push_back(clu3x5.isPhiFlipped);
         _cl3x5_tauMatchIdx.push_back(clu3x5.tauMatchIdx);
         _cl3x5_jetMatchIdx.push_back(clu3x5.jetMatchIdx);
         _cl3x5_cl3dMatchIdx.push_back(clu3x5.cl3dMatchIdx);

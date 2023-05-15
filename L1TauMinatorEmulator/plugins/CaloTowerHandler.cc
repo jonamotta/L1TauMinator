@@ -38,6 +38,8 @@ class CaloTowerHandler : public edm::stream::EDProducer<> {
         int endcap_ieta(float &eta) const;
         std::vector<TowerHelper::TowerHit> sortPicLikeI(std::vector<TowerHelper::TowerHit>) const;
         std::vector<TowerHelper::TowerHit> sortPicLikeF(std::vector<TowerHelper::TowerHit>) const;
+        std::vector<TowerHelper::TowerHit> sortPicLikeI_phiFlip(std::vector<TowerHelper::TowerHit>) const;
+        std::vector<TowerHelper::TowerHit> sortPicLikeF_phiFlip(std::vector<TowerHelper::TowerHit>) const;
 
         //----tokens and handles----
         edm::EDGetTokenT<l1tp2::CaloTowerCollection> l1TowersToken;
@@ -129,6 +131,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     {
         TowerHelper::TowerHit l1Hit;
         l1Hit.isBarrel     = false;
+        l1Hit.l1egTowerEt  = 0.0;
+        l1Hit.l1egTowerIet = 0;
+        l1Hit.nL1eg        = 0;
         l1Hit.towerEta     = hit.eta();
         l1Hit.towerPhi     = hit.phi();
         l1Hit.towerEm      = hit.etEm();
@@ -448,6 +453,17 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
     }// end while loop of 9x9 TowerClusters creation
 
+    // sort the TowerHits in the TowerCluster to have them organized as "a picture of it" but phi-flipped
+    int Ncltws9x9 = l1TowerClusters9x9->size();
+    for (int i = 0; i < Ncltws9x9; ++i)
+    {
+        TowerHelper::TowerCluster clu9x9 = l1TowerClusters9x9->at(i);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF_phiFlip(clu9x9.towerHits);
+        clu9x9.InitHits(); clu9x9.towerHits = sortedHits;
+        clu9x9.isPhiFlipped = true;
+        l1TowerClusters9x9->push_back(clu9x9);
+    }
+
 
     /********************************************************************************************
     * Begin with making TowerClusters in 7x7 grid based on all energy not included in L1EG Objs.
@@ -596,6 +612,17 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         if (sortedHits.size() != 49) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 49 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
 
     }// end while loop of 7x7 TowerClusters creation
+
+    // sort the TowerHits in the TowerCluster to have them organized as "a picture of it" but phi-flipped
+    int Ncltws7x7 = l1TowerClusters7x7->size();
+    for (int i = 0; i < Ncltws7x7; ++i)
+    {
+        TowerHelper::TowerCluster clu7x7 = l1TowerClusters7x7->at(i);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF_phiFlip(clu7x7.towerHits);
+        clu7x7.InitHits(); clu7x7.towerHits = sortedHits;
+        clu7x7.isPhiFlipped = true;
+        l1TowerClusters7x7->push_back(clu7x7);
+    }
 
 
     /********************************************************************************************
@@ -746,6 +773,17 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
     }// end while loop of 5x5 TowerClusters creation
 
+    // sort the TowerHits in the TowerCluster to have them organized as "a picture of it" but phi-flipped
+    int Ncltws5x5 = l1TowerClusters5x5->size();
+    for (int i = 0; i < Ncltws5x5; ++i)
+    {
+        TowerHelper::TowerCluster clu5x5 = l1TowerClusters5x5->at(i);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF_phiFlip(clu5x5.towerHits);
+        clu5x5.InitHits(); clu5x5.towerHits = sortedHits;
+        clu5x5.isPhiFlipped = true;
+        l1TowerClusters5x5->push_back(clu5x5);
+    }
+
 
     /********************************************************************************************
     * Begin with making TowerClusters in 5x9 grid based on all energy not included in L1EG Objs.
@@ -895,7 +933,18 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
     }// end while loop of 5x9 TowerClusters creation
 
-    // cluster numpy array printout for nice displays
+    // sort the TowerHits in the TowerCluster to have them organized as "a picture of it" but phi-flipped
+    int Ncltws5x9 = l1TowerClusters5x9->size();
+    for (int i = 0; i < Ncltws5x9; ++i)
+    {
+        TowerHelper::TowerCluster clu5x9 = l1TowerClusters5x9->at(i);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF_phiFlip(clu5x9.towerHits);
+        clu5x9.InitHits(); clu5x9.towerHits = sortedHits;
+        clu5x9.isPhiFlipped = true;
+        l1TowerClusters5x9->push_back(clu5x9);
+    }
+
+    // // cluster numpy array printout for nice displays
     // int idxi = 0;
     // for (auto& clu5x9 : *l1TowerClusters5x9)
     // {
@@ -1061,6 +1110,17 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
     }// end while loop of 5x7 TowerClusters creation
 
+    // sort the TowerHits in the TowerCluster to have them organized as "a picture of it" but phi-flipped
+    int Ncltws5x7 = l1TowerClusters5x7->size();
+    for (int i = 0; i < Ncltws5x7; ++i)
+    {
+        TowerHelper::TowerCluster clu5x7 = l1TowerClusters5x7->at(i);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF_phiFlip(clu5x7.towerHits);
+        clu5x7.InitHits(); clu5x7.towerHits = sortedHits;
+        clu5x7.isPhiFlipped = true;
+        l1TowerClusters5x7->push_back(clu5x7);
+    }
+
 
     /********************************************************************************************
     * Begin with making TowerClusters in 3x7 grid based on all energy not included in L1EG Objs.
@@ -1210,6 +1270,17 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
 
     }// end while loop of 3x7 TowerClusters creation
 
+    // sort the TowerHits in the TowerCluster to have them organized as "a picture of it" but phi-flipped
+    int Ncltws3x7 = l1TowerClusters3x7->size();
+    for (int i = 0; i < Ncltws3x7; ++i)
+    {
+        TowerHelper::TowerCluster clu3x7 = l1TowerClusters3x7->at(i);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF_phiFlip(clu3x7.towerHits);
+        clu3x7.InitHits(); clu3x7.towerHits = sortedHits;
+        clu3x7.isPhiFlipped = true;
+        l1TowerClusters3x7->push_back(clu3x7);
+    }
+
 
     /********************************************************************************************
     * Begin with making TowerClusters in 3x5 grid based on all energy not included in L1EG Objs.
@@ -1358,6 +1429,18 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         if (sortedHits.size() != 15) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF 15 TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
 
     }// end while loop of 3x5 TowerClusters creation
+
+    // sort the TowerHits in the TowerCluster to have them organized as "a picture of it" but phi-flipped
+    int Ncltws3x5 = l1TowerClusters3x5->size();
+    for (int i = 0; i < Ncltws3x5; ++i)
+    {
+        TowerHelper::TowerCluster clu3x5 = l1TowerClusters3x5->at(i);
+        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLikeF_phiFlip(clu3x5.towerHits);
+        clu3x5.InitHits(); clu3x5.towerHits = sortedHits;
+        clu3x5.isPhiFlipped = true;
+        l1TowerClusters3x5->push_back(clu3x5);
+    }
+
 
     if (DEBUG) 
     {
@@ -1619,6 +1702,45 @@ std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLikeI(std::vector<To
                 ((b.towerIphi>=65 && b.towerIphi<=72) && (a.towerIphi>=1 && a.towerIphi<=8)))   { return a.towerIphi > b.towerIphi; }
             
             else { return a.towerIphi < b.towerIphi; }
+        }
+        else { return a.towerIeta < b.towerIeta; }
+    });
+
+    return towerHits;
+}
+
+std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLikeF_phiFlip(std::vector<TowerHelper::TowerHit> towerHits) const
+{
+    std::sort(begin(towerHits), end(towerHits), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
+    { 
+        // compute the difference in eta instead of direct comparison to account for possible little differences in the eta position
+        // (mainly due to all the playing around that happens at the beginning to fill zeros and missing towers)
+        if (abs(a.towerEta - b.towerEta) < 0.001)
+        {
+            if ((a.towerPhi < -2.4 && b.towerPhi > 2.4) || (b.towerPhi < -2.4 && a.towerPhi > 2.4))
+            {
+                if (a.towerPhi * b.towerPhi < 0) { return a.towerPhi < b.towerPhi; }
+                else                             { return a.towerPhi > b.towerPhi; }
+            }
+            
+            else { return a.towerPhi > b.towerPhi; }
+        }
+        else { return a.towerEta < b.towerEta; }
+    });
+
+    return towerHits;
+}
+
+std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLikeI_phiFlip(std::vector<TowerHelper::TowerHit> towerHits) const
+{
+    std::sort(begin(towerHits), end(towerHits), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
+    { 
+        if (a.towerIeta == b.towerIeta)
+        {
+            if (((a.towerIphi>=65 && a.towerIphi<=72) && (b.towerIphi>=1 && b.towerIphi<=8)) ||
+                ((b.towerIphi>=65 && b.towerIphi<=72) && (a.towerIphi>=1 && a.towerIphi<=8)))   { return a.towerIphi < b.towerIphi; }
+            
+            else { return a.towerIphi > b.towerIphi; }
         }
         else { return a.towerIeta < b.towerIeta; }
     });

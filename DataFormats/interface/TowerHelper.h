@@ -66,6 +66,8 @@ namespace TowerHelper
         int jetMatchIdx = -99;
         int cl3dMatchIdx = -99;
 
+        bool isPhiFlipped = false;
+
         float IDscore = -99.;
         float calibPt = -99.;
 
