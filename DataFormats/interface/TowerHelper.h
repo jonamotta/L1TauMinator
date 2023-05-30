@@ -78,5 +78,54 @@ namespace TowerHelper
 
     // collection of NxN trigger towers clusters (barrel, endcap, and hf friendly)
     typedef std::vector<TowerCluster> TowerClustersCollection;
+
+
+
+    //##############################################################################################################
+    // THE FOLLOWING TWO USE THE SAME STUFF AS THE CALO JAET/TAU ALREADY IMPLEMENTED
+
+    // class for single trigger tower hits (barrel, endcap, and hf friendly)
+    class SimpleTowerHit {
+        public:
+        float towerEta = -99.;
+        float towerPhi = -99.;
+        float towerEm = 0.;
+        float towerHad = 0.;
+        float l1egTowerEt = 0.;
+        float towerEt = 0.;
+        int   towerIeta = -99;
+        int   towerIphi = -99;
+        bool  isBarrel = true;
+        bool  stale = false;
+        bool  stale4seed = false;
+
+        // L1EG info
+        int   nL1eg = 0;
+        int   l1egTrkSS = -99;
+        int   l1egTrkIso = -99;
+        int   l1egStandaloneSS = -99;
+        int   l1egStandaloneIso = -99;
+    };
+
+
+    // class for NxN trigger towers clusters (barrel, endcap, and hf friendly)
+    class SimpleTowerCluster {
+        public:
+        bool  barrelSeeded = false;
+        int   seedIeta = -99;
+        int   seedIphi = -99;
+        float seedEta = -99.;
+        float seedPhi = -99.;
+
+        float IDscore = -99.;
+        float calibPt = -99.;
+
+        std::vector<SimpleTowerHit> towerHits;
+
+        void InitHits(int N, int M) { towerHits.resize(N*M); }
+    };
+
+    // collection of NxN trigger towers clusters (barrel, endcap, and hf friendly)
+    typedef std::vector<SimpleTowerCluster> SimpleTowerClustersCollection;
 }
 #endif

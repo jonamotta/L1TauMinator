@@ -4,6 +4,11 @@
   <class name="std::vector<TowerHelper::TowerCluster>"/>
   <class name="edm::Wrapper<std::vector<TowerHelper::TowerCluster>>"/>
 
+  <class name="TowerHelper::SimpleTowerHit"/>
+  <class name="TowerHelper::SimpleTowerCluster"/>
+  <class name="std::vector<TowerHelper::SimpleTowerCluster>"/>
+  <class name="edm::Wrapper<std::vector<TowerHelper::SimpleTowerCluster>>"/>
+
   <class name="HGClusterHelper::HGCluster"/>
   <class name="std::vector<HGClusterHelper::HGCluster>"/>
   <class name="edm::Wrapper<std::vector<HGClusterHelper::HGCluster>>"/>

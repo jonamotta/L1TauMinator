@@ -36,6 +36,8 @@ namespace HGClusterHelper
 
         float IDscore = -99.;
         float calibPt = -99.;
+
+        bool stale = false;
     };
 
     typedef std::vector<HGCluster> HGClustersCollection;
