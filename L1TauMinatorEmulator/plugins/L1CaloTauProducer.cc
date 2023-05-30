@@ -14,6 +14,7 @@
 #include "DataFormats/L1TCalorimeterPhase2/interface/CaloTower.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/L1THGCal/interface/HGCalMulticluster.h"
+#include "DataFormats/L1TParticleFlow/interface/PFCluster.h"
 #include "DataFormats/L1THGCal/interface/HGCalTower.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 
@@ -21,6 +22,7 @@
 #include "CalibFormats/CaloTPG/interface/CaloTPGRecord.h"
 
 #include "L1Trigger/L1THGCal/interface/backend/HGCalTriggerClusterIdentificationBase.h"
+#include "L1Trigger/Phase2L1ParticleFlow/interface/HGC3DClusterEgID.h"
 #include "L1Trigger/L1TCalorimeter/interface/CaloTools.h"
 
 #include "L1TauMinator/DataFormats/interface/TowerHelper.h"
@@ -43,7 +45,6 @@ class L1CaloTauProducer : public edm::stream::EDProducer<> {
         int tower_dIEta(int &iEta_1, int &iEta_2) const;
         int endcap_iphi(float &phi) const;
         int endcap_ieta(float &eta) const;
-        std::vector<TowerHelper::TowerHit> sortPicLike(std::vector<TowerHelper::TowerHit>) const;
         float inputQuantizer(float inputF, float LSB, int nbits);
 
         //----tokens and handles----
@@ -53,46 +54,53 @@ class L1CaloTauProducer : public edm::stream::EDProducer<> {
         edm::EDGetToken hgcalTowersToken;
         edm::Handle<l1t::HGCalTowerBxCollection> hgcalTowersHandle;
 
-        edm::EDGetTokenT<HcalTrigPrimDigiCollection> hcalDigisToken;
-        edm::Handle<HcalTrigPrimDigiCollection> hcalDigisHandle;
-        edm::ESGetToken<CaloTPGTranscoder, CaloTPGRecord> decoderTag;
-
         edm::EDGetTokenT<l1t::HGCalMulticlusterBxCollection> HGClusterToken;
         edm::Handle<l1t::HGCalMulticlusterBxCollection> HGClusterHandle;
 
         //----private variables----
-        int etaClusterDimension;
-        int phiClusterDimension;
-        int CNNfilters;
+        enum class UseEmInterp { No, EmOnly, AllKeepHad, AllKeepTot };
+        UseEmInterp scenario;
+        StringCutObjectSelector<l1t::HGCalMulticluster> preEmId;
+        l1tpf::HGC3DClusterEgID VsPuId;
+
         double EcalEtMinForClustering;
         double HcalEtMinForClustering;
         double EtMinForSeeding;
 
-        std::string CLTW_CNNmodel_path;
-        std::string CLTW_DNNident_path;
-        std::string CLTW_DNNcalib_path;
+        std::string CNNmodel_CB_path;
+        std::string DNNident_CB_path;
+        std::string DNNcalib_CB_path;
 
-        std::string CL3D_DNNident_path;
-        std::string CL3D_DNNcalib_path;
-
-        std::vector<std::string> CL3D_DNNident_feats;
-        std::vector<std::string> CL3D_DNNcalib_feats;
+        std::string CNNmodel_CE_path;
+        std::string DNNident_CE_path;
+        std::string DNNcalib_CE_path;
 
         bool DEBUG;
 
-        tensorflow::GraphDef* CLTW_CNNmodel;
-        tensorflow::GraphDef* CLTW_DNNident;
-        tensorflow::GraphDef* CLTW_DNNcalib;
+        tensorflow::GraphDef* CNNmodel_CB;
+        tensorflow::GraphDef* DNNident_CB;
+        tensorflow::GraphDef* DNNcalib_CB;
 
-        tensorflow::Session* CLTW_CNNsession;
-        tensorflow::Session* CLTW_DNNsessionIdent;
-        tensorflow::Session* CLTW_DNNsessionCalib;
+        tensorflow::Session* CNNmodel_CBsession;
+        tensorflow::Session* DNNident_CBsession;
+        tensorflow::Session* DNNcalib_CBsession;
 
-        tensorflow::GraphDef* CL3D_DNNident;
-        tensorflow::GraphDef* CL3D_DNNcalib;
+        tensorflow::GraphDef* CNNmodel_CE;
+        tensorflow::GraphDef* DNNident_CE;
+        tensorflow::GraphDef* DNNcalib_CE;
 
-        tensorflow::Session* CL3D_DNNsessionIdent;
-        tensorflow::Session* CL3D_DNNsessionCalib;
+        tensorflow::Session* CNNmodel_CEsession;
+        tensorflow::Session* DNNident_CEsession;
+        tensorflow::Session* DNNcalib_CEsession;
+
+        // hardoced dimensions of the tower clusters
+        int seedIdx = 22;
+        int IEta_dim = 5;
+        int IPhi_dim = 9;
+        float Eta_dim = 0.2;
+        float Phi_dim = 0.4;
+        float Eta_dim_seed = 0.35;
+        float Phi_dim_seed = 0.7;
 };
 
 
@@ -108,65 +116,78 @@ class L1CaloTauProducer : public edm::stream::EDProducer<> {
 L1CaloTauProducer::L1CaloTauProducer(const edm::ParameterSet& iConfig) 
     : l1TowersToken(consumes<l1tp2::CaloTowerCollection>(iConfig.getParameter<edm::InputTag>("l1CaloTowers"))),
       hgcalTowersToken(consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("hgcalTowers"))),
-      hcalDigisToken(consumes<HcalTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalDigis"))),
-      decoderTag(esConsumes<CaloTPGTranscoder, CaloTPGRecord>(edm::ESInputTag("", ""))),
+
       HGClusterToken(consumes<l1t::HGCalMulticlusterBxCollection>(iConfig.getParameter<edm::InputTag>("HgcalClusters"))),
-      etaClusterDimension(iConfig.getParameter<int>("etaClusterDimension")),
-      phiClusterDimension(iConfig.getParameter<int>("phiClusterDimension")),
-      CNNfilters(iConfig.getParameter<int>("CNNfilters")),
+      scenario(UseEmInterp::No),
+      preEmId(iConfig.getParameter<std::string>("preEmId")),
+      VsPuId(iConfig.getParameter<edm::ParameterSet>("VsPuId")),
+      
       EcalEtMinForClustering(iConfig.getParameter<double>("EcalEtMinForClustering")),
       HcalEtMinForClustering(iConfig.getParameter<double>("HcalEtMinForClustering")),
       EtMinForSeeding(iConfig.getParameter<double>("EtMinForSeeding")),
-      CLTW_CNNmodel_path(iConfig.getParameter<std::string>("CLTW_CNNmodel_path")),
-      CLTW_DNNident_path(iConfig.getParameter<std::string>("CLTW_DNNident_path")),
-      CLTW_DNNcalib_path(iConfig.getParameter<std::string>("CLTW_DNNcalib_path")),
-      CL3D_DNNident_path(iConfig.getParameter<std::string>("CL3D_DNNident_path")),
-      CL3D_DNNcalib_path(iConfig.getParameter<std::string>("CL3D_DNNcalib_path")),
-      CL3D_DNNident_feats(iConfig.getParameter<std::vector<std::string>>("CL3D_DNNident_feats")),
-      CL3D_DNNcalib_feats(iConfig.getParameter<std::vector<std::string>>("CL3D_DNNcalib_feats")),
+      
+      CNNmodel_CB_path(iConfig.getParameter<std::string>("CNNmodel_CB_path")),
+      DNNident_CB_path(iConfig.getParameter<std::string>("DNNident_CB_path")),
+      DNNcalib_CB_path(iConfig.getParameter<std::string>("DNNcalib_CB_path")),
+      CNNmodel_CE_path(iConfig.getParameter<std::string>("CNNmodel_CE_path")),
+      DNNident_CE_path(iConfig.getParameter<std::string>("DNNident_CE_path")),
+      DNNcalib_CE_path(iConfig.getParameter<std::string>("DNNcalib_CE_path")),
+
       DEBUG(iConfig.getParameter<bool>("DEBUG"))
 {    
 
     // Create sessions for Tensorflow inferece
-    CLTW_CNNmodel = tensorflow::loadGraphDef(CLTW_CNNmodel_path);
-    CLTW_CNNsession = tensorflow::createSession(CLTW_CNNmodel);
+    CNNmodel_CB = tensorflow::loadGraphDef(CNNmodel_CB_path);
+    CNNmodel_CBsession = tensorflow::createSession(CNNmodel_CB);
 
-    CLTW_DNNident = tensorflow::loadGraphDef(CLTW_DNNident_path);
-    CLTW_DNNsessionIdent = tensorflow::createSession(CLTW_DNNident);
+    DNNident_CB = tensorflow::loadGraphDef(DNNident_CB_path);
+    DNNident_CBsession = tensorflow::createSession(DNNident_CB);
 
-    CLTW_DNNcalib = tensorflow::loadGraphDef(CLTW_DNNcalib_path);
-    CLTW_DNNsessionCalib = tensorflow::createSession(CLTW_DNNcalib);
+    DNNcalib_CB = tensorflow::loadGraphDef(DNNcalib_CB_path);
+    DNNcalib_CBsession = tensorflow::createSession(DNNcalib_CB);
 
-    CL3D_DNNident = tensorflow::loadGraphDef(CL3D_DNNident_path);
-    CL3D_DNNsessionIdent = tensorflow::createSession(CL3D_DNNident);
+    CNNmodel_CE = tensorflow::loadGraphDef(CNNmodel_CE_path);
+    CNNmodel_CEsession = tensorflow::createSession(CNNmodel_CE);
 
-    CL3D_DNNcalib = tensorflow::loadGraphDef(CL3D_DNNcalib_path);
-    CL3D_DNNsessionCalib = tensorflow::createSession(CL3D_DNNcalib);
+    DNNident_CE = tensorflow::loadGraphDef(DNNident_CE_path);
+    DNNident_CEsession = tensorflow::createSession(DNNident_CE);
 
+    DNNcalib_CE = tensorflow::loadGraphDef(DNNcalib_CE_path);
+    DNNcalib_CEsession = tensorflow::createSession(DNNcalib_CE);
+
+    // Initialize HGCAL BDTs
+    if (!VsPuId.method().empty()) {
+      VsPuId.prepareTMVA();
+    }
 
     // Create produced outputs
-    produces<TowerHelper::TowerClustersCollection>("l1TowerClustersNxM");
-    produces<HGClusterHelper::HGClustersCollection>("HGClustersCollection");
-    produces<TauHelper::TausCollection>("TausCollection");
+    produces<TowerHelper::SimpleTowerClustersCollection> ("l1TowerClustersNxMCB");
+    produces<TowerHelper::SimpleTowerClustersCollection> ("l1TowerClustersNxMCE");
+    produces<HGClusterHelper::HGClustersCollection>      ("HGClustersCollection");
+    produces<TauHelper::TausCollection>                  ("TauMinatorTausCollection");
 
-    if (DEBUG) { std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , HcalTpEtMin = " << HcalEtMinForClustering << " , EcalTpEtMin = " << EcalEtMinForClustering << std::endl; }
+    std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , HcalTpEtMin = " << HcalEtMinForClustering << " , EcalTpEtMin = " << EcalEtMinForClustering << std::endl;
 }
 
 void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 {
     // Create and Fill collection of all calotowers and their attributes
-    std::vector<TowerHelper::TowerHit> l1CaloTowers;
+    std::vector<TowerHelper::SimpleTowerHit> l1CaloTowers;
 
     iEvent.getByToken(l1TowersToken, l1CaloTowerHandle);
     int warnings = 0;
     for (auto &hit : *l1CaloTowerHandle.product())
     {
-        if (hit.towerIEta() == -1016 && hit.towerIPhi() == -962) { warnings += 1; }
+        // skip this weird towers and store warning
+        if (hit.towerIEta() == -1016 && hit.towerIPhi() == -962)
+        {
+            warnings += 1;
+            continue;
+        }
 
-        TowerHelper::TowerHit l1Hit;
+        TowerHelper::SimpleTowerHit l1Hit;
         l1Hit.isBarrel     = true;
         l1Hit.l1egTowerEt  = hit.l1egTowerEt();
-        l1Hit.l1egTowerIet = floor( l1Hit.l1egTowerEt/0.5 );
         l1Hit.nL1eg        = hit.nL1eg();
         l1Hit.towerEta     = hit.towerEta();
         l1Hit.towerPhi     = hit.towerPhi();
@@ -175,20 +196,18 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         l1Hit.towerEt      = l1Hit.towerEm + l1Hit.towerHad + l1Hit.l1egTowerEt;
         l1Hit.towerIeta    = hit.towerIEta();
         l1Hit.towerIphi    = hit.towerIPhi();
-        l1Hit.towerIem     = floor( l1Hit.towerEm/0.5 );
-        l1Hit.towerIhad    = floor( l1Hit.towerHad/0.5 );
-        l1Hit.towerIet     = floor( (l1Hit.towerEm + l1Hit.towerHad + l1Hit.l1egTowerEt)/0.5 );
 
         l1CaloTowers.push_back(l1Hit);
     }
     if (warnings != 0) { std::cout << " ** WARNING : FOUND " << warnings << " TOWERS WITH towerIeta=-1016 AND towerIphi=-962" << std::endl; }
 
-    int maxIetaHGCal = 0;
     iEvent.getByToken(hgcalTowersToken, hgcalTowersHandle);
     for (auto &hit : *hgcalTowersHandle.product())
     {
-        TowerHelper::TowerHit l1Hit;
+        TowerHelper::SimpleTowerHit l1Hit;
         l1Hit.isBarrel     = false;
+        l1Hit.l1egTowerEt  = 0.0;
+        l1Hit.nL1eg        = 0;
         l1Hit.towerEta     = hit.eta();
         l1Hit.towerPhi     = hit.phi();
         l1Hit.towerEm      = hit.etEm();
@@ -196,406 +215,55 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         l1Hit.towerEt      = l1Hit.towerEm + l1Hit.towerHad;
         l1Hit.towerIeta    = endcap_ieta(l1Hit.towerEta);
         l1Hit.towerIphi    = endcap_iphi(l1Hit.towerPhi);
-        l1Hit.towerIem     = floor( l1Hit.towerEm/0.5 );
-        l1Hit.towerIhad    = floor( l1Hit.towerHad/0.5 );
-        l1Hit.towerIet     = floor( (l1Hit.towerEm + l1Hit.towerHad)/0.5 );
 
         l1CaloTowers.push_back(l1Hit);
-
-        if (l1Hit.towerIeta > maxIetaHGCal) { maxIetaHGCal = l1Hit.towerIeta; }
-    }
-
-    iEvent.getByToken(hcalDigisToken, hcalDigisHandle);
-    const auto& decoder = eSetup.getData(decoderTag);
-    for (const auto& hit : *hcalDigisHandle.product())
-    {
-        HcalTrigTowerDetId id = hit.id();
-        
-        // Only doing HF so skip outside range
-        if (abs(id.ieta()) < l1t::CaloTools::kHFBegin) { continue; }
-        if (abs(id.ieta()) > l1t::CaloTools::kHFEnd)   { continue; }    
-
-        // get the energy deposit -> divide it by 2 to account fro iphi splitting
-        float hadEt = decoder.hcaletValue(hit.id(), hit.t0()) / 2.;
-        
-        // shift HF ieta to fit the HGCAL towers
-        int ietaShift = maxIetaHGCal - l1t::CaloTools::kHFBegin;
-
-        TowerHelper::TowerHit l1Hit_A;
-        l1Hit_A.isBarrel     = false;
-        l1Hit_A.towerEta     = l1t::CaloTools::towerEta(id.ieta());
-        l1Hit_A.towerPhi     = l1t::CaloTools::towerPhi(id.ieta(), id.iphi());
-        l1Hit_A.towerEm      = 0.;
-        l1Hit_A.towerHad     = hadEt;
-        l1Hit_A.towerEt      = hadEt;
-        l1Hit_A.towerIeta    = id.ieta() + ietaShift * std::copysign(1, l1Hit_A.towerEta);
-        l1Hit_A.towerIphi    = id.iphi();
-        l1Hit_A.towerIem     = 0;
-        l1Hit_A.towerIhad    = floor( hadEt/0.5 );
-        l1Hit_A.towerIet     = floor( hadEt/0.5 );
-
-        TowerHelper::TowerHit l1Hit_B;
-        l1Hit_B.isBarrel     = false;
-        l1Hit_B.towerEta     = l1t::CaloTools::towerEta(id.ieta());
-        l1Hit_B.towerPhi     = l1t::CaloTools::towerPhi(id.ieta(), id.iphi()) + 0.0872664; // account for iphi splitting
-        l1Hit_B.towerEm      = 0.;
-        l1Hit_B.towerHad     = hadEt;
-        l1Hit_B.towerEt      = hadEt;
-        l1Hit_B.towerIeta    = id.ieta() + ietaShift * std::copysign(1, l1Hit_B.towerEta);
-        l1Hit_B.towerIphi    = id.iphi() + 1; // account for iphi splitting
-        l1Hit_B.towerIem     = 0;
-        l1Hit_B.towerIhad    = floor( hadEt/0.5 );
-        l1Hit_B.towerIet     = floor( hadEt/0.5 );
-
-        // the seeding happens only up to ieta 35 (endcap limit) so no need to store TT for higher than that
-        if (abs(l1Hit_A.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_A);
-        if (abs(l1Hit_B.towerIeta)<=39) l1CaloTowers.push_back(l1Hit_B);
-    }
-
-    // Fill missing towers in HGCAL due to current simulation limitation (because right now they are produced starting from modules and some TT do not have a centered module in front of them)
-    // --> just fill with zeros (JB approves)
-    std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
-    {
-        if (a.towerIeta == b.towerIeta) { return a.towerIphi < b.towerIphi; }
-        else                            { return a.towerIeta < b.towerIeta; }
-    });
-    int iEtaProgression = -39;
-    int iPhiProgression = 1;
-    for (auto &l1CaloTower : l1CaloTowers)
-    {
-        // skip towers with the weird IEta=-1016 IPhi=-962 values and they will also be filled with zeros
-        if (l1CaloTower.towerIeta < -39) { continue; }
-
-        int iPhiDiff = l1CaloTower.towerIphi - iPhiProgression;
-        int max = iPhiProgression+iPhiDiff;
-        if (iPhiDiff != 0)
-        {   
-            if (iPhiDiff<0) { max = 73; } // account for circularity 72->1
-            for (int iPhi=iPhiProgression; iPhi < max; ++iPhi)
-            {
-                TowerHelper::TowerHit l1Hit;
-                if (abs(iEtaProgression)<=17) { l1Hit.isBarrel = true; }
-                else                          { l1Hit.isBarrel = false; }
-                l1Hit.l1egTowerEt  = 0;
-                l1Hit.l1egTowerIet = 0;
-                l1Hit.nL1eg        = 0;
-                l1Hit.towerEta     = iEtaProgression * 0.0845;
-                if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
-                else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
-                l1Hit.towerEm      = 0.0;
-                l1Hit.towerHad     = 0.0;
-                l1Hit.towerEt      = 0.0;
-                l1Hit.towerIeta    = iEtaProgression;
-                l1Hit.towerIphi    = iPhi;
-                l1Hit.towerIem     = 0;
-                l1Hit.towerIhad    = 0;
-                l1Hit.towerIet     = 0;
-                
-                l1CaloTowers.push_back(l1Hit);
-
-                if (DEBUG) { std::cout << "Adding missing tower with iEta " << iEtaProgression << " iPhi " << iPhi << std::endl; }
-
-                iPhiProgression += 1;
-            }
-            if (max==73) // hack to account for circularity 72->1
-            {
-                iEtaProgression += 1;
-                if (iEtaProgression == 0) { iEtaProgression += 1;} // skip iEta=0
-                
-                for (int iPhi=1; iPhi < l1CaloTower.towerIphi; ++iPhi)
-                {
-                    TowerHelper::TowerHit l1Hit;
-                    if (abs(iEtaProgression)<=17) { l1Hit.isBarrel = true; }
-                    else                          { l1Hit.isBarrel = false; }
-                    l1Hit.l1egTowerEt  = 0;
-                    l1Hit.l1egTowerIet = 0;
-                    l1Hit.nL1eg        = 0;
-                    l1Hit.towerEta     = iEtaProgression * 0.0845;
-                    if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
-                    else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
-                    l1Hit.towerEm      = 0.0;
-                    l1Hit.towerHad     = 0.0;
-                    l1Hit.towerEt      = 0.0;
-                    l1Hit.towerIeta    = iEtaProgression;
-                    l1Hit.towerIphi    = iPhi;
-                    l1Hit.towerIem     = 0;
-                    l1Hit.towerIhad    = 0;
-                    l1Hit.towerIet     = 0;
-                    
-                    l1CaloTowers.push_back(l1Hit);
-
-                    if (DEBUG) { std::cout << "Adding missing tower with iEta " << iEtaProgression << " iPhi " << iPhi << std::endl; }
-
-                    iPhiProgression += 1;
-                }
-
-                iEtaProgression -= 1;
-                if (iEtaProgression == 0) { iEtaProgression -= 1;} // skip iEta=0
-            }
-        }
-        
-        iPhiProgression += 1;
-        if (iPhiProgression > 72)
-        {
-            iPhiProgression = 1;
-            iEtaProgression += 1;
-            if (iEtaProgression == 0) { iEtaProgression += 1;} // skip iEta=0
-        }
-        if (max == 73) { iPhiProgression = l1CaloTower.towerIphi+1; } // hack to account for circularity 72->1
-
-        if (iEtaProgression>39) { break; }
-    }
-
-    if (DEBUG)
-    {
-        std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
-        {
-            if (a.towerIeta == b.towerIeta) { return a.towerIphi < b.towerIphi; }
-            else                            { return a.towerIeta < b.towerIeta; }
-        });
-
-        for (auto &l1CaloTower : l1CaloTowers)
-        {
-            printf("CALO TOWER iEta %i iPhi %i eta %f phi %f em %f had %f et %f nL1eg %i\n",
-                (int)l1CaloTower.towerIeta,
-                (int)l1CaloTower.towerIphi,
-                l1CaloTower.towerEta,
-                l1CaloTower.towerPhi,
-                l1CaloTower.towerEm,
-                l1CaloTower.towerHad,
-                l1CaloTower.towerEt,
-                l1CaloTower.nL1eg);
-        }
     }
 
     // Sort the ECAL+HCAL+L1EGs tower sums based on total ET
-    std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b) { return a.towerEt > b.towerEt; });
+    std::sort(begin(l1CaloTowers), end(l1CaloTowers), [](const TowerHelper::SimpleTowerHit &a, TowerHelper::SimpleTowerHit &b) { return a.towerEt > b.towerEt; });
 
-    if (DEBUG)
-    {
-        int n_towers = l1CaloTowers.size();
-        int n_nonzero_towers = 0;
-        for (auto &l1CaloTower : l1CaloTowers) { if (l1CaloTower.towerEt>0) n_nonzero_towers++; }
-        std::cout << "***************************************************************************************************************************************" << std::endl;
-        std::cout << " ** total number of towers = " << n_towers << std::endl;
-        std::cout << " ** total number of non-zero towers = " << n_nonzero_towers << std::endl;
-    }
-
-    
-    // Make NxM TowerClusters
-    std::unique_ptr<TowerHelper::TowerClustersCollection> l1TowerClustersNxM(new TowerHelper::TowerClustersCollection);
-
-    // re-initialize the stale flags
-    for (auto &l1CaloTower : l1CaloTowers) { l1CaloTower.InitStale(); }
-
-    // loop for NxM TowerClusters seeds finding
-    bool caloTauSeedingFinished = false;
-    while (!caloTauSeedingFinished)
-    {
-        TowerHelper::TowerCluster cluNxM; cluNxM.InitHits();
-
-        for (auto &l1CaloTower : l1CaloTowers)
-        {
-            // skip HF towers for seeding
-            if (abs(l1CaloTower.towerIeta) > 35) { continue; }
-
-            // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale4seed) { continue; }
-
-            // find highest ET tower and use to seed the TowerCluster
-            if (cluNxM.nHits == 0.0)
-            {
-                // the leading unused tower has ET < min, stop jet clustering
-                if (l1CaloTower.towerEt < EtMinForSeeding)
-                {
-                    caloTauSeedingFinished = true;
-                    break;
-                }
-                l1CaloTower.stale4seed = true;
-                l1CaloTower.stale = true;
-
-                // Set seed location
-                if (l1CaloTower.isBarrel) { cluNxM.barrelSeeded = true; }
-                
-                // Fill the seed tower variables
-                cluNxM.seedIeta = l1CaloTower.towerIeta;
-                cluNxM.seedIphi = l1CaloTower.towerIphi;
-                cluNxM.seedEta  = l1CaloTower.towerEta;
-                cluNxM.seedPhi  = l1CaloTower.towerPhi;
-                if      (abs(cluNxM.seedIeta)<=13) { cluNxM.isBarrel = true;  }
-                else if (abs(cluNxM.seedIeta)>=22) { cluNxM.isEndcap = true;  }
-                else                               { cluNxM.isOverlap = true; }
-
-                // Fill the TowerCluster towers
-                cluNxM.towerHits.push_back(l1CaloTower);
-                
-                // Fill the TowerCluster overall variables
-                cluNxM.totalEm      += l1CaloTower.towerEm;
-                cluNxM.totalHad     += l1CaloTower.towerHad;
-                cluNxM.totalEt      += l1CaloTower.towerEt;
-                cluNxM.totalEgEt    += l1CaloTower.l1egTowerEt;
-                cluNxM.totalIem     += l1CaloTower.towerIem;
-                cluNxM.totalIhad    += l1CaloTower.towerIhad;
-                cluNxM.totalIet     += l1CaloTower.towerIet;
-                cluNxM.totalEgIet   += l1CaloTower.l1egTowerIet;
-                cluNxM.nHits++;
-
-                continue;
-            }
-
-            // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_dIEta(cluNxM.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_dIPhi(cluNxM.seedIphi, l1CaloTower.towerIphi);
-
-            // stale tower for seeding if it would lead to overalp between clusters
-            if (abs(d_iEta) <= (etaClusterDimension-1) && abs(d_iPhi) <= (phiClusterDimension-1)) { l1CaloTower.stale4seed = true; }
-        } // end for loop over TPs
-
-        if (cluNxM.nHits > 0) { l1TowerClustersNxM->push_back(cluNxM); }
-
-    }  // end while loop of TowerClusters seeding
-
-    // Create batch input for Tensorflow models
-    tensorflow::setLogging("2");
-    int batchSize =  (int)(l1TowerClustersNxM->size());
-    tensorflow::TensorShape imageShape({batchSize, etaClusterDimension, phiClusterDimension, CNNfilters});
-    tensorflow::TensorShape positionShape({batchSize, 2});
-    tensorflow::Tensor TowerClusterImage(tensorflow::DT_FLOAT, imageShape);
-    tensorflow::Tensor TowerClusterPosition(tensorflow::DT_FLOAT, positionShape);
-
-    // loop for NxM TowerClusters creation starting from the seed just found
-    int cluIdx = 0;
-    for (auto& cluNxM : *l1TowerClustersNxM)
-    {
-        for (auto &l1CaloTower : l1CaloTowers)
-        {
-            // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
-
-            // go on with unused l1CaloTowers which are not the initial seed
-            int d_iEta = tower_dIEta(cluNxM.seedIeta, l1CaloTower.towerIeta);
-            int d_iPhi = tower_dIPhi(cluNxM.seedIphi, l1CaloTower.towerIphi);
-
-            // cluster all towers in a NxM towers mask
-            if (abs(d_iEta) <= (etaClusterDimension-1)/2 && abs(d_iPhi) <= (phiClusterDimension-1)/2)
-            {
-                l1CaloTower.stale = true;
-
-                // Fill the TowerCluster towers
-                cluNxM.towerHits.push_back(l1CaloTower);
-
-                // Fill the TowerCluster overall variables
-                cluNxM.totalEm      += l1CaloTower.towerEm;
-                cluNxM.totalHad     += l1CaloTower.towerHad;
-                cluNxM.totalEt      += l1CaloTower.towerEt;
-                cluNxM.totalEgEt    += l1CaloTower.l1egTowerEt;
-                cluNxM.totalIem     += l1CaloTower.towerIem;
-                cluNxM.totalIhad    += l1CaloTower.towerIhad;
-                cluNxM.totalIet     += l1CaloTower.towerIet;
-                cluNxM.totalEgIet   += l1CaloTower.l1egTowerIet;
-                if (l1CaloTower.towerIet > 0) cluNxM.nHits++;
-            }
-        }// end for loop of TP clustering
-
-        // sort the TowerHits in the TowerCluster to have them organized as "a picture of it"
-        std::vector<TowerHelper::TowerHit> sortedHits = sortPicLike(cluNxM.towerHits);
-        cluNxM.InitHits(); cluNxM.towerHits = sortedHits;
-
-        if (int(sortedHits.size()) != etaClusterDimension*phiClusterDimension) { std::cout << " ** WARNING : CLUSTER WITH WRONG NUMBER OF TOWERS! (" << sortedHits.size() << " TOWERS FOUND)" << std::endl; }
-
-        // Fill inputs for Tensorflow inference
-        for (int eta = 0; eta < etaClusterDimension; ++eta)
-        {
-            for (int phi = 0; phi < phiClusterDimension; ++phi)
-            {
-                int towerIdx = eta*phiClusterDimension + phi;
-                if (CNNfilters == 3)
-                {
-                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 0) = inputQuantizer(cluNxM.towerHits[towerIdx].l1egTowerEt, 0.25, 10);
-                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 1) = inputQuantizer(cluNxM.towerHits[towerIdx].towerEm, 0.25, 10);
-                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 2) = inputQuantizer(cluNxM.towerHits[towerIdx].towerHad, 0.25, 10);
-                }
-                else if (CNNfilters == 1)
-                {
-                    TowerClusterImage.tensor<float, 4>()(cluIdx, eta, phi, 0) = cluNxM.towerHits[towerIdx].towerEt;
-                }
-
-                if (DEBUG)
-                {
-                    std::cout << "(" << eta << "," << phi << ")[" << towerIdx << "]        " << cluNxM.towerHits[towerIdx].l1egTowerEt << "    " << cluNxM.towerHits[towerIdx].towerEm << "    " << cluNxM.towerHits[towerIdx].towerHad << "\n" << std::endl;
-                    if (phi==phiClusterDimension-1) { std::cout << "" << std::endl; }
-                }
-            }
-        }
-        
-        TowerClusterPosition.tensor<float, 2>()(cluIdx, 0) = cluNxM.seedEta;
-        TowerClusterPosition.tensor<float, 2>()(cluIdx, 1) = cluNxM.seedPhi;
-        
-        cluIdx += 1; // increase index of cluster in batch
-
-    }// end while loop of NxM TowerClusters creation
-
-    // Apply CNN model
-    tensorflow::NamedTensorList CLTW_CNNinputList = {{"TowerClusterImage", TowerClusterImage}, {"TowerClusterPosition", TowerClusterPosition}};
-    std::vector<tensorflow::Tensor> CLTW_CNNoutputs;
-    tensorflow::run(CLTW_CNNsession, CLTW_CNNinputList, {"model/middleMan/concat"}, &CLTW_CNNoutputs);
-    tensorflow::NamedTensorList CLTW_DNNinputsList = {{"middleMan", CLTW_CNNoutputs[0]}};
-
-    // Apply DNN for identification
-    std::vector<tensorflow::Tensor> CLTW_DNNoutputsIdent;
-    tensorflow::run(CLTW_DNNsessionIdent, CLTW_DNNinputsList, {"model_1/sigmoid_DNNout/Sigmoid"}, &CLTW_DNNoutputsIdent);
-
-    // Apply DNN for calibration
-    std::vector<tensorflow::Tensor> CLTW_DNNoutputsCalib;
-    tensorflow::run(CLTW_DNNsessionCalib, CLTW_DNNinputsList, {"TauCNNCalibrator/DNNout/MatMul"}, &CLTW_DNNoutputsCalib);
-
-    // Fill CNN+DNN output variables of TowerClusters
-    cluIdx = 0;
-    for (auto& cluNxM : *l1TowerClustersNxM)
-    {
-        cluNxM.IDscore = CLTW_DNNoutputsIdent[0].matrix<float>()(0, cluIdx);
-        cluNxM.calibPt = CLTW_DNNoutputsCalib[0].matrix<float>()(0, cluIdx);
-        cluIdx += 1; // increase index of cluster in batch
-    }
-
-    if (DEBUG) 
-    {
-        std::cout << "\n***************************************************************************************************************************************" << std::endl;
-        for (auto& cluNxM : *l1TowerClustersNxM)
-        {
-            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-            std::cout << " -- clu NxM seed " << " , eta " << cluNxM.seedIeta << " phi " << cluNxM.seedIphi << std::endl;
-            std::cout << " -- clu NxM seed " << " , isBarrel " << cluNxM.isBarrel << " isEndcap " << cluNxM.isEndcap << " isOverlap " << cluNxM.isOverlap << std::endl;
-            std::cout << " -- clu NxM towers etas (" << cluNxM.towerHits.size() << ") [";
-            for (long unsigned int j = 0; j < cluNxM.towerHits.size(); ++j) { std::cout  << ", " << cluNxM.towerHits[j].towerIeta; }
-            std::cout << "]" << std::endl;
-            std::cout << " -- clu NxM towers phis (" << cluNxM.towerHits.size() << ") [";
-            for (long unsigned int j = 0; j < cluNxM.towerHits.size(); ++j) { std::cout << ", " << cluNxM.towerHits[j].towerIphi; }
-            std::cout << "]" << std::endl;
-            std::cout << " -- clu NxM towers ems (" << cluNxM.towerHits.size() << ") [";
-            for (long unsigned int j = 0; j < cluNxM.towerHits.size(); ++j) { std::cout << ", " << cluNxM.towerHits[j].towerIem; }
-            std::cout << "]" << std::endl;
-            std::cout << " -- clu NxM towers hads (" << cluNxM.towerHits.size() << ") [";
-            for (long unsigned int j = 0; j < cluNxM.towerHits.size(); ++j) { std::cout << ", " << cluNxM.towerHits[j].towerIhad; }
-            std::cout << "]" << std::endl;
-            std::cout << " -- clu NxM towers ets (" << cluNxM.towerHits.size() << ") [";
-            for (long unsigned int j = 0; j < cluNxM.towerHits.size(); ++j) { std::cout << ", " << cluNxM.towerHits[j].towerIet; }
-            std::cout << "]" << std::endl;
-            std::cout << " -- clu NxM number of towers " << cluNxM.nHits << std::endl;
-            std::cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
-        }
-        std::cout << "*****************************************************************************************************************************************" << std::endl;
-    }
-
-    // Create and Fill the collection of 3D clusters and their usefull attributes
-    std::unique_ptr<HGClusterHelper::HGClustersCollection> HGClustersCollection(new HGClusterHelper::HGClustersCollection);
+    // Create and Fill the collection of 3D clusters and their attributes
+    std::vector<HGClusterHelper::HGCluster> AllHGClustersCollection;
     iEvent.getByToken(HGClusterToken, HGClusterHandle);
 
-    cluIdx = 0;
-    for (auto& cl3d : *HGClusterHandle.product())
+    for (auto cl3dIt = HGClusterHandle->begin(0); cl3dIt != HGClusterHandle->end(0); ++cl3dIt)
     {
-        HGClusterHelper::HGCluster HGCluster;
+        auto& cl3d = *cl3dIt;
 
+        // Implement cl3d PU ID as done in https://github.com/cms-sw/cmssw/blob/master/L1Trigger/Phase2L1ParticleFlow/plugins/PFClusterProducerFromHGC3DClusters.cc#L120
+        bool isEM = preEmId(*cl3dIt);
+        l1t::PFCluster cluster(cl3d.pt(), cl3d.eta(), cl3d.phi(), cl3d.hOverE());
+        if (scenario == UseEmInterp::EmOnly) // for emID objs, use EM interp as pT and set H = 0
+        {
+            if (isEM)
+            {
+                float pt_new = cl3d.iPt(l1t::HGCalMulticluster::EnergyInterpretation::EM);
+                float hoe_new = 0.;
+                cluster = l1t::PFCluster(pt_new, cl3d.eta(), cl3d.phi(), hoe_new, isEM);
+            }
+        }
+        else if (scenario == UseEmInterp::AllKeepHad) // for all objs, replace EM part with EM interp, preserve H
+        {
+            float had_old = cl3d.pt() - cluster.emEt();
+            float em_new = cl3d.iPt(l1t::HGCalMulticluster::EnergyInterpretation::EM);
+            float pt_new = had_old + em_new;
+            float hoe_new = em_new > 0 ? (had_old / em_new) : -1;
+            cluster = l1t::PFCluster(pt_new, cl3d.eta(), cl3d.phi(), hoe_new, isEM);
+        }
+        else if (scenario == UseEmInterp::AllKeepTot) // for all objs, replace EM part with EM interp, preserve pT
+        {
+            float em_new = cl3d.iPt(l1t::HGCalMulticluster::EnergyInterpretation::EM);
+            float hoe_new = em_new > 0 ? (cl3d.pt() / em_new - 1) : -1;
+            cluster = l1t::PFCluster(cl3d.pt(), cl3d.eta(), cl3d.phi(), hoe_new, isEM);
+        }
+
+        if (!VsPuId.method().empty())
+        { 
+            int id = VsPuId.passID(*cl3dIt, cluster);
+            if (!id) { continue; } // skip cl3d if it does not pass puid
+        }
+
+        HGClusterHelper::HGCluster HGCluster;
         HGCluster.pt = cl3d.pt();
         HGCluster.energy = cl3d.energy();
         HGCluster.eta = cl3d.eta();
@@ -615,173 +283,377 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         HGCluster.meanz = cl3d.zBarycenter();
         HGCluster.quality = cl3d.hwQual();
 
-        if (DEBUG)
-        {
-            std::cout << "---------------------------------------------------------------------" <<std::endl;
-            std::cout << "pt :               in " << cl3d.pt()               << " out " << HGCluster.pt               << std::endl;
-            std::cout << "energy :           in " << cl3d.energy()           << " out " << HGCluster.energy           << std::endl;
-            std::cout << "eta :              in " << cl3d.eta()              << " out " << HGCluster.eta              << std::endl;
-            std::cout << "phi :              in " << cl3d.phi()              << " out " << HGCluster.phi              << std::endl;
-            std::cout << "showerlength :     in " << cl3d.showerLength()     << " out " << HGCluster.showerlength     << std::endl;
-            std::cout << "coreshowerlength : in " << cl3d.coreShowerLength() << " out " << HGCluster.coreshowerlength << std::endl;
-            std::cout << "firstlayer :       in " << cl3d.firstLayer()       << " out " << HGCluster.firstlayer       << std::endl;
-            std::cout << "seetot :           in " << cl3d.sigmaEtaEtaTot()   << " out " << HGCluster.seetot           << std::endl;
-            std::cout << "seemax :           in " << cl3d.sigmaEtaEtaMax()   << " out " << HGCluster.seemax           << std::endl;
-            std::cout << "spptot :           in " << cl3d.sigmaPhiPhiTot()   << " out " << HGCluster.spptot           << std::endl;
-            std::cout << "sppmax :           in " << cl3d.sigmaPhiPhiMax()   << " out " << HGCluster.sppmax           << std::endl;
-            std::cout << "szz :              in " << cl3d.sigmaZZ()          << " out " << HGCluster.szz              << std::endl;
-            std::cout << "srrtot :           in " << cl3d.sigmaRRTot()       << " out " << HGCluster.srrtot           << std::endl;
-            std::cout << "srrmax :           in " << cl3d.sigmaRRMax()       << " out " << HGCluster.srrmax           << std::endl;
-            std::cout << "srrmean :          in " << cl3d.sigmaRRMean()      << " out " << HGCluster.srrmean          << std::endl;
-            std::cout << "hoe :              in " << cl3d.hOverE()           << " out " << HGCluster.hoe              << std::endl;
-            std::cout << "meanz :            in " << cl3d.zBarycenter()      << " out " << HGCluster.meanz            << std::endl;
-            std::cout << "quality :          in " << cl3d.hwQual()           << " out " << HGCluster.quality          << std::endl;
-            std::cout << "---------------------------------------------------------------------" <<std::endl;
-        }
-
-        HGClustersCollection->push_back(HGCluster);
-        cluIdx += 1; // increase index of cluster in batch
+        AllHGClustersCollection.push_back(HGCluster);
     }
 
-    // Create batch input for Tensorflow models
-    tensorflow::setLogging("2");
-    batchSize =  (int)(HGClustersCollection->size());
-    const int nmb_ident_feats = CL3D_DNNident_feats.size();
-    const int nmb_calib_feats = CL3D_DNNcalib_feats.size();
-    tensorflow::TensorShape identInputShape({batchSize, nmb_ident_feats});
-    tensorflow::Tensor Cl3dIdentInput(tensorflow::DT_FLOAT, identInputShape);
-    tensorflow::TensorShape calibInputShape({batchSize, nmb_calib_feats});
-    tensorflow::Tensor Cl3dCalibInput(tensorflow::DT_FLOAT, calibInputShape);
+    // order the collection in pt (the input to the GCT will be pt ordered)
+    std::sort(begin(AllHGClustersCollection), end(AllHGClustersCollection), [](const HGClusterHelper::HGCluster &a, HGClusterHelper::HGCluster &b) { return a.pt > b.pt; });
 
-    cluIdx = 0;
-    for (auto& HGCluster : *HGClustersCollection)
+    // Make NxM TowerClusters and HGClusters collections for TauMinator
+    std::unique_ptr<TowerHelper::SimpleTowerClustersCollection> l1TowerClustersNxM_CB(new TowerHelper::SimpleTowerClustersCollection);
+    std::unique_ptr<TowerHelper::SimpleTowerClustersCollection> l1TowerClustersNxM_CE(new TowerHelper::SimpleTowerClustersCollection);
+    std::unique_ptr<HGClusterHelper::HGClustersCollection> HGClustersCollection(new HGClusterHelper::HGClustersCollection);
+
+    // supporting collection of endcap clusters before cl3d matching
+    std::vector<TowerHelper::SimpleTowerCluster> AllL1TowerClustersNxM_CE;
+
+    bool caloTauSeedingFinished = false;
+    // loop for seeding of different tau objects
+    while (!caloTauSeedingFinished)
     {
-        for (int i = 0; i < nmb_ident_feats; ++i)
+        TowerHelper::SimpleTowerCluster clNxM; clNxM.InitHits(IEta_dim, IPhi_dim);
+        bool seeded = false;
+
+        // loop over towers to cluster
+        for (auto &l1CaloTower : l1CaloTowers)
         {
-            if (CL3D_DNNident_feats[i] == "cl3d_pt")               { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.pt, 0.25, 14) - 20.241386991916283)/23.01837359563478; }
-            if (CL3D_DNNident_feats[i] == "cl3d_e")                { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.energy, 0.25, 14); }
-            if (CL3D_DNNident_feats[i] == "cl3d_eta")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.eta; }
-            if (CL3D_DNNident_feats[i] == "cl3d_localAbsEta")      { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9) - 1.0074996364465862)/0.49138567390141064; }
-            if (CL3D_DNNident_feats[i] == "cl3d_phi")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.phi; }
-            if (CL3D_DNNident_feats[i] == "cl3d_showerlength")     { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.showerlength - 35.80472904577922)/7.440518440086627; }
-            if (CL3D_DNNident_feats[i] == "cl3d_coreshowerlength") { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.coreshowerlength - 11.933355669294706)/4.791972733791438; }
-            if (CL3D_DNNident_feats[i] == "cl3d_firstlayer")       { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.firstlayer - 1.3720078128341484)/1.6893861207515388; }
-            if (CL3D_DNNident_feats[i] == "cl3d_seetot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.seetot, 0.0000153, 16) - 0.03648582652086512)/0.020407089049271552; }
-            if (CL3D_DNNident_feats[i] == "cl3d_seemax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seemax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_spptot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.spptot, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_sppmax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.sppmax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_szz")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.szz, 0.002, 16) - 20.51621627863874)/11.633317917896875; }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrtot")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrtot, 0.0000153, 16) - 0.00534390307737272)/0.001325129860675611; }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrmax")           { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmax, 0.0000153, 16); }
-            if (CL3D_DNNident_feats[i] == "cl3d_srrmean")          { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrmean, 0.0000153, 16) - 0.00365570411813347367)/0.0009327963551387752; }
-            if (CL3D_DNNident_feats[i] == "cl3d_hoe")              { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.hoe, 0.002, 16) - 1.3676566630073708)/7.978238945457623; }
-            if (CL3D_DNNident_feats[i] == "cl3d_localAbsMeanZ")    { Cl3dIdentInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(10*(abs(HGCluster.meanz)-320), 0.5, 12) - 291.6762877632198)/178.8235004591792; }
-        }
+            // skip seeding in towers that would make the cluster extend in HF
+            // skip l1CaloTowers which are already used by this clusters' mask
+            if (abs(l1CaloTower.towerEta) > 2.83 || l1CaloTower.stale4seed) { continue; }
 
-        for (int i = 0; i < nmb_calib_feats; ++i)
-        {
-            if (CL3D_DNNcalib_feats[i] == "cl3d_pt")               { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.pt, 0.25, 14) - 20.241386991916283)/23.01837359563478; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_e")                { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.energy, 0.25, 14); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_eta")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.eta; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_localAbsEta")      { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(abs(HGCluster.eta)-1.45, 0.004, 9) - 1.0074996364465862)/0.49138567390141064; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_phi")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  HGCluster.phi; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_showerlength")     { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.showerlength - 35.80472904577922)/7.440518440086627; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_coreshowerlength") { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.coreshowerlength - 11.933355669294706)/4.791972733791438; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_firstlayer")       { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (HGCluster.firstlayer - 1.3720078128341484)/1.6893861207515388; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_seetot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.seetot, 0.0000153, 16) - 0.03648582652086512)/0.020407089049271552; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_seemax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.seemax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_spptot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.spptot, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_sppmax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.sppmax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_szz")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.szz, 0.002, 16) - 20.51621627863874)/11.633317917896875; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrtot")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrtot, 0.0000153, 16) - 0.00534390307737272)/0.001325129860675611; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrmax")           { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  inputQuantizer(HGCluster.srrmax, 0.0000153, 16); }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_srrmean")          { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.srrmean, 0.0000153, 16) - 0.00365570411813347367)/0.0009327963551387752; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_hoe")              { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(HGCluster.hoe, 0.002, 16) - 1.3676566630073708)/7.978238945457623; }
-            if (CL3D_DNNcalib_feats[i] == "cl3d_localAbsMeanZ")    { Cl3dCalibInput.tensor<float, 2>()(cluIdx, i) =  (inputQuantizer(10*(abs(HGCluster.meanz)-320), 0.5, 12) - 291.6762877632198)/178.8235004591792; }
-        }
-
-        cluIdx += 1; // increase index of cluster in batch
-    }
-
-    // Apply DNN for identification
-    tensorflow::NamedTensorList CL3D_DNNIdentInputsList = {{"CL3DFeatures", Cl3dIdentInput}};
-    std::vector<tensorflow::Tensor> CL3D_DNNoutputsIdent;
-    tensorflow::run(CL3D_DNNsessionIdent, CL3D_DNNIdentInputsList, {"TauDNNIdentifier/sigmoid_DNNout/Sigmoid"}, &CL3D_DNNoutputsIdent);
-
-    // Apply DNN for calibration
-    tensorflow::NamedTensorList CL3D_DNNCalibInputsList = {{"CL3DFeatures", Cl3dCalibInput}};
-    std::vector<tensorflow::Tensor> CL3D_DNNoutputsCalib;
-    tensorflow::run(CL3D_DNNsessionCalib, CL3D_DNNCalibInputsList, {"TauDNNCalibrator/DNNout/MatMul"}, &CL3D_DNNoutputsCalib);
-
-    // Fill CNN+DNN output variables of TowerClusters
-    cluIdx = 0;
-    for (auto& HGCluster : *HGClustersCollection)
-    {
-        HGCluster.IDscore = CL3D_DNNoutputsIdent[0].matrix<float>()(0, cluIdx);
-        HGCluster.calibPt = CL3D_DNNoutputsCalib[0].matrix<float>()(0, cluIdx);
-        cluIdx += 1; // increase index of cluster in batch
-    }
-
-    // Create and Fill the collection of L1 taus and their usefull attributes
-    std::unique_ptr<TauHelper::TausCollection> TausCollection(new TauHelper::TausCollection);
-
-    // cross loop over NxM TowerClusters and CL3D to do matching in the endcap
-    for (auto& cluNxM : *l1TowerClustersNxM)
-    {
-        if (cluNxM.IDscore<0/*FIXME*/) { continue; } // consider only clusters that pass the minimal 99% efficiency cut
-
-        TauHelper::Tau Tau;
-
-        // treat endcap and barrel separartely
-        if (abs(cluNxM.seedEta)>1.5)
-        {
-            bool matched = false;
-            float IDmax = 0.0;
-            HGClusterHelper::HGCluster HGCluster2store; 
-            for (auto& HGCluster : *HGClustersCollection)
+            // if not seded do the seeding
+            if (!seeded)
             {
-                if (HGCluster.IDscore<0/*FIXME*/) { continue; } // consider only clusters that pass the minimal 99% efficiency cut
-
-                // apply geometrical match between cluNxM and cl3d
-                float dEta = cluNxM.seedEta - HGCluster.eta;
-                float dPhi = reco::deltaPhi(cluNxM.seedPhi, HGCluster.phi);
-                float dR2 = dEta * dEta + dPhi * dPhi;
-                if (dR2 > 0.25) { continue; } // require the cluster to be within dR 0.5 
-
-                if (HGCluster.IDscore > IDmax)
+                // the leading unused tower has ET < min, stop jet clustering
+                if (l1CaloTower.towerEt < EtMinForSeeding)
                 {
-                    IDmax = HGCluster.IDscore;
-                    HGCluster2store = HGCluster;
-                    matched = true;
+                    caloTauSeedingFinished = true;
+                    continue;
+                }
+
+                clNxM.seedIeta = l1CaloTower.towerIeta;
+                clNxM.seedIphi = l1CaloTower.towerIphi;
+                clNxM.seedEta  = l1CaloTower.towerEta;
+                clNxM.seedPhi  = l1CaloTower.towerPhi;
+                if (l1CaloTower.isBarrel) { clNxM.barrelSeeded = true; }
+
+                clNxM.towerHits[seedIdx] = l1CaloTower;
+                l1CaloTower.stale4seed = true;
+                l1CaloTower.stale = true;
+                seeded = true;
+
+                continue;
+            }
+
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            // use iEta/iPhi comparisons in the barrel and eta/phi in HGCal
+            if (clNxM.barrelSeeded && l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_dIEta(l1CaloTower.towerIeta, clNxM.seedIeta);
+                d_iPhi = tower_dIPhi(l1CaloTower.towerIphi, clNxM.seedIphi);
+            }
+            else
+            {
+                d_Eta = l1CaloTower.towerEta - clNxM.seedEta;
+                d_Phi = reco::deltaPhi(l1CaloTower.towerPhi, clNxM.seedPhi);
+            }
+
+            // stale tower for seeding if it would lead to overalp between clusters
+            if ((abs(d_iEta) <= IEta_dim-1 && abs(d_iPhi) <= IPhi_dim-1) || (abs(d_Eta) < Eta_dim_seed && abs(d_Phi) < Phi_dim_seed)) { l1CaloTower.stale4seed = true; }
+
+        } // end for loop over TPs
+
+        // pushback seeds split in barrel and endcap
+        if (seeded)
+        {
+            if (clNxM.barrelSeeded) { l1TowerClustersNxM_CB->push_back(clNxM); }
+            else                     { AllL1TowerClustersNxM_CE.push_back(clNxM); }
+        }
+
+    } // end while loop of TowerClusters seeding
+
+
+    // loop for barrel NxM TowerClusters clustering starting from the seeds just found
+    for (auto& clNxM : *l1TowerClustersNxM_CB)
+    {
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip l1CaloTowers which are already used
+            if (l1CaloTower.stale) { continue; }
+
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            int   hitIdx = 99.;
+            // use iEta/iPhi comparisons in the barrel and use eta/phi in HGCal
+            if (l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_dIEta(l1CaloTower.towerIeta, clNxM.seedIeta);
+                d_iPhi = tower_dIPhi(l1CaloTower.towerIphi, clNxM.seedIphi);
+
+                hitIdx = d_iEta * IPhi_dim + d_iPhi + seedIdx;
+            }
+            else
+            {
+                d_Eta = l1CaloTower.towerEta - clNxM.seedEta;
+                d_Phi = reco::deltaPhi(l1CaloTower.towerPhi, clNxM.seedPhi);
+
+                int dieta = d_Eta / 0.0807; // minimal difference in endcap is 0.0808
+                int diphi = d_Phi / 0.0872; 
+                hitIdx = dieta * IPhi_dim + diphi + seedIdx;
+            }
+
+            // cluster all towers in a NxM towers mask
+            if ((abs(d_iEta) <= (IEta_dim-1)/2 && abs(d_iPhi) <= (IPhi_dim-1)/2) || (abs(d_Eta) < Eta_dim && abs(d_Phi) < Phi_dim))
+            {
+                clNxM.towerHits[hitIdx] = l1CaloTower;
+                l1CaloTower.stale = true;
+            }
+
+        } // end for loop over TPs
+
+    } // end while loop of barrel TowerClusters creation
+
+
+    // in the endcap cross-loop over clNxM and cl3d to match them (we can do it before full clustering just using the seed info)
+    for (auto& clNxM : AllL1TowerClustersNxM_CE)
+    {
+        bool matched = false;
+        for (auto &HGCluster : AllHGClustersCollection)
+        {
+            // in case the clNxM or HGCluster have already been matched just continue through the list to the end
+            // only use cl3ds above 4GeV
+            if (matched || HGCluster.stale || HGCluster.pt < 4) { continue; }
+
+            float d_Eta = HGCluster.eta - clNxM.seedEta;
+            float d_Phi = reco::deltaPhi(HGCluster.phi, clNxM.seedPhi);
+            float d_R2 = pow(d_Eta,2) + pow(d_Phi,2);
+
+            if (d_R2 < 0.25)
+            {
+                HGCluster.stale = true;
+                HGClustersCollection->push_back(HGCluster);
+                l1TowerClustersNxM_CE->push_back(clNxM);
+                matched = true;
+            }
+        
+        } // end for loop over cl3ds
+    
+    } // end for loop over clNxM
+
+
+    // loop for endcap matched NxM TowerClusters clustering starting from the seeds just found
+    for (auto& clNxM : *l1TowerClustersNxM_CE)
+    {
+        for (auto &l1CaloTower : l1CaloTowers)
+        {
+            // skip l1CaloTowers which are already used
+            if (l1CaloTower.stale) { continue; }
+
+            int   d_iEta = 99;
+            int   d_iPhi = 99;
+            float d_Eta = 99.;
+            float d_Phi = 99.;
+            int   hitIdx = 99.;
+            // use iEta/iPhi comparisons in the endcap and use eta/phi in HGCal
+            if (l1CaloTower.isBarrel)
+            {
+                d_iEta = tower_dIEta(l1CaloTower.towerIeta, clNxM.seedIeta);
+                d_iPhi = tower_dIPhi(l1CaloTower.towerIphi, clNxM.seedIphi);
+
+                hitIdx = d_iEta * IPhi_dim + d_iPhi + seedIdx;
+            }
+            else
+            {
+                d_Eta = l1CaloTower.towerEta - clNxM.seedEta;
+                d_Phi = reco::deltaPhi(l1CaloTower.towerPhi, clNxM.seedPhi);
+
+                int dieta = d_Eta / 0.0807; // minimal difference in endcap is 0.0808
+                int diphi = d_Phi / 0.0872; 
+                hitIdx = dieta * IPhi_dim + diphi + seedIdx;
+            }
+
+            // cluster all towers in a NxM towers mask
+            if ((abs(d_iEta) <= (IEta_dim-1)/2 && abs(d_iPhi) <= (IPhi_dim-1)/2) || (abs(d_Eta) < Eta_dim && abs(d_Phi) < Phi_dim))
+            {
+                clNxM.towerHits[hitIdx] = l1CaloTower;
+                l1CaloTower.stale = true;
+            }
+
+        } // end for loop over TPs
+
+    } // end while loop of endcap TowerClusters creation
+
+
+    // Barrel TauMinator application
+    tensorflow::setLogging("2");
+    int batchSize_CB =  (int)(l1TowerClustersNxM_CB->size());
+    tensorflow::TensorShape imageShape_CB({batchSize_CB, IEta_dim, IPhi_dim, 3});
+    tensorflow::TensorShape positionShape_CB({batchSize_CB, 2});
+    tensorflow::Tensor TowerClusterImage_CB(tensorflow::DT_FLOAT, imageShape_CB);
+    tensorflow::Tensor TowerClusterPosition_CB(tensorflow::DT_FLOAT, positionShape_CB);
+
+    int clIdx = 0;
+    for (auto& clNxM : *l1TowerClustersNxM_CB)
+    {
+        // Fill inputs for Tensorflow inference
+        for (int eta = 0; eta < IEta_dim; ++eta)
+        {
+            for (int phi = 0; phi < IPhi_dim; ++phi)
+            {
+                int towerIdx = eta*IPhi_dim + phi;
+                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 0) = inputQuantizer(clNxM.towerHits[towerIdx].l1egTowerEt, 0.25, 10);
+                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 1) = inputQuantizer(clNxM.towerHits[towerIdx].towerEm,     0.25, 10);
+                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 2) = inputQuantizer(clNxM.towerHits[towerIdx].towerHad,    0.25, 10);
+
+                if (DEBUG)
+                {
+                    std::cout << "(" << eta << "," << phi << ")[" << towerIdx << "]        " << clNxM.towerHits[towerIdx].l1egTowerEt << "    " << clNxM.towerHits[towerIdx].towerEm << "    " << clNxM.towerHits[towerIdx].towerHad << "\n" << std::endl;
+                    if (phi==8) { std::cout << "" << std::endl; }
                 }
             }
-            if (matched)
-            {
-                // set tau information for the endcap area
-                Tau.pt  = HGCluster2store.calibPt;
-                Tau.eta = HGCluster2store.eta;
-                Tau.phi = HGCluster2store.phi;
-                Tau.isEndcap = true;
-                Tau.IDscore = HGCluster2store.IDscore;
-            }
         }
-        else
-        {
-            // set tau information for the barrel area
-            Tau.pt  = cluNxM.calibPt;
-            Tau.eta = cluNxM.seedEta;
-            Tau.phi = cluNxM.seedPhi;
-            Tau.isBarrel = true;
-            Tau.IDscore = cluNxM.IDscore;
-        }
+        
+        TowerClusterPosition_CB.tensor<float, 2>()(clIdx, 0) = clNxM.seedEta;
+        TowerClusterPosition_CB.tensor<float, 2>()(clIdx, 1) = clNxM.seedPhi;
 
-        if (Tau.isBarrel || Tau.isEndcap) { TausCollection->push_back(Tau); }
+        clIdx++; // increase batch index
     }
 
-    iEvent.put(std::move(l1TowerClustersNxM), "l1TowerClustersNxM");
-    iEvent.put(std::move(HGClustersCollection), "HGClustersCollection");
-    iEvent.put(std::move(TausCollection), "TausCollection");
-}
+    // Apply CNN model
+    tensorflow::NamedTensorList CNNmodel_CBinputList = {{"TowerClusterImage", TowerClusterImage_CB}, {"TowerClusterPosition", TowerClusterPosition_CB}};
+    std::vector<tensorflow::Tensor> CNNmodel_CBoutputs;
+    tensorflow::run(CNNmodel_CBsession, CNNmodel_CBinputList, {"TauMinator_CB_conv/middleMan/concat"}, &CNNmodel_CBoutputs);
+    tensorflow::NamedTensorList DNN_CBinputsList = {{"middleMan", CNNmodel_CBoutputs[0]}};
+
+    // Apply DNN for identification
+    std::vector<tensorflow::Tensor> DNN_CBoutputsIdent;
+    tensorflow::run(DNNident_CBsession, DNN_CBinputsList, {"TauMinator_CB_ident/sigmoid_IDout/Sigmoid"}, &DNN_CBoutputsIdent);
+
+    // Apply DNN for calibration
+    std::vector<tensorflow::Tensor> DNN_CBoutputsCalib;
+    tensorflow::run(DNNcalib_CBsession, DNN_CBinputsList, {"TauMinator_CB_calib/DNNout/MatMul"}, &DNN_CBoutputsCalib);
+
+    // Fill TauMinator output variables of TowerClusters
+    clIdx = 0;
+    for (auto& clNxM : *l1TowerClustersNxM_CB)
+    {
+        clNxM.IDscore = DNN_CBoutputsIdent[0].matrix<float>()(0, clIdx);
+        clNxM.calibPt = DNN_CBoutputsCalib[0].matrix<float>()(0, clIdx);
+        clIdx++; // increase batch index
+    }
+
+
+    // Endcap TauMinator application
+    int batchSize_CE =  (int)(l1TowerClustersNxM_CE->size());
+    tensorflow::TensorShape imageShape_CE({batchSize_CE, IEta_dim, IPhi_dim, 3});
+    tensorflow::TensorShape positionShape_CE({batchSize_CE, 2});
+    tensorflow::TensorShape cl3dfeatShape_CE({batchSize_CE, 8});
+    tensorflow::Tensor TowerClusterImage_CE(tensorflow::DT_FLOAT, imageShape_CE);
+    tensorflow::Tensor TowerClusterPosition_CE(tensorflow::DT_FLOAT, positionShape_CE);
+    tensorflow::Tensor Cl3dShapeFeatures_CE(tensorflow::DT_FLOAT, cl3dfeatShape_CE);
+
+    clIdx = 0;
+    for (auto& clNxM : *l1TowerClustersNxM_CE)
+    {
+        // indexing of cl3ds is the same as the one of clNxMs
+        HGClusterHelper::HGCluster HGClu = HGClustersCollection->at(clIdx);
+
+        // Fill inputs for Tensorflow inference
+        for (int eta = 0; eta < IEta_dim; ++eta)
+        {
+            for (int phi = 0; phi < IPhi_dim; ++phi)
+            {
+                int towerIdx = eta*IPhi_dim + phi;
+                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 0) = inputQuantizer(clNxM.towerHits[towerIdx].l1egTowerEt, 0.25, 10);
+                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 1) = inputQuantizer(clNxM.towerHits[towerIdx].towerEm,     0.25, 10);
+                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 2) = inputQuantizer(clNxM.towerHits[towerIdx].towerHad,    0.25, 10);
+
+                if (DEBUG)
+                {
+                    std::cout << "(" << eta << "," << phi << ")[" << towerIdx << "]        " << clNxM.towerHits[towerIdx].l1egTowerEt << "    " << clNxM.towerHits[towerIdx].towerEm << "    " << clNxM.towerHits[towerIdx].towerHad << "\n" << std::endl;
+                    if (phi==8) { std::cout << "" << std::endl; }
+                }
+            }
+        }
+        
+        TowerClusterPosition_CE.tensor<float, 2>()(clIdx, 0) = clNxM.seedEta;
+        TowerClusterPosition_CE.tensor<float, 2>()(clIdx, 1) = clNxM.seedPhi;
+
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 0) = (inputQuantizer(HGClu.pt, 0.25, 14)                     - 6.07127) / 8.09958;
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 1) = (inputQuantizer(abs(HGClu.eta)-1.321, 0.004, 9)         - 1.43884) / 0.31367;
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 2) = (HGClu.showerlength                                     - 31.2058) / 7.66842;
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 3) = (HGClu.coreshowerlength                                 - 10.0995) / 2.73062;
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 4) = (inputQuantizer(HGClu.spptot, 0.0000153, 16)            - 0.02386) / 0.01520;
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 5) = (inputQuantizer(HGClu.szz, 0.00153, 16)                 - 19.5851) / 12.7077;
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 6) = (inputQuantizer(HGClu.srrtot, 0.0000153, 16)            - 0.00606) / 0.00129;
+        Cl3dShapeFeatures_CE.tensor<float, 2>()(clIdx, 7) = (inputQuantizer(10*(abs(HGClu.meanz)-321.05), 0.5, 12)  - 215.552) / 104.794;
+    
+        clIdx++; // increase batch index
+    }
+
+    // Apply CNN model
+    tensorflow::NamedTensorList CNNmodel_CEinputList = {{"TowerClusterImage", TowerClusterImage_CE}, {"TowerClusterPosition", TowerClusterPosition_CE}, {"AssociatedCl3dFeatures", Cl3dShapeFeatures_CE}};
+    std::vector<tensorflow::Tensor> CNNmodel_CEoutputs;
+    tensorflow::run(CNNmodel_CEsession, CNNmodel_CEinputList, {"TauMinator_CE_conv/middleMan/concat"}, &CNNmodel_CEoutputs);
+    tensorflow::NamedTensorList DNN_CEinputsList = {{"middleMan", CNNmodel_CEoutputs[0]}};
+
+    // Apply DNN for identification
+    std::vector<tensorflow::Tensor> DNN_CEoutputsIdent;
+    tensorflow::run(DNNident_CEsession, DNN_CEinputsList, {"TauMinator_CE_ident/sigmoid_IDout/Sigmoid"}, &DNN_CEoutputsIdent);
+
+    // Apply DNN for calibration
+    std::vector<tensorflow::Tensor> DNN_CEoutputsCalib;
+    tensorflow::run(DNNcalib_CEsession, DNN_CEinputsList, {"TauMinator_CE_calib/DNNout/MatMul"}, &DNN_CEoutputsCalib);
+
+    // Fill TauMinator output variables of TowerClusters
+    clIdx = 0;
+    for (auto& clNxM : *l1TowerClustersNxM_CE)
+    {
+        clNxM.IDscore = DNN_CEoutputsIdent[0].matrix<float>()(0, clIdx);
+        clNxM.calibPt = DNN_CEoutputsCalib[0].matrix<float>()(0, clIdx);
+        clIdx++; // increase batch index
+    }
+
+
+    // Create and Fill the collection of L1 taus and their usefull attributes
+    std::unique_ptr<TauHelper::TausCollection> TauMinatorTausCollection(new TauHelper::TausCollection);
+
+    // definition of barrel and endcap scale corretcor parameters
+    // float A_CB = 2.3442768459838006;  float A_CE = 1.9210322940301963;
+    // float B_CB = 0.1058388788344820;  float B_CE = 0.0911722319870048;
+    // float C_CB = 0.8827768598575636;  float C_CE = 0.8598476032538743;
+
+    for (auto& clNxM : *l1TowerClustersNxM_CB)
+    {
+        if (clNxM.IDscore<0/*FIXME*/) { continue; }
+
+        TauHelper::Tau Tau;
+        // set tau information for the barrel area
+        Tau.pt  = clNxM.calibPt; // / (A_CB*exp(-clNxM.calibPt*B_CB)+C_CB);
+        Tau.eta = clNxM.seedEta;
+        Tau.phi = clNxM.seedPhi;
+        Tau.isBarrel = true;
+        Tau.IDscore = clNxM.IDscore;
+
+        TauMinatorTausCollection->push_back(Tau);
+    }
+
+    for (auto& clNxM : *l1TowerClustersNxM_CE)
+    {
+        if (clNxM.IDscore<0/*FIXME*/) { continue; }
+
+        TauHelper::Tau Tau;
+        // set tau information for the barrel area
+        Tau.pt  = clNxM.calibPt; // / (A_CE*exp(-clNxM.calibPt*B_CE)+C_CE);
+        Tau.eta = clNxM.seedEta;
+        Tau.phi = clNxM.seedPhi;
+        Tau.isBarrel = false;
+        Tau.IDscore = clNxM.IDscore;
+
+        TauMinatorTausCollection->push_back(Tau);
+    }
+
+    iEvent.put(std::move(l1TowerClustersNxM_CB),    "l1TowerClustersNxMCB");
+    iEvent.put(std::move(l1TowerClustersNxM_CE),    "l1TowerClustersNxMCE");
+    iEvent.put(std::move(HGClustersCollection),     "HGClustersCollection");
+    iEvent.put(std::move(TauMinatorTausCollection), "TauMinatorTausCollection");
+
+} // end of produce function
 
 int L1CaloTauProducer::tower_dIPhi(int &iPhi_1, int &iPhi_2) const
 {
@@ -813,26 +685,6 @@ int L1CaloTauProducer::endcap_ieta(float &eta) const
 {
     float eta_step = 0.0845;
     return floor(abs(eta)/eta_step) * std::copysign(1,eta);
-}
-
-std::vector<TowerHelper::TowerHit> L1CaloTauProducer::sortPicLike(std::vector<TowerHelper::TowerHit> towerHits) const
-{
-    // sorts towers in order of eta,phi (both increasing)
-    // e.g. 3x5 cluster : eta 1,1,1,1,1,2,2,2,2,2,3,3,3,3,3
-    //                    phi 1,2,3,4,5,1,2,3,4,5,1,2,3,4,5
-    std::sort(begin(towerHits), end(towerHits), [](const TowerHelper::TowerHit &a, TowerHelper::TowerHit &b)
-    { 
-        if (a.towerIeta == b.towerIeta)
-        {
-            if (((a.towerIphi>=65 && a.towerIphi<=72) && (b.towerIphi>=1 && b.towerIphi<=8)) ||
-                ((b.towerIphi>=65 && b.towerIphi<=72) && (a.towerIphi>=1 && a.towerIphi<=8)))   { return a.towerIphi > b.towerIphi; }
-            
-            else { return a.towerIphi < b.towerIphi; }
-        }
-        else { return a.towerIeta < b.towerIeta; }
-    });
-
-    return towerHits;
 }
 
 float L1CaloTauProducer::inputQuantizer(float inputF, float LSB, int nbits)

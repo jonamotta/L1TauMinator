@@ -1,28 +1,39 @@
 import FWCore.ParameterSet.Config as cms
 
 L1CaloTauProducer = cms.EDProducer("L1CaloTauProducer",
-    l1CaloTowers = cms.InputTag("L1EGammaClusterEmuProducer","L1CaloTowerCollection",""),
-    hgcalTowers = cms.InputTag("hgcalTowerProducer","HGCalTowerProcessor"),
-    HgcalClusters=cms.InputTag("hgcalBackEndLayer2Producer","HGCalBackendLayer2Processor3DClustering"),
-    hcalDigis = cms.InputTag("simHcalTriggerPrimitiveDigis"),
-    etaClusterDimension = cms.int32(5),
-    phiClusterDimension = cms.int32(9),
-    CNNfilters = cms.int32(3),
+    l1CaloTowers = cms.InputTag("l1tEGammaClusterEmuProducer","L1CaloTowerCollection",""), # uncalibrated towers (same input as L1TowerCalibrator)
+    hgcalTowers = cms.InputTag("l1tHGCalTowerProducer","HGCalTowerProcessor"),
+
+    HgcalClusters = cms.InputTag("l1tHGCalBackEndLayer2Producer","HGCalBackendLayer2Processor3DClustering"),
+    preEmId  = cms.string("hOverE < 0.3 && hOverE >= 0"),
+    VsPuId = cms.PSet(
+        isPUFilter = cms.bool(True),
+        preselection = cms.string(""),
+        method = cms.string("BDT"), # "" to be disabled, "BDT" to be enabled
+        variables = cms.VPSet(
+            cms.PSet(name = cms.string("eMax"), value = cms.string("eMax()")),
+            cms.PSet(name = cms.string("eMaxOverE"), value = cms.string("eMax()/energy()")),
+            cms.PSet(name = cms.string("sigmaPhiPhiTot"), value = cms.string("sigmaPhiPhiTot()")),
+            cms.PSet(name = cms.string("sigmaRRTot"), value = cms.string("sigmaRRTot()")),
+            cms.PSet(name = cms.string("triggerCells90percent"), value = cms.string("triggerCells90percent()")),
+        ),
+        weightsFile = cms.string("L1Trigger/Phase2L1ParticleFlow/data/hgcal_egID/Photon_Pion_vs_Neutrino_BDTweights_1116.xml.gz"),
+        wp = cms.string("-0.10")
+    ),
+
     EcalEtMinForClustering = cms.double(0.),
     HcalEtMinForClustering = cms.double(0.),
     EtMinForSeeding = cms.double(2.5),
-    CLTW_CNNmodel_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/data/CLTW_CNNmodel.pb"),
-    CLTW_DNNident_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/data/CLTW_DNNident.pb"),
-    CLTW_DNNcalib_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/data/CLTW_DNNcalib.pb"),
-    # XGBident_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/data/XGBident.model"),
-    # XGBcalib_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/data/XGBcalib.model"),
-    # XGBident_feats = cms.vstring("cl3d_pt", "cl3d_coreshowerlength", "cl3d_srrtot", "cl3d_srrmean", "cl3d_hoe", "cl3d_meanz"),
-    # XGBcalib_feats = cms.vstring("cl3d_showerlength", "cl3d_coreshowerlength", "cl3d_abseta", "cl3d_spptot", "cl3d_srrmean", "cl3d_meanz"),
-    # C1calib_params = cms.vdouble(-5.451686, 26.783195),
-    # C3calib_params = cms.vdouble(51.069366, -41.85, 13.090333, -1.8184333, 0.09459969),
-    CL3D_DNNident_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/data/CL3D_DNNident.pb"),
-    CL3D_DNNcalib_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_3_0_pre4/src/L1TauMinator/L1TauMinatorEmulator/data/CL3D_DNNcalib.pb"),
-    CL3D_DNNident_feats = cms.vstring("cl3d_localAbsEta", "cl3d_showerlength", "cl3d_coreshowerlength", "cl3d_firstlayer", "cl3d_seetot", "cl3d_szz", "cl3d_srrtot", "cl3d_srrmean", "cl3d_hoe", "cl3d_localAbsMeanZ"),
-    CL3D_DNNcalib_feats = cms.vstring("cl3d_pt", "cl3d_localAbsEta", "cl3d_showerlength", "cl3d_coreshowerlength", "cl3d_firstlayer", "cl3d_seetot", "cl3d_szz", "cl3d_srrtot", "cl3d_srrmean", "cl3d_hoe", "cl3d_localAbsMeanZ"),
+    
+    CNNmodel_CB_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/CNNmodel_CB.pb"),
+    DNNident_CB_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/DNNident_CB.pb"),
+    # DNNcalib_CB_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CB.pb"),
+    DNNcalib_CB_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CB_ptWeighted.pb"),
+
+    CNNmodel_CE_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/CNNmodel_CE.pb"),
+    DNNident_CE_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/DNNident_CE.pb"),
+    # DNNcalib_CE_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CE.pb"),
+    DNNcalib_CE_path = cms.string("/home/llr/cms/motta/Phase2L1T/CMSSW_12_5_2_patch1/src/L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CE_ptWeighted.pb"),
+    
     DEBUG = cms.bool(False)
 )
