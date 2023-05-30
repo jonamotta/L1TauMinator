@@ -1,9 +1,3 @@
-<use   name="FWCore/Framework"/>
-<use   name="FWCore/ParameterSet"/>
-<use   name="FWCore/ServiceRegistry"/>
-<use   name="FWCore/PluginManager"/>
-<use   name="FWCore/MessageLogger"/>
-<use   name="FWCore/Utilities"/>
 <use   name="CommonTools/Utils"/>
 <use   name="CommonTools/UtilAlgos"/>
 <use   name="CommonTools/MVAUtils"/>
@@ -23,6 +17,7 @@
 <use   name="L1Trigger/Phase2L1ParticleFlow"/>
 <use   name="CalibFormats/CaloTPG"/>
 <use   name="L1TauMinator/DataFormats"/>
+<use   name="L1TauMinator/L1TauMinatorEmulator"/>
 <use   name="PhysicsTools/TensorFlow"/>
 <use   name="xgboost"/>
 <use   name="roottmva"/>
