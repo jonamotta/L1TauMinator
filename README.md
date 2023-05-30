@@ -7,11 +7,11 @@ Package for the development of a ML-based Phase-2 Level-1 Tau Trigger algorithm
 ## Installation isntructions
 
 ```shell
-cmsrel CMSSW_12_3_0_pre4
-cd CMSSW_12_3_0_pre4/src
+cmsrel CMSSW_12_5_2_patch1
+cd CMSSW_12_5_2_patch1/src
 cmsenv
 git cms-init
-git cms-merge-topic -u cms-l1t-offline:l1t-phase2-v3.4.41
+git cms-merge-topic -u cms-l1t-offline:l1t-phase2-v64
 
 git cms-addpkg L1Trigger/L1THGCal
 
