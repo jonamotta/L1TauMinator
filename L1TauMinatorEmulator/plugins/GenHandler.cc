@@ -42,6 +42,10 @@ class GenHandler : public edm::stream::EDProducer<> {
         bool isIntermediateResonance(const reco::GenParticle& daughter) const;
         bool isGamma(const reco::GenParticle& daughter) const;
         bool isStableNeutralHadron(const reco::GenParticle& daughter) const;
+        bool isGoodBQuark(const reco::GenParticle& candidate) const;
+        bool isFromId (const reco::Candidate& candidate, const int targetPdgId) const;
+        bool CheckBit(const int number, const int bitpos) const;
+        bool isFirstCopy (const reco::Candidate& candidate) const;
 
         //----tokens and handles----
         edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken;
@@ -70,6 +74,7 @@ GenHandler::GenHandler(const edm::ParameterSet& iConfig)
 {    
     produces<GenHelper::GenTausCollection>("GenTausCollection");
     produces<GenHelper::GenJetsCollection>("GenJetsCollection");
+    produces<GenHelper::GenJetsCollection>("GenBJetsCollection");
 }
 
 void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
@@ -77,194 +82,179 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     // Create and Fill the collection of good taus and their attributes
     std::unique_ptr<GenHelper::GenTausCollection> GenTausCollection(new GenHelper::GenTausCollection);
 
+
+    std::vector<reco::GenParticle> GenBQuarks;
+
     iEvent.getByToken(genParticlesToken, genParticlesHandle);
     for (auto& particle : *genParticlesHandle.product())
     {
-        if (!isGoodTau(particle)) { continue; }
+        if (isGoodTau(particle))
+        {
 
-        GenHelper::GenTau GenTau;
+            GenHelper::GenTau GenTau;
 
-        GenTau.pt = particle.pt();
-        GenTau.eta = particle.eta();
-        GenTau.phi = particle.phi();
-        GenTau.e = particle.energy();
-        GenTau.m = particle.mass();
+            GenTau.pt = particle.pt();
+            GenTau.eta = particle.eta();
+            GenTau.phi = particle.phi();
+            GenTau.e = particle.energy();
+            GenTau.m = particle.mass();
 
-        LorentzVector tau_p4vis(0., 0., 0., 0.);
-        LorentzVector tau_p4em(0., 0., 0., 0.);
-        LorentzVector tau_p4had(0., 0., 0., 0.);
-        LorentzVector tau_p4mu(0., 0., 0., 0.); // used for debugging puproses only
-        int n_pi = 0;
-        int n_piZero = 0;
-        int n_gamma = 0;
-        int n_ele = 0;
-        int n_mu = 0;
+            LorentzVector tau_p4vis(0., 0., 0., 0.);
+            LorentzVector tau_p4em(0., 0., 0., 0.);
+            LorentzVector tau_p4had(0., 0., 0., 0.);
+            LorentzVector tau_p4mu(0., 0., 0., 0.); // used for debugging puproses only
+            int n_pi = 0;
+            int n_piZero = 0;
+            int n_gamma = 0;
+            int n_ele = 0;
+            int n_mu = 0;
 
-        // Loop over tau daughters to set DM and visible quantities
-        const reco::GenParticleRefVector& daughters = particle.daughterRefVector();
-        for (const auto& daughter : daughters) {
+            // Loop over tau daughters to set DM and visible quantities
+            const reco::GenParticleRefVector& daughters = particle.daughterRefVector();
+            for (const auto& daughter : daughters) {
 
-            if (isStableLepton(*daughter))
-            {
-                if (isElectron(*daughter))
-                { 
-                    n_ele++; 
-                    tau_p4em += (daughter->p4());
-                }
-                else if (isMuon(*daughter))
-                { 
-                    n_mu++;
-                    tau_p4mu += (daughter->p4()); // used for debugging puproses only
-                }
-                tau_p4vis += (daughter->p4());
-            }
-
-            else if (isChargedHadron(*daughter))
-            {
-                n_pi++;
-                tau_p4vis += (daughter->p4());
-                tau_p4had += (daughter->p4());
-            }
-
-            else if (isNeutralPion(*daughter))
-            {
-                n_piZero++;
-                const reco::GenParticleRefVector& granddaughters = daughter->daughterRefVector();
-                for (const auto& granddaughter : granddaughters)
+                if (isStableLepton(*daughter))
                 {
-                    if (isGamma(*granddaughter))
-                    {
-                        n_gamma++;
-                        tau_p4vis += (granddaughter->p4());
-                        tau_p4em += (granddaughter->p4());
+                    if (isElectron(*daughter))
+                    { 
+                        n_ele++; 
+                        tau_p4em += (daughter->p4());
                     }
+                    else if (isMuon(*daughter))
+                    { 
+                        n_mu++;
+                        tau_p4mu += (daughter->p4()); // used for debugging puproses only
+                    }
+                    tau_p4vis += (daughter->p4());
                 }
-            }
 
-            else if (isStableNeutralHadron(*daughter))
-            {
-                tau_p4vis += (daughter->p4());
-                tau_p4had += (daughter->p4());
-            }
-
-            else
-            {
-                const reco::GenParticleRefVector& granddaughters = daughter->daughterRefVector();
-                for (const auto& granddaughter : granddaughters)
+                else if (isChargedHadron(*daughter))
                 {
-                    if (isStableNeutralHadron(*granddaughter)) {
-                        tau_p4vis += (granddaughter->p4());
-                        tau_p4had += (granddaughter->p4());
-                    }
+                    n_pi++;
+                    tau_p4vis += (daughter->p4());
+                    tau_p4had += (daughter->p4());
                 }
-            }
 
-            /* Here the selection of the decay product according to the Pythia6 decayTree */
-            if (isIntermediateResonance(*daughter))
-            {
-                const reco::GenParticleRefVector& grandaughters = daughter->daughterRefVector();
-                for (const auto& grandaughter : grandaughters)
+                else if (isNeutralPion(*daughter))
                 {
-                    if (isChargedHadron(*grandaughter) || isChargedHadronFromResonance(*grandaughter))
+                    n_piZero++;
+                    const reco::GenParticleRefVector& granddaughters = daughter->daughterRefVector();
+                    for (const auto& granddaughter : granddaughters)
                     {
-                        n_pi++;
-                        tau_p4vis += (grandaughter->p4());
-                        tau_p4had += (grandaughter->p4());
-                    }
-                    else if (isNeutralPion(*grandaughter) || isNeutralPionFromResonance(*grandaughter))
-                    {
-                        n_piZero++;
-                        const reco::GenParticleRefVector& descendants = grandaughter->daughterRefVector();
-                        for (const auto& descendant : descendants)
+                        if (isGamma(*granddaughter))
                         {
-                            if (isGamma(*descendant)) 
+                            n_gamma++;
+                            tau_p4vis += (granddaughter->p4());
+                            tau_p4em += (granddaughter->p4());
+                        }
+                    }
+                }
+
+                else if (isStableNeutralHadron(*daughter))
+                {
+                    tau_p4vis += (daughter->p4());
+                    tau_p4had += (daughter->p4());
+                }
+
+                else
+                {
+                    const reco::GenParticleRefVector& granddaughters = daughter->daughterRefVector();
+                    for (const auto& granddaughter : granddaughters)
+                    {
+                        if (isStableNeutralHadron(*granddaughter)) {
+                            tau_p4vis += (granddaughter->p4());
+                            tau_p4had += (granddaughter->p4());
+                        }
+                    }
+                }
+
+                /* Here the selection of the decay product according to the Pythia6 decayTree */
+                if (isIntermediateResonance(*daughter))
+                {
+                    const reco::GenParticleRefVector& grandaughters = daughter->daughterRefVector();
+                    for (const auto& grandaughter : grandaughters)
+                    {
+                        if (isChargedHadron(*grandaughter) || isChargedHadronFromResonance(*grandaughter))
+                        {
+                            n_pi++;
+                            tau_p4vis += (grandaughter->p4());
+                            tau_p4had += (grandaughter->p4());
+                        }
+                        else if (isNeutralPion(*grandaughter) || isNeutralPionFromResonance(*grandaughter))
+                        {
+                            n_piZero++;
+                            const reco::GenParticleRefVector& descendants = grandaughter->daughterRefVector();
+                            for (const auto& descendant : descendants)
                             {
-                                n_gamma++;
-                                tau_p4vis += (descendant->p4());
-                                tau_p4em += (descendant->p4());
+                                if (isGamma(*descendant)) 
+                                {
+                                    n_gamma++;
+                                    tau_p4vis += (descendant->p4());
+                                    tau_p4em += (descendant->p4());
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        GenTau.visPt = tau_p4vis.Pt();
-        GenTau.visEta = tau_p4vis.Eta();
-        GenTau.visPhi = tau_p4vis.Phi();
-        GenTau.visE = tau_p4vis.E();
-        GenTau.visM = tau_p4vis.M();
-        GenTau.visPtEm = tau_p4em.Pt();
-        GenTau.visEEm = tau_p4em.E();
-        GenTau.visPtHad = tau_p4had.Pt();
-        GenTau.visEHad = tau_p4had.E();
+            GenTau.visPt = tau_p4vis.Pt();
+            GenTau.visEta = tau_p4vis.Eta();
+            GenTau.visPhi = tau_p4vis.Phi();
+            GenTau.visE = tau_p4vis.E();
+            GenTau.visM = tau_p4vis.M();
+            GenTau.visPtEm = tau_p4em.Pt();
+            GenTau.visEEm = tau_p4em.E();
+            GenTau.visPtHad = tau_p4had.Pt();
+            GenTau.visEHad = tau_p4had.E();
 
-        // skip taus out of HGcal acceptance
-        if (abs(GenTau.visEta > 3.0)) { continue; }
+            // Leptonic tau decays
+            if (n_pi == 0 && n_piZero == 0 && n_ele == 1)     { GenTau.DM = -1; }
+            else if (n_pi == 0 && n_piZero == 0 && n_mu == 1) { GenTau.DM = -1; }
+            // 1-prong tau decay
+            else if (n_pi == 1 && n_piZero == 0) { GenTau.DM = 0; }
+            // 1-prong + pi0 tau decay
+            else if (n_pi == 1 && n_piZero == 1) { GenTau.DM = 1; }
+            // 1-prong + pi0s tau decay
+            else if (n_pi == 1 && n_piZero > 1)  { GenTau.DM = 2; }
+            // 3-prongs tau decay
+            else if (n_pi == 3 && n_piZero == 0) { GenTau.DM = 10; }
+            // 3-prongs + pi0 tau decay
+            else if (n_pi == 3 && n_piZero == 1) { GenTau.DM = 11; }
+            // 3-prongs + pi0s tau decay
+            else if (n_pi == 3 && n_piZero > 1)  { GenTau.DM = 12; }
+            // other tau decays
+            else { GenTau.DM = -1; }
 
-        // Leptonic tau decays
-        if (n_pi == 0 && n_piZero == 0 && n_ele == 1)     { GenTau.DM = -1; }
-        else if (n_pi == 0 && n_piZero == 0 && n_mu == 1) { GenTau.DM = -1; }
-        // 1-prong tau decay
-        else if (n_pi == 1 && n_piZero == 0) { GenTau.DM = 0; }
-        // 1-prong + pi0 tau decay
-        else if (n_pi == 1 && n_piZero == 1) { GenTau.DM = 1; }
-        // 1-prong + pi0s tau decay
-        else if (n_pi == 1 && n_piZero > 1)  { GenTau.DM = 2; }
-        // 3-prongs tau decay
-        else if (n_pi == 3 && n_piZero == 0) { GenTau.DM = 10; }
-        // 3-prongs + pi0 tau decay
-        else if (n_pi == 3 && n_piZero == 1) { GenTau.DM = 11; }
-        // 3-prongs + pi0s tau decay
-        else if (n_pi == 3 && n_piZero > 1)  { GenTau.DM = 12; }
-        // other tau decays
-        else { GenTau.DM = -1; }
+            if (DEBUG)
+            {
+                printf(" - GEN TAU pt %f eta %f phi %f vispt %f viseta %f visphi %f DM %i\n",
+                    GenTau.pt,
+                    GenTau.eta,
+                    GenTau.phi,
+                    GenTau.visPt,
+                    GenTau.visEta,
+                    GenTau.visPhi,
+                    GenTau.DM);
+            }
 
-        if (DEBUG)
+            // skip taus out of HGcal acceptance and  non hadronic taus
+            if (abs(GenTau.visEta < 3.0) && GenTau.DM > 0) { GenTausCollection->push_back(GenTau); }
+
+        } // end if(goodTau())
+
+
+        if (isGoodBQuark(particle))
         {
-            printf(" - GEN TAU pt %f eta %f phi %f vispt %f viseta %f visphi %f DM %i\n",
-                GenTau.pt,
-                GenTau.eta,
-                GenTau.phi,
-                GenTau.visPt,
-                GenTau.visEta,
-                GenTau.visPhi,
-                GenTau.DM);
+            // skip bs out of HGcal acceptance
+            if (abs(particle.eta() < 3.0)) { GenBQuarks.push_back(particle); }
         }
-
-        // skip non hadronic taus
-        if (GenTau.DM < 0) { continue; }
-
-        // remove taus that are too close to one another
-        // bool tooClose = false;
-        // for (const auto& otherGenTau : GenTausCollection)
-        // {
-        //     float dEta = otherGenTau.visEta - GenTau.visEta;
-        //     float dPhi = reco::deltaPhi(otherGenTau.visPhi, GenTau.visPhi);
-        //     float dR2 = dEta*dEta + dPhi*dPhi;
-            
-        //     // if close and current pt smaller than previous one: skip current tau
-        //     if (dR2 < 0.25 && GenTau.visPt < otherGenTau.visPt)
-        //     {
-        //         tooClose = true;
-        //         break;
-        //     }
-        //     // if close and current pt larger than previous one: erase previous tau
-        //     else if (dR2 < 0.25 && GenTau.visPt > otherGenTau.visPt)
-        //     {
-        //         auto it = find(GenTausCollection.begin(), GenTausCollection.end(), otherGenTau);
-        //         GenTausCollection.erase(it);
-        //         break;
-        //     }
-        // }
-        // if (tooClose) { continue; }
-
-        GenTausCollection->push_back(GenTau);
 
     }
 
     // Create and Fill the collection of good jets and their attributes
     std::unique_ptr<GenHelper::GenJetsCollection> GenJetsCollection(new GenHelper::GenJetsCollection);
+    std::unique_ptr<GenHelper::GenJetsCollection> GenBJetsCollection(new GenHelper::GenJetsCollection);
 
     iEvent.getByToken(genJetsToken, genJetsHandle);
     for (auto& jet : *genJetsHandle.product())
@@ -320,65 +310,149 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             }
         }
 
-        if (!skipTauJet) { GenJetsCollection->push_back(GenJet); }
+        bool bJet = false;
+        float maxPt = -99.;
+        for (long unsigned int idx = 0; idx < GenBQuarks.size(); idx++)
+        {
+            const reco::GenParticle& b = GenBQuarks[idx];
+
+            float dEta = GenJet.eta - b.eta();
+            float dPhi = reco::deltaPhi(GenJet.phi, b.phi());
+            float dR2 = dEta * dEta + dPhi * dPhi;
+
+            if (dR2 < 0.25 && b.pt() > maxPt)
+            {
+                bJet = true;
+                maxPt = b.pt();
+            } 
+        }
+
+        if (!skipTauJet)
+        {
+            if (bJet) { GenBJetsCollection->push_back(GenJet); }
+            else      { GenJetsCollection->push_back(GenJet); }
+        }
     }
 
-    iEvent.put(std::move(GenTausCollection), "GenTausCollection");
-    iEvent.put(std::move(GenJetsCollection), "GenJetsCollection");
+    iEvent.put(std::move(GenTausCollection),  "GenTausCollection");
+    iEvent.put(std::move(GenJetsCollection),  "GenJetsCollection");
+    iEvent.put(std::move(GenBJetsCollection), "GenBJetsCollection");
 }
 
-bool GenHandler::isGoodTau(const reco::GenParticle& candidate) const {
+bool GenHandler::isGoodTau(const reco::GenParticle& candidate) const
+{
   return (std::abs(candidate.pdgId()) == 15 && candidate.status() == 2);
 }
 
-bool GenHandler::isChargedHadron(const reco::GenParticle& candidate) const {
+bool GenHandler::isChargedHadron(const reco::GenParticle& candidate) const
+{
   return ((std::abs(candidate.pdgId()) == 211 || std::abs(candidate.pdgId()) == 321) && candidate.status() == 1 &&
           candidate.isDirectPromptTauDecayProductFinalState() && candidate.isLastCopy());
 }
 
-bool GenHandler::isChargedHadronFromResonance(const reco::GenParticle& candidate) const {
+bool GenHandler::isChargedHadronFromResonance(const reco::GenParticle& candidate) const
+{
   return ((std::abs(candidate.pdgId()) == 211 || std::abs(candidate.pdgId()) == 321) && candidate.status() == 1 &&
           candidate.isLastCopy());
 }
 
-bool GenHandler::isStableLepton(const reco::GenParticle& candidate) const {
+bool GenHandler::isStableLepton(const reco::GenParticle& candidate) const
+{
   return ((std::abs(candidate.pdgId()) == 11 || std::abs(candidate.pdgId()) == 13) && candidate.status() == 1 &&
           candidate.isDirectPromptTauDecayProductFinalState() && candidate.isLastCopy());
 }
 
-bool GenHandler::isElectron(const reco::GenParticle& candidate) const {
+bool GenHandler::isElectron(const reco::GenParticle& candidate) const
+{
   return (std::abs(candidate.pdgId()) == 11 && candidate.isDirectPromptTauDecayProductFinalState() &&
           candidate.isLastCopy());
 }
 
-bool GenHandler::isMuon(const reco::GenParticle& candidate) const {
+bool GenHandler::isMuon(const reco::GenParticle& candidate) const
+{
   return (std::abs(candidate.pdgId()) == 13 && candidate.isDirectPromptTauDecayProductFinalState() &&
           candidate.isLastCopy());
 }
 
-bool GenHandler::isNeutralPion(const reco::GenParticle& candidate) const {
+bool GenHandler::isNeutralPion(const reco::GenParticle& candidate) const
+{
   return (std::abs(candidate.pdgId()) == 111 && candidate.status() == 2 &&
           candidate.statusFlags().isTauDecayProduct() && !candidate.isDirectPromptTauDecayProductFinalState());
 }
 
-bool GenHandler::isNeutralPionFromResonance(const reco::GenParticle& candidate) const {
+bool GenHandler::isNeutralPionFromResonance(const reco::GenParticle& candidate) const
+{
   return (std::abs(candidate.pdgId()) == 111 && candidate.status() == 2 && candidate.statusFlags().isTauDecayProduct());
 }
 
-bool GenHandler::isGamma(const reco::GenParticle& candidate) const {
+bool GenHandler::isGamma(const reco::GenParticle& candidate) const
+{
   return (std::abs(candidate.pdgId()) == 22 && candidate.status() == 1 && candidate.statusFlags().isTauDecayProduct() &&
           !candidate.isDirectPromptTauDecayProductFinalState() && candidate.isLastCopy());
 }
 
-bool GenHandler::isIntermediateResonance(const reco::GenParticle& candidate) const {
+bool GenHandler::isIntermediateResonance(const reco::GenParticle& candidate) const
+{
   return ((std::abs(candidate.pdgId()) == 213 || std::abs(candidate.pdgId()) == 20213 ||
            std::abs(candidate.pdgId()) == 24) &&
           candidate.status() == 2);
 }
 
-bool GenHandler::isStableNeutralHadron(const reco::GenParticle& candidate) const {
+bool GenHandler::isStableNeutralHadron(const reco::GenParticle& candidate) const
+{
   return (!(std::abs(candidate.pdgId()) > 10 && std::abs(candidate.pdgId()) < 17) && !isChargedHadron(candidate) &&
           candidate.status() == 1);
 }
+
+bool GenHandler::isGoodBQuark(const reco::GenParticle& candidate) const
+{
+    // int status_flags = candidate.userInt("generalGenFlags"); // only exists for pat::GenParticle
+    return (std::abs(candidate.pdgId()) == 5 && /*candidate.status() == 21 && CheckBit(status_flags, 12) && CheckBit(status_flags, 8) &&*/ isFromId(candidate, 25));
+    //                                             incoming particle            is first copy                from hard process                 from Higgs decay
+}
+
+bool GenHandler::isFromId (const reco::Candidate& candidate, const int targetPdgId) const
+{
+    if (abs(candidate.pdgId()) == targetPdgId)
+    { 
+        if(abs(candidate.pdgId()) == 5) { return isFirstCopy(candidate); }
+        else                            { return true; }
+    }
+
+    for (unsigned int motherIdx = 0; motherIdx < candidate.numberOfMothers(); motherIdx++)
+    {
+        const reco::Candidate& mother = *candidate.mother(motherIdx);
+        if (isFromId(mother, targetPdgId)) { return true; }
+    }
+    
+    // no mother found
+    return false;
+}
+
+bool GenHandler::CheckBit(const int number, const int bitpos) const
+{
+  bool res = number & (1 << bitpos);
+  return res;
+}
+
+bool GenHandler::isFirstCopy (const reco::Candidate& candidate) const
+{
+    int cloneIdx = -1;
+    int id = candidate.pdgId();
+    for (unsigned int motherIdx = 0; motherIdx < candidate.numberOfMothers(); motherIdx++)
+    {
+        const reco::Candidate& mother = *candidate.mother(motherIdx);
+        if (mother.pdgId() == id)
+        {
+            cloneIdx = motherIdx;
+            break;
+        }
+    }
+    
+    if (cloneIdx == -1) { return true; }
+    else                { return false; };
+    
+}
+
 
 DEFINE_FWK_MODULE(GenHandler);
