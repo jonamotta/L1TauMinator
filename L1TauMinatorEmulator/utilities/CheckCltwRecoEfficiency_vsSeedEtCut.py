@@ -5,8 +5,8 @@ import ROOT
 import sys
 import os
 
-import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
+import matplotlib.pyplot as plt
 import mplhep
 plt.style.use(mplhep.style.CMS)
 
@@ -35,6 +35,7 @@ def deltaPhi( phi1, phi2 ):
 efficiencies_vsPt = []
 efficiencies_vsEta = []
 allCltwCntVects = []
+allCltwCntVects_CE = []
 
 seedTags = ['seedEtCut2p5', 'seedEtCut3p0', 'seedEtCut3p5', 'seedEtCut4p0', 'seedEtCut4p5', 'seedEtCut5p0']
 
@@ -57,6 +58,9 @@ for seedTag in seedTags:
 
     totalCltwCnt = 0
     cltwCntVect = []
+
+    totalCltwCnt_CE = 0
+    cltwCntVect_CE = []
 
     binsPt = [25, 30, 35, 40, 45, 50, 60, 70, 80, 100, 120, 150, 180, 250]
     total_vsPt = ROOT.TH1F("total_vsPt", "total_vsPt", len(binsPt)-1, array('f',binsPt))
@@ -82,8 +86,16 @@ for seedTag in seedTags:
         _cl5x9_seedPhi = list(inChain.cl5x9_seedPhi)
         _cl5x9_totalEt = list(inChain.cl5x9_totalEt)
 
-        totalCltwCnt += len(_cl5x9_seedEta)
-        cltwCntVect.append(len(_cl5x9_seedEta))
+        tmp = len(_cl5x9_seedEta)
+        totalCltwCnt += tmp
+        cltwCntVect.append(tmp)
+
+        tmp1 = abs(np.array(_cl5x9_seedEta))
+        tmp2 = len( tmp1[tmp1>1.5] )
+        totalCltwCnt_CE += tmp2
+        cltwCntVect_CE.append(tmp2)
+
+        del tmp, tmp1, tmp2
 
         # first loop over taus to avoid duplicate matching
         for tauEta, tauPhi, tauPt in zip(_tau_visEta, _tau_visPhi, _tau_visPt):
@@ -131,6 +143,7 @@ for seedTag in seedTags:
     print(" - TOTAL NUMBER OF TAUS = "+str(totalTausCnt))
     print(" - NUMBER OF MATCHED TAUS = "+str(matchedTausCnt)+"  ("+str(matchedTausCnt/totalTausCnt*100)+"%)")
     print(" - AVERAGE NUMBER OF CLTWs PER EVENT = "+str(totalCltwCnt/nEntries))
+    print(" - AVERAGE NUMBER OF ENDCAP CLTWs PER EVENT = "+str(totalCltwCnt_CE/nEntries))
     print("")
 
     sys.stdout = sys.__stdout__
@@ -141,6 +154,7 @@ for seedTag in seedTags:
     efficiencies_vsPt.append(eff_vsPt)
     efficiencies_vsEta.append(eff_vsEta)
     allCltwCntVects.append(cltwCntVect)
+    allCltwCntVects_CE.append(cltwCntVect_CE)
 
     fig, ax = plt.subplots(figsize=(10,10))
     plt.grid(linestyle=':', zorder=1)
@@ -172,7 +186,7 @@ for seedTag in seedTags:
         Y.append(eff_vsPt.GetPointY(ibin))
         Y_low.append(eff_vsPt.GetErrorYlow(ibin))
         Y_high.append(eff_vsPt.GetErrorYhigh(ibin))
-    ax.errorbar(X, Y, xerr=0.05, yerr=[Y_low, Y_high], lw=2, marker='o', color='green', zorder=2)
+    ax.errorbar(X, Y, xerr=1, yerr=[Y_low, Y_high], lw=2, marker='o', color='green', zorder=2)
     for xtick in ax.xaxis.get_major_ticks():
         xtick.set_pad(10)
     # leg = plt.legend(loc = 'lower right', fontsize=20)
@@ -225,7 +239,7 @@ for seedTag in seedTags:
     plt.savefig('CltwRecoEffs/ptResponseCltwTaus_'+seedTag+'.pdf')
     plt.close()
 
-    del total_vsPt, match_vsPt, total_vsEta, match_vsEta, eff_vsPt, eff_vsEta
+    del total_vsPt, match_vsPt, total_vsEta, match_vsEta, eff_vsPt, eff_vsEta, inChain
 
 
 labels = [2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
@@ -246,7 +260,7 @@ for xtick in ax.xaxis.get_major_ticks():
     xtick.set_pad(10)
 leg = plt.legend(loc = 'lower right', fontsize=20)
 leg._legend_box.align = "left"
-plt.xlabel(r'$p_{T}^{Gen \tau}$')
+plt.xlabel(r'$\eta_{T}^{Gen \tau}$')
 plt.ylabel('Efficiency')
 plt.xlim(-3.1, 3.1)
 plt.ylim(0.68, 1.02)
@@ -266,7 +280,7 @@ for i, currEffVsPt in enumerate(efficiencies_vsPt):
         Y.append(currEffVsPt.GetPointY(ibin))
         Y_low.append(currEffVsPt.GetErrorYlow(ibin))
         Y_high.append(currEffVsPt.GetErrorYhigh(ibin))
-    ax.errorbar(X, Y, xerr=0.05, yerr=[Y_low, Y_high], lw=2, marker='o', color=cmap(i), zorder=i+2, label=r'Cluster seed $E_{T}\leq$'+'%.2f GeV'%(labels[i]))
+    ax.errorbar(X, Y, xerr=1, yerr=[Y_low, Y_high], lw=2, marker='o', color=cmap(i), zorder=i+2, label=r'Cluster seed $E_{T}\leq$'+'%.2f GeV'%(labels[i]))
 for xtick in ax.xaxis.get_major_ticks():
     xtick.set_pad(10)
 leg = plt.legend(loc = 'lower right', fontsize=20)
@@ -278,6 +292,7 @@ plt.ylim(0.93, 1.0)
 mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
 plt.savefig('CltwRecoEffs/efficiencies_vsPt.pdf')
 plt.close()
+
 
 plt.figure(figsize=(10,10))
 plt.grid(linestyle=':', zorder=1)
@@ -294,5 +309,22 @@ plt.ylim(0., ymax*1.5)
 plt.xlim(10,70)
 mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
 plt.savefig('CltwRecoEffs/number_of_clusters.pdf')
+plt.close()
+
+plt.figure(figsize=(10,10))
+plt.grid(linestyle=':', zorder=1)
+ymax = 0
+for i, cnt in enumerate(allCltwCntVects_CE):
+    hist, edges = np.histogram(cnt, bins=np.arange(0.5,80.5,1))
+    density = hist / len(cnt)
+    plt.step(edges[1:], density, label=r'Cluster seed $E_{T}\leq$'+'%.2f GeV'%(labels[i])+r' - $\mu$=%.3f , $\sigma$=%.3f'%(np.mean(cnt),np.std(cnt)), color=cmap(i), lw=2, zorder=2)
+    if max(density)>ymax: ymax = max(density)
+plt.legend(loc = 'upper left', fontsize=16)
+plt.xlabel(r'Number of clusters')
+plt.ylabel('a.u.')
+plt.ylim(0., ymax*1.5)
+plt.xlim(10,70)
+mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig('CltwRecoEffs/number_of_clusters_CE.pdf')
 plt.close()
 
