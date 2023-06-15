@@ -29,6 +29,11 @@ L1TauMinatorNtuples
             -> same as v2 + cl3d puId + endcap clusters matching + phi-flipping
         * new Phase2Fall22 125X MC samples
 
+    v4
+        * new ntuple version
+        * Phase2Fall22 125X MC samples
+        * implemented new definition of hadronic taus following the Menu Tools approach
+
 
 **************************************************************
 **************************************************************
@@ -224,7 +229,16 @@ TauMinator Trainings
         * evaluate performance
         * evaluate rate
 
+    2023_05_28_v16
+        * same models as for v15 BUT quantized and pruned
+        * HLS implementation with hls4ml
+        * deployment on vu9p using hls4ml accelerator backend
 
+    2023_06_15_v17
+        * uses L1TauMinatorNtuples/v4 produced on the 15th of June
+            -> this increase substantially the training statistics
+            -> this make the definition of hadronic objects the same as in the Menu
+        *
 
 
 
