@@ -268,7 +268,6 @@ if __name__ == "__main__" :
         # save convolutional part alone
         image_in = TauMinatorModelPruned.get_layer(index=0).get_output_at(0)
         posit_in = TauMinatorModelPruned.get_layer(name='TowerClusterPosition').get_output_at(0)
-        flat_out = TauMinatorModelPruned.get_layer(name='middleMan').get_output_at(0)
         x_cnn = image_in
         for layer in TauMinatorModelPruned.layers[1:7]:
             x_cnn = layer(x_cnn)
@@ -277,6 +276,13 @@ if __name__ == "__main__" :
         CNNmodel.save(outdir+'/CNNmodel', include_optimizer=False)
         # cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CNNmodel_CB.pb', CNNmodel, variables_to_constants=True)
         # cmsml.tensorflow.save_graph(indir+'/CMSSWmodels/CNNmodel_CB.pb.txt', CNNmodel, variables_to_constants=True)
+
+        image_in = TauMinatorModelPruned.get_layer(index=0).get_output_at(0)
+        x_cnn = image_in
+        for layer in TauMinatorModelPruned.layers[1:7]:
+            x_cnn = layer(x_cnn)
+        CNNmodel = tf.keras.Model([image_in], x_cnn, name="TauMinator_CB_conv")
+        CNNmodel.save(outdir+'/CNNmodel_special4accelerator', include_optimizer=False)
 
         # create middleman to be used for the saving of the id dnn alone
         idx = 0
