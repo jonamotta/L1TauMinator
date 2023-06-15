@@ -94,6 +94,12 @@ if __name__ == "__main__" :
         mapping_dict = load_obj(perfdir+'/turnons'+tag+'/online2offline_mapping.pkl')
         online_thresholds = range(20, 175, 1)
 
+        print('idWp_CB')
+        print(idWp_CB)
+        print('idWp_CE')
+        print(idWp_CE)
+        exit()
+
         # loop over the events to fill all the histograms
         directory = '/data_CMS/cms/motta/Phase2L1T/L1TauMinatorNtuples/v'+options.NtupleV+'/MinBias_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut'+options.seedEtCut+options.inTag+'/'
         inChain = ROOT.TChain("L1CaloTauNtuplizer/L1TauMinatorTree");
