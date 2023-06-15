@@ -17,7 +17,6 @@
 <use   name="L1Trigger/Phase2L1ParticleFlow"/>
 <use   name="CalibFormats/CaloTPG"/>
 <use   name="L1TauMinator/DataFormats"/>
-<use   name="L1TauMinator/L1TauMinatorEmulator"/>
 <use   name="PhysicsTools/TensorFlow"/>
 <use   name="xgboost"/>
 <use   name="roottmva"/>

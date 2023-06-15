@@ -137,22 +137,22 @@ L1CaloTauProducer::L1CaloTauProducer(const edm::ParameterSet& iConfig)
 {    
 
     // Create sessions for Tensorflow inferece
-    CNNmodel_CB = tensorflow::loadGraphDef(CNNmodel_CB_path);
+    CNNmodel_CB = tensorflow::loadGraphDef(edm::FileInPath(CNNmodel_CB_path).fullPath());
     CNNmodel_CBsession = tensorflow::createSession(CNNmodel_CB);
 
-    DNNident_CB = tensorflow::loadGraphDef(DNNident_CB_path);
+    DNNident_CB = tensorflow::loadGraphDef(edm::FileInPath(DNNident_CB_path).fullPath());
     DNNident_CBsession = tensorflow::createSession(DNNident_CB);
 
-    DNNcalib_CB = tensorflow::loadGraphDef(DNNcalib_CB_path);
+    DNNcalib_CB = tensorflow::loadGraphDef(edm::FileInPath(DNNcalib_CB_path).fullPath());
     DNNcalib_CBsession = tensorflow::createSession(DNNcalib_CB);
 
-    CNNmodel_CE = tensorflow::loadGraphDef(CNNmodel_CE_path);
+    CNNmodel_CE = tensorflow::loadGraphDef(edm::FileInPath(CNNmodel_CE_path).fullPath());
     CNNmodel_CEsession = tensorflow::createSession(CNNmodel_CE);
 
-    DNNident_CE = tensorflow::loadGraphDef(DNNident_CE_path);
+    DNNident_CE = tensorflow::loadGraphDef(edm::FileInPath(DNNident_CE_path).fullPath());
     DNNident_CEsession = tensorflow::createSession(DNNident_CE);
 
-    DNNcalib_CE = tensorflow::loadGraphDef(DNNcalib_CE_path);
+    DNNcalib_CE = tensorflow::loadGraphDef(edm::FileInPath(DNNcalib_CE_path).fullPath());
     DNNcalib_CEsession = tensorflow::createSession(DNNcalib_CE);
 
     // Initialize HGCAL BDTs
