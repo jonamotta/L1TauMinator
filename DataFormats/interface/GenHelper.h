@@ -13,6 +13,9 @@ namespace GenHelper
         float pt = -99.;
         float e = -99.;
         float m = -99.;
+        float sumEta = -99.;
+        float sumPhi = -99.;
+        float sumPt = -99.;
         float visEta = -99.;
         float visPhi = -99.;
         float visPt = -99.;

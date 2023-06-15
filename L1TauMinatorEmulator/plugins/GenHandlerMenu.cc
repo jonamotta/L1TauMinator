@@ -22,9 +22,9 @@
 
 typedef math::XYZTLorentzVector LorentzVector;
 
-class GenHandlerMod : public edm::stream::EDProducer<> {
+class GenHandlerMenu : public edm::stream::EDProducer<> {
     public:
-        explicit GenHandlerMod(const edm::ParameterSet&);
+        explicit GenHandlerMenu(const edm::ParameterSet&);
 
     private:
         //----edm control---
@@ -64,18 +64,59 @@ class GenHandlerMod : public edm::stream::EDProducer<> {
 */
 
 // ----Constructor and Destructor -----
-GenHandlerMod::GenHandlerMod(const edm::ParameterSet& iConfig) 
+GenHandlerMenu::GenHandlerMenu(const edm::ParameterSet& iConfig) 
     : genParticlesToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("GenParticles"))),
       DEBUG(iConfig.getParameter<bool>("DEBUG"))
 {    
     produces<GenHelper::GenTausCollection>("GenTausCollection");
 }
 
-void GenHandlerMod::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
+void GenHandlerMenu::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 {
     // Create and Fill the collection of good taus and their attributes
     std::unique_ptr<GenHelper::GenTausCollection> GenTausCollection(new GenHelper::GenTausCollection);
 
+    // supporting vectors for teh definition of hadronic taus
+    // copied from: https://cmssdt.cern.ch/lxr/source/L1Trigger/L1TNtuples/plugins/L1GenTreeProducer.cc#0143
+    std::vector<int> allPartStatus;
+    std::vector<int> allPartId;
+    std::vector<int> allPartParentId;
+    std::vector<LorentzVector> allPartP4;
+    iEvent.getByToken(genParticlesToken, genParticlesHandle);
+    for (auto& p : *genParticlesHandle.product())
+    {
+        int id = p.pdgId();
+ 
+        // See if the parent was interesting
+        int parentID = -10000;
+        unsigned int nMo = p.numberOfMothers();
+        for (unsigned int i = 0; i < nMo; ++i) {
+          int thisParentID = dynamic_cast<const reco::GenParticle*>(p.mother(i))->pdgId();
+          //
+          // Is this a bottom hadron?
+          int hundredsIndex = abs(thisParentID) / 100;
+          int thousandsIndex = abs(thisParentID) / 1000;
+          if (((abs(thisParentID) >= 23) && (abs(thisParentID) <= 25)) || (abs(thisParentID) == 6) ||
+              (hundredsIndex == 5) || (hundredsIndex == 4) || (thousandsIndex == 5) || (thousandsIndex == 4))
+            parentID = thisParentID;
+        }
+        if ((parentID == -10000) && (nMo > 0))
+          parentID = dynamic_cast<const reco::GenParticle*>(p.mother(0))->pdgId();
+        //
+        // If the parent of this particle is interesting, store all of the info
+        if ((parentID != p.pdgId()) &&
+            ((parentID > -9999) || (abs(id) == 11) || (abs(id) == 13) || (abs(id) == 23) || (abs(id) == 24) ||
+             (abs(id) == 25) || (abs(id) == 4) || (abs(id) == 5) || (abs(id) == 6))) {
+
+            allPartStatus.push_back(p.status());
+            allPartId.push_back(p.pdgId());
+            allPartParentId.push_back(parentID);
+            allPartP4.push_back(p.p4());
+        }
+    }
+
+
+    // loop to create hadroni tau candidates' visible 4-vectors
     iEvent.getByToken(genParticlesToken, genParticlesHandle);
     for (auto& particle : *genParticlesHandle.product())
     {
@@ -86,7 +127,7 @@ void GenHandlerMod::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 
         if(AbsID == 12 || AbsID == 14 || AbsID == 16) { continue; }
 
-        if(AbsID == 15 && status == 2) // DIFF : status==2 selection reduces taus by ~1/3
+        if(AbsID == 15 && status == 2)
         {
             GenTau.pt = particle.pt();
             GenTau.eta = particle.eta();
@@ -95,35 +136,30 @@ void GenHandlerMod::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             GenTau.m = particle.mass();
 
             LorentzVector tau_p4vis(0., 0., 0., 0.);
+            LorentzVector tau_p4(0., 0., 0., 0.);
             bool LeptonicDecay = false;
             int ID = particle.pdgId();
 
-            for (int i = 0; i < (int)genParticlesHandle.product()->size(); i++)
+            for (int i = 0; i < (int)allPartStatus.size(); i++)
             {
-                reco::GenParticle candidate = genParticlesHandle.product()->at(i);
+                int status_ = allPartStatus[i];
+                int id = allPartId[i];
+                int parentID = allPartParentId[i];
+                LorentzVector P4 = allPartP4[i];
+                
+                if (parentID != ID) { continue; }
 
-                // done like in here https://cmssdt.cern.ch/lxr/source/L1Trigger/L1TNtuples/plugins/L1GenTreeProducer.cc
-                // POSSIBLE DIFF : to me it looks like I did it correctly but maybe I mis-interpreted how the variable is filled/read
-                bool found = false;
-                for (int j = 0; j < (int)candidate.numberOfMothers(); j++)
-                {
-                    int motherId = candidate.mother(j)->pdgId();
-                    if (motherId == ID) { found = true; }
-                }
+                if((id == 11 || id == -11)) { LeptonicDecay = true; }
+                if((id == 13 || id == -13)) { LeptonicDecay = true; }
 
-                if (!found) { continue; }
+                tau_p4 = tau_p4 + P4;
 
-                // DIFF : asking for direct decay product enlarges the number of passing candidates by ~5%
-                // is last copy does not seem to make any difference
-                // status==1 does not seem to make any difference
-                if((candidate.pdgId() == 11 || candidate.pdgId() == -11) && candidate.isDirectPromptTauDecayProductFinalState() && candidate.isLastCopy() && candidate.status() == 1) { LeptonicDecay = true; }
-                if((candidate.pdgId() == 13 || candidate.pdgId() == -13) && candidate.isDirectPromptTauDecayProductFinalState() && candidate.isLastCopy() && candidate.status() == 1) { LeptonicDecay = true; }
+                if(id == 12 || id == -12) { continue; }
+                if(id == 14 || id == -14) { continue; }
+                if(id == 16 || id == -16) { continue; }
 
-                if(candidate.pdgId() == 12 || candidate.pdgId() == -12) { continue; }
-                if(candidate.pdgId() == 14 || candidate.pdgId() == -14) { continue; }
-                if(candidate.pdgId() == 16 || candidate.pdgId() == -16) { continue; }
+                tau_p4vis = tau_p4vis + P4;
 
-                tau_p4vis = tau_p4vis + candidate.p4();
             }
 
             if (LeptonicDecay) { continue; }
@@ -131,6 +167,9 @@ void GenHandlerMod::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             GenTau.visPt = tau_p4vis.Pt();
             GenTau.visEta = tau_p4vis.Eta();
             GenTau.visPhi = tau_p4vis.Phi();
+            GenTau.sumPt = tau_p4.Pt();
+            GenTau.sumEta = tau_p4.Eta();
+            GenTau.sumPhi = tau_p4.Phi();
             GenTau.visE = tau_p4vis.E();
             GenTau.visM = tau_p4vis.M();
             GenTau.visPtEm = -99.;
@@ -138,7 +177,7 @@ void GenHandlerMod::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             GenTau.visPtHad = -99.;
             GenTau.visEHad = -99.;
 
-            // if (abs(GenTau.visEta < 3.0)) { GenTausCollection->push_back(GenTau); }
+            if (abs(GenTau.visEta < 3.0)) { GenTausCollection->push_back(GenTau); }
 
             GenTausCollection->push_back(GenTau);
         }
@@ -148,4 +187,4 @@ void GenHandlerMod::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 }
 
 
-DEFINE_FWK_MODULE(GenHandlerMod);
+DEFINE_FWK_MODULE(GenHandlerMenu);

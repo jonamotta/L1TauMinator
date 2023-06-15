@@ -32,6 +32,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.CaloTowerHandler_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.HGClusterHandler_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.GenHandler_cff')
+process.load('L1TauMinator.L1TauMinatorEmulator.GenHandlerMenu_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.Ntuplizer_cff')
 
 options = VarParsing.VarParsing ('analysis')
@@ -98,6 +99,7 @@ process.raw2digi_path     = cms.Path(process.RawToDigi)
 process.towerCluster_path = cms.Path(process.CaloTowerHandler_seq)
 process.hgcalCluster_path = cms.Path(process.HGClusterHandler_seq)
 process.generator_path    = cms.Path(process.GenHandler_seq)
+process.generatorMod_path = cms.Path(process.GenHandlerMenu_seq)
 process.ntuplizer_path    = cms.Path(process.Ntuplizer_seq)
 # process.endjob_path       = cms.EndPath(process.endOfProcess)
 
@@ -109,6 +111,7 @@ process.schedule = cms.Schedule(process.raw2digi_path,
                                 process.towerCluster_path,
                                 process.hgcalCluster_path,
                                 process.generator_path,
+                                process.generatorMod_path,
                                 process.ntuplizer_path)
                                 # process.endjob_path)
 

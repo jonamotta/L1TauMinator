@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-GenHandlerMod = cms.EDProducer("GenHandlerMod",
+GenHandlerMenu = cms.EDProducer("GenHandlerMenu",
     GenParticles = cms.InputTag('genParticles'),
     DEBUG = cms.bool(False)
 )

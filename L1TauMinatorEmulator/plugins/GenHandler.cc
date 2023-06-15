@@ -224,7 +224,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             // 3-prongs + pi0s tau decay
             else if (n_pi == 3 && n_piZero > 1)  { GenTau.DM = 12; }
             // other tau decays
-            else { GenTau.DM = -1; }
+            else { GenTau.DM = 100; }
 
             if (DEBUG)
             {
