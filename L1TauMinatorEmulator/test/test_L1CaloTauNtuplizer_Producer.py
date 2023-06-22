@@ -31,7 +31,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.load('L1Trigger.L1CaloTrigger.l1tNNCaloTauProducer_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.GenHandler_cff')
-process.load('L1TauMinator.L1TauMinatorEmulator.GenHandlerMod_cff')
+process.load('L1TauMinator.L1TauMinatorEmulator.GenHandlerMenu_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.L1CaloTauNtuplizer_Producer_cff')
 
 options = VarParsing.VarParsing ('analysis')
@@ -96,7 +96,7 @@ process.raw2digi_path     = cms.Path(process.RawToDigi)
 # process.hgcTpg_path       = cms.Path(process.L1THGCalTriggerPrimitives)   # re-emulation of calo tps
 process.tauMinator_path   = cms.Path(process.l1tNNCaloTauProducer_seq)
 process.generator_path    = cms.Path(process.GenHandler_seq)
-process.generatorMod_path = cms.Path(process.GenHandlerMod_seq)
+process.generatorMod_path = cms.Path(process.GenHandlerMenu_seq)
 process.ntuplizer_path    = cms.Path(process.L1CaloTauNtuplizerProducer_seq)
 # process.endjob_path       = cms.EndPath(process.endOfProcess)
 

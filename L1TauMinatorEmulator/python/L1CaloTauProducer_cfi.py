@@ -24,16 +24,16 @@ L1CaloTauProducer = cms.EDProducer("L1CaloTauProducer",
     EcalEtMinForClustering = cms.double(0.),
     HcalEtMinForClustering = cms.double(0.),
     EtMinForSeeding = cms.double(2.5),
-    
-    CNNmodel_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/CNNmodel_CB.pb"),
-    DNNident_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/DNNident_CB.pb"),
-    # DNNcalib_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CB.pb"),
-    DNNcalib_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CB_ptWeighted.pb"),
 
-    CNNmodel_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/CNNmodel_CE.pb"),
-    DNNident_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/DNNident_CE.pb"),
-    # DNNcalib_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CE.pb"),
-    DNNcalib_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/DNNcalib_CE_ptWeighted.pb"),
+    CNNmodel_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/CNNmodel_CB.pb"),
+    DNNident_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/DNNident_CB.pb"),
+    # DNNcalib_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15p1/DNNcalib_CB.pb"),
+    DNNcalib_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/DNNcalib_CB_ptWeighted.pb"),
+
+    CNNmodel_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/CNNmodel_CE.pb"),
+    DNNident_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/DNNident_CE.pb"),
+    # DNNcalib_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/DNNcalib_CE.pb"),
+    DNNcalib_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/DNNcalib_CE_ptWeighted.pb"),
     
     DEBUG = cms.bool(False)
 )
