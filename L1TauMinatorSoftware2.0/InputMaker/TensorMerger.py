@@ -31,24 +31,25 @@ def splitInBlocks (l, n):
 
 if __name__ == "__main__" :
     parser = OptionParser()
-    parser.add_option("--NtupleV",        dest="NtupleV",        default=None)
-    parser.add_option("--v",              dest="v",              default=None)
-    parser.add_option("--date",           dest="date",           default=None)
-    parser.add_option('--caloClNxM',      dest='caloClNxM',      default="5x9")
-    parser.add_option("--seedEtCut",      dest="seedEtCut",      default="2p5")
-    parser.add_option("--uTauPtCut",      dest="uTauPtCut",      default=None,  type=int)
-    parser.add_option("--lTauPtCut",      dest="lTauPtCut",      default=None,  type=int)
-    parser.add_option("--uEtacut",        dest="uEtacut",        default=None,  type=float)
-    parser.add_option("--lEtacut",        dest="lEtacut",        default=None,  type=float)
-    parser.add_option('--doBarrel',       dest='doBarrel',       default=False, action='store_true')
-    parser.add_option('--doEndcap',       dest='doEndcap',       default=False, action='store_true')
-    parser.add_option('--doHH',           dest='doHH',           default=False, action='store_true')
-    parser.add_option('--doVBFH',         dest='doVBFH',         default=False, action='store_true')
-    parser.add_option('--doGGH',          dest='doGGH',          default=False, action='store_true')
-    parser.add_option('--doDY',           dest='doDY',           default=False, action='store_true')
-    parser.add_option('--doDYlm',         dest='doDYlm',         default=False, action='store_true')
-    parser.add_option('--doMinBias',      dest='doMinBias',      default=False, action='store_true')
-    parser.add_option("--filesLim",       dest="filesLim",       default=10000, type=int)
+    parser.add_option("--v",               dest="v",               default=None)
+    parser.add_option("--date",            dest="date",            default=None)
+    parser.add_option('--caloClNxM',       dest='caloClNxM',       default="5x9")
+    parser.add_option("--seedEtCut",       dest="seedEtCut",       default="2p5")
+    parser.add_option("--clusteringEtCut", dest="clusteringEtCut", default="")
+    parser.add_option("--etaRestriction",  dest="etaRestriction",  default="")
+    parser.add_option("--uTauPtCut",       dest="uTauPtCut",       default=None,  type=int)
+    parser.add_option("--lTauPtCut",       dest="lTauPtCut",       default=None,  type=int)
+    parser.add_option("--uEtacut",         dest="uEtacut",         default=None,  type=float)
+    parser.add_option("--lEtacut",         dest="lEtacut",         default=None,  type=float)
+    parser.add_option('--doBarrel',        dest='doBarrel',        default=False, action='store_true')
+    parser.add_option('--doEndcap',        dest='doEndcap',        default=False, action='store_true')
+    parser.add_option('--doHH',            dest='doHH',            default=False, action='store_true')
+    parser.add_option('--doVBFH',          dest='doVBFH',          default=False, action='store_true')
+    parser.add_option('--doGGH',           dest='doGGH',           default=False, action='store_true')
+    parser.add_option('--doDY',            dest='doDY',            default=False, action='store_true')
+    parser.add_option('--doDYlm',          dest='doDYlm',          default=False, action='store_true')
+    parser.add_option('--doMinBias',       dest='doMinBias',       default=False, action='store_true')
+    parser.add_option("--filesLim",        dest="filesLim",        default=10000, type=int)
     (options, args) = parser.parse_args()
     print(options)
 
@@ -64,17 +65,19 @@ if __name__ == "__main__" :
     if options.lEtacut   : tag += '_lEtacut'+str(options.lEtacut) 
 
     if options.doGGH:
-        inlist_folders.append(outfile_base+"GluGluHToTauTau_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+tag+"/")
+        inlist_folders.append(outfile_base+"GluGluHToTauTau_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
     if options.doVBFH:
-        inlist_folders.append(outfile_base+"VBFHToTauTau_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+tag+"/")
+        inlist_folders.append(outfile_base+"VBFHToTauTau_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
     if options.doDYlm:
-        inlist_folders.append(outfile_base+"DYlowmass_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+tag+"/")
+        inlist_folders.append(outfile_base+"DYlowmass_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
     if options.doDY:
-        inlist_folders.append(outfile_base+"DY_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+tag+"/")
+        inlist_folders.append(outfile_base+"DY_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
+
+    print(inlist_folders)
 
     images_files = []
     posits_files = []
@@ -151,6 +154,8 @@ if __name__ == "__main__" :
             posits = np.load(posits_files[idx], allow_pickle=True)['arr_0']
             target = np.load(target_files[idx], allow_pickle=True)['arr_0']
 
+            if target.shape[0] == 0: continue
+
             # ID mask
             targetID  = target[:,1].reshape(-1,1)
             tau_sel = targetID.reshape(1,-1)[0] > 0
@@ -188,6 +193,8 @@ if __name__ == "__main__" :
             posits = np.load(posits_files[idx], allow_pickle=True)['arr_0']
             shapes = np.load(shapes_files[idx], allow_pickle=True)['arr_0']
             target = np.load(target_files[idx], allow_pickle=True)['arr_0']
+
+            if target.shape[0] == 0: continue
 
             # ID mask
             targetID  = target[:,1].reshape(-1,1)

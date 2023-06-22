@@ -56,6 +56,7 @@ if __name__ == "__main__" :
     parser.add_option('--caloClNxM', dest='caloClNxM', default="5x9")
     parser.add_option("--uTauPtCut", dest="uTauPtCut", default=None, type=int)
     parser.add_option("--lTauPtCut", dest="lTauPtCut", default=None, type=int)
+    parser.add_option("--CBCEsplit", dest="CBCEsplit", default=1.5, type=float)
     parser.add_option("--uEtacut",   dest="uEtacut",   default=None, type=float)
     parser.add_option("--lEtacut",   dest="lEtacut",   default=None, type=float)
     (options, args) = parser.parse_args()
@@ -64,6 +65,8 @@ if __name__ == "__main__" :
     # get clusters' shape dimensions
     N = int(options.caloClNxM.split('x')[0])
     M = int(options.caloClNxM.split('x')[1])
+
+    EtaPhiLsb = np.round(np.pi/36, 5)
 
     CLTWimages_CB = []
     CLTWpositions_CB = []
@@ -138,8 +141,12 @@ if __name__ == "__main__" :
             # apply minimum pt cut on taus
             if options.lTauPtCut and tauMatchIdx >= 0 and _gentau_visPt[tauMatchIdx] < options.lTauPtCut: continue
 
+            # apply maximum eta cut on taus and on l1 objects
+            
+            if options.uEtacut and abs(cl5x9_seedEta) > options.uEtacut: continue
+
             # if in the barrel just save the info of the CLTW
-            if abs(cl5x9_seedEta)<1.5:
+            if abs(cl5x9_seedEta) < options.CBCEsplit:
                 # CLTW image
                 x1l = []
                 for j in range(45):
@@ -150,8 +157,8 @@ if __name__ == "__main__" :
 
                 # CLTW position
                 x2l = []
-                x2l.append(cl5x9_seedEta)
-                x2l.append(cl5x9_seedPhi)
+                x2l.append(inputQuantizer(cl5x9_seedEta, EtaPhiLsb, 7))
+                x2l.append(inputQuantizer(cl5x9_seedPhi, EtaPhiLsb, 7))
                 x2 = np.array(x2l)
 
                 # tau target features
@@ -186,8 +193,8 @@ if __name__ == "__main__" :
 
                 # CLTW position
                 x2l = []
-                x2l.append(cl5x9_seedEta)
-                x2l.append(cl5x9_seedPhi)
+                x2l.append(inputQuantizer(cl5x9_seedEta, EtaPhiLsb, 7))
+                x2l.append(inputQuantizer(cl5x9_seedPhi, EtaPhiLsb, 7))
                 x2 = np.array(x2l)
 
                 # CL3D features
