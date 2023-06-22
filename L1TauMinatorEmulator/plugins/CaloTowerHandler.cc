@@ -55,7 +55,11 @@ class CaloTowerHandler : public edm::stream::EDProducer<> {
         //----private variables----
         double EcalEtMinForClustering;
         double HcalEtMinForClustering;
+        double EtMinForClustering;
         double EtMinForSeeding;
+
+        double SeedingEtaRestriction;
+
         bool DEBUG;
 };
 
@@ -76,7 +80,9 @@ CaloTowerHandler::CaloTowerHandler(const edm::ParameterSet& iConfig)
       decoderTag(esConsumes<CaloTPGTranscoder, CaloTPGRecord>(edm::ESInputTag("", ""))),
       EcalEtMinForClustering(iConfig.getParameter<double>("EcalEtMinForClustering")),
       HcalEtMinForClustering(iConfig.getParameter<double>("HcalEtMinForClustering")),
+      EtMinForClustering(iConfig.getParameter<double>("EtMinForClustering")),
       EtMinForSeeding(iConfig.getParameter<double>("EtMinForSeeding")),
+      SeedingEtaRestriction(iConfig.getParameter<double>("SeedingEtaRestriction")),
       DEBUG(iConfig.getParameter<bool>("DEBUG"))
 {    
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters9x9");
@@ -87,7 +93,8 @@ CaloTowerHandler::CaloTowerHandler(const edm::ParameterSet& iConfig)
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters3x7");
     produces<TowerHelper::TowerClustersCollection>("l1TowerClusters3x5");
 
-    std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , HcalTpEtMin = " << HcalEtMinForClustering << " , EcalTpEtMin = " << EcalEtMinForClustering << std::endl;
+    std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , EtMinForClustering = " << EtMinForClustering << " , HcalEtMinForClustering = " << HcalEtMinForClustering << " , EcalEtMinForClustering = " << EcalEtMinForClustering << std::endl;
+    std::cout << "SeedingEtaRestriction = " << SeedingEtaRestriction << std::endl;
 }
 
 void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
@@ -314,7 +321,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (DEBUG) { std::cout << " // Ieta " << l1CaloTower.towerIeta << " - Iphi " << l1CaloTower.towerIphi; }
 
             // skip seeding in towers that would make the cluster extend in HF
-            if (abs(l1CaloTower.towerEta) > 2.65) { continue; }
+            // or that extends beyoud the wanted eta restriction
+            if (abs(l1CaloTower.towerEta) > 2.65 || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -401,7 +409,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
             if (DEBUG) { std::cout << " // Ieta " << l1CaloTower.towerIeta << " - Iphi " << l1CaloTower.towerIphi; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
+            if (l1CaloTower.stale || l1CaloTower.towerEt < EtMinForClustering) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
             int   d_iEta = 99;
@@ -485,7 +493,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip seeding in towers that would make the cluster extend in HF
-            if (abs(l1CaloTower.towerEta) > 2.75) { continue; }
+            // or that extends beyoud the wanted eta restriction
+            if (abs(l1CaloTower.towerEta) > 2.75 || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -564,7 +573,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
+            if (l1CaloTower.stale || l1CaloTower.towerEt < EtMinForClustering) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
             int   d_iEta = 99;
@@ -645,7 +654,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip seeding in towers that would make the cluster extend in HF
-            if (abs(l1CaloTower.towerEta) > 2.83) { continue; }
+            // or that extends beyoud the wanted eta restriction
+            if (abs(l1CaloTower.towerEta) > 2.83 || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -724,7 +734,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
+            if (l1CaloTower.stale || l1CaloTower.towerEt < EtMinForClustering) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
             int   d_iEta = 99;
@@ -805,7 +815,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip seeding in towers that would make the cluster extend in HF
-            if (abs(l1CaloTower.towerEta) > 2.83) { continue; }
+            // or that extends beyoud the wanted eta restriction
+            if (abs(l1CaloTower.towerEta) > 2.83 || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -884,7 +895,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
+            if (l1CaloTower.stale || l1CaloTower.towerEt < EtMinForClustering) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
             int   d_iEta = 99;
@@ -982,7 +993,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip seeding in towers that would make the cluster extend in HF
-            if (abs(l1CaloTower.towerEta) > 2.83) { continue; }
+            // or that extends beyoud the wanted eta restriction
+            if (abs(l1CaloTower.towerEta) > 2.83 || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -1061,7 +1073,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
+            if (l1CaloTower.stale || l1CaloTower.towerEt < EtMinForClustering) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
             int   d_iEta = 99;
@@ -1142,7 +1154,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip seeding in towers that would make the cluster extend in HF
-            if (abs(l1CaloTower.towerEta) > 2.91) { continue; }
+            // or that extends beyoud the wanted eta restriction
+            if (abs(l1CaloTower.towerEta) > 2.91 || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -1221,7 +1234,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
+            if (l1CaloTower.stale || l1CaloTower.towerEt < EtMinForClustering) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
             int   d_iEta = 99;
@@ -1302,7 +1315,8 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip seeding in towers that would make the cluster extend in HF
-            if (abs(l1CaloTower.towerEta) > 2.91) { continue; }
+            // or that extends beyoud the wanted eta restriction
+            if (abs(l1CaloTower.towerEta) > 2.91 || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // skip l1CaloTowers which are already used by this clusters' mask
             if (l1CaloTower.stale4seed) { continue; }
@@ -1381,7 +1395,7 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
         for (auto &l1CaloTower : l1CaloTowers)
         {
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (l1CaloTower.stale) { continue; }
+            if (l1CaloTower.stale || l1CaloTower.towerEt < EtMinForClustering) { continue; }
 
             // go on with unused l1CaloTowers which are not the initial seed
             int   d_iEta = 99;

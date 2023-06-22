@@ -7,6 +7,8 @@ CaloTowerHandler = cms.EDProducer("CaloTowerHandler",
     hcalDigis = cms.InputTag("simHcalTriggerPrimitiveDigis"),
     EcalEtMinForClustering = cms.double(0.),
     HcalEtMinForClustering = cms.double(0.),
+    EtMinForClustering = cms.double(0.),
     EtMinForSeeding = cms.double(2.5),
+    SeedingEtaRestriction = cms.double(3.5),
     DEBUG = cms.bool(False)
 )

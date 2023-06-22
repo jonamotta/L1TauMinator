@@ -44,6 +44,16 @@ options.register ('minSeedEt',
                   VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.VarParsing.varType.float,          # string, int, or float
                   "minimum seeding energy")
+options.register ('minClusteringEt',
+                  0.0, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum seeding energy")
+options.register ('etaRestriction',
+                  3.5, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum seeding energy")
 options.parseArguments()
 
 process.maxEvents = cms.untracked.PSet(
@@ -90,6 +100,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '125X_mcRun4_realistic_v2', '')
 
 # minimum value of seeding energy
 process.CaloTowerHandler.EtMinForSeeding = cms.double(options.minSeedEt)
+process.CaloTowerHandler.EtMinForClustering = cms.double(options.minClusteringEt)
+process.CaloTowerHandler.SeedingEtaRestriction = cms.double(options.etaRestriction)
 
 # Path and EndPath definitions
 process.raw2digi_path     = cms.Path(process.RawToDigi)
