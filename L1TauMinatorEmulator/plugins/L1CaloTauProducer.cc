@@ -125,7 +125,7 @@ L1CaloTauProducer::L1CaloTauProducer(const edm::ParameterSet& iConfig)
       EcalEtMinForClustering(iConfig.getParameter<double>("EcalEtMinForClustering")),
       HcalEtMinForClustering(iConfig.getParameter<double>("HcalEtMinForClustering")),
       EtMinForSeeding(iConfig.getParameter<double>("EtMinForSeeding")),
-      
+
       CNNmodel_CB_path(iConfig.getParameter<std::string>("CNNmodel_CB_path")),
       DNNident_CB_path(iConfig.getParameter<std::string>("DNNident_CB_path")),
       DNNcalib_CB_path(iConfig.getParameter<std::string>("DNNcalib_CB_path")),
@@ -187,13 +187,13 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
         TowerHelper::SimpleTowerHit l1Hit;
         l1Hit.isBarrel     = true;
-        l1Hit.l1egTowerEt  = hit.l1egTowerEt();
+        l1Hit.l1egTowerEt  = hit.l1egTowerEt(); // inputQuantizer(hit.l1egTowerEt(), 0.25, 10);
         l1Hit.nL1eg        = hit.nL1eg();
         l1Hit.towerEta     = hit.towerEta();
         l1Hit.towerPhi     = hit.towerPhi();
-        l1Hit.towerEm      = hit.ecalTowerEt();
-        l1Hit.towerHad     = hit.hcalTowerEt();
-        l1Hit.towerEt      = l1Hit.towerEm + l1Hit.towerHad + l1Hit.l1egTowerEt;
+        l1Hit.towerEm      = hit.ecalTowerEt(); // inputQuantizer(hit.ecalTowerEt(), 0.25, 10);
+        l1Hit.towerHad     = hit.hcalTowerEt(); // inputQuantizer(hit.hcalTowerEt(), 0.25, 10);
+        l1Hit.towerEt      = hit.ecalTowerEt() + hit.hcalTowerEt() + hit.l1egTowerEt(); // inputQuantizer(hit.ecalTowerEt() + hit.hcalTowerEt() + hit.l1egTowerEt(), 0.25, 10);
         l1Hit.towerIeta    = hit.towerIEta();
         l1Hit.towerIphi    = hit.towerIPhi();
 
@@ -210,9 +210,9 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         l1Hit.nL1eg        = 0;
         l1Hit.towerEta     = hit.eta();
         l1Hit.towerPhi     = hit.phi();
-        l1Hit.towerEm      = hit.etEm();
-        l1Hit.towerHad     = hit.etHad();
-        l1Hit.towerEt      = l1Hit.towerEm + l1Hit.towerHad;
+        l1Hit.towerEm      = hit.etEm(); // inputQuantizer(hit.etEm(), 0.25, 10);
+        l1Hit.towerHad     = hit.etHad(); // inputQuantizer(hit.etHad(), 0.25, 10);
+        l1Hit.towerEt      = hit.etEm() + hit.etHad(); // inputQuantizer(hit.etEm() + hit.etHad(), 0.25, 10);
         l1Hit.towerIeta    = endcap_ieta(l1Hit.towerEta);
         l1Hit.towerIphi    = endcap_iphi(l1Hit.towerPhi);
 
@@ -360,7 +360,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         if (seeded)
         {
             if (clNxM.barrelSeeded) { l1TowerClustersNxM_CB->push_back(clNxM); }
-            else                     { AllL1TowerClustersNxM_CE.push_back(clNxM); }
+            else                    { AllL1TowerClustersNxM_CE.push_back(clNxM); }
         }
 
     } // end while loop of TowerClusters seeding
@@ -430,9 +430,9 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
                 l1TowerClustersNxM_CE->push_back(clNxM);
                 matched = true;
             }
-        
+
         } // end for loop over cl3ds
-    
+
     } // end for loop over clNxM
 
 
