@@ -224,7 +224,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             // 3-prongs + pi0s tau decay
             else if (n_pi == 3 && n_piZero > 1)  { GenTau.DM = 12; }
             // other tau decays
-            else { GenTau.DM = 100; }
+            else { GenTau.DM = -1; }
 
             if (DEBUG)
             {
@@ -239,7 +239,7 @@ void GenHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             }
 
             // skip taus out of HGcal acceptance and  non hadronic taus
-            if (abs(GenTau.visEta < 3.0) && GenTau.DM > 0) { GenTausCollection->push_back(GenTau); }
+            if (abs(GenTau.visEta) < 3.0 && GenTau.DM > 0) { GenTausCollection->push_back(GenTau); }
 
         } // end if(goodTau())
 
