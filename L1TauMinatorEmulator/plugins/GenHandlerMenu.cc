@@ -13,6 +13,8 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "DataFormats/Math/interface/LorentzVector.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
+#include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
@@ -76,7 +78,7 @@ void GenHandlerMenu::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     // Create and Fill the collection of good taus and their attributes
     std::unique_ptr<GenHelper::GenTausCollection> GenTausCollection(new GenHelper::GenTausCollection);
 
-    // supporting vectors for teh definition of hadronic taus
+    // supporting vectors for the definition of hadronic taus
     // copied from: https://cmssdt.cern.ch/lxr/source/L1Trigger/L1TNtuples/plugins/L1GenTreeProducer.cc#0143
     std::vector<int> allPartStatus;
     std::vector<int> allPartId;
@@ -116,7 +118,9 @@ void GenHandlerMenu::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
     }
 
 
-    // loop to create hadroni tau candidates' visible 4-vectors
+    std::vector<GenHelper::GenTau> AllTaus;
+
+    // loop to create hadronic tau candidates' visible 4-vectors
     iEvent.getByToken(genParticlesToken, genParticlesHandle);
     for (auto& particle : *genParticlesHandle.product())
     {
@@ -142,7 +146,6 @@ void GenHandlerMenu::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
 
             for (int i = 0; i < (int)allPartStatus.size(); i++)
             {
-                int status_ = allPartStatus[i];
                 int id = allPartId[i];
                 int parentID = allPartParentId[i];
                 LorentzVector P4 = allPartP4[i];
@@ -177,10 +180,37 @@ void GenHandlerMenu::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
             GenTau.visPtHad = -99.;
             GenTau.visEHad = -99.;
 
-            if (abs(GenTau.visEta < 3.0)) { GenTausCollection->push_back(GenTau); }
-
-            GenTausCollection->push_back(GenTau);
+            if (abs(GenTau.visEta) < 3.0) { AllTaus.push_back(GenTau); }
         }
+    }
+
+
+    for (int j = 0; j < (int)AllTaus.size(); j++)
+    {
+        GenHelper::GenTau GenTau = AllTaus[j];
+
+        double Isolation = 0.;
+
+        for (int i = 0; i < (int)allPartStatus.size(); i++)
+        {
+            int id = allPartId[i];
+            LorentzVector P4 = allPartP4[i];
+
+            if (allPartStatus[i] != 1) { continue; } // use only final state particles
+            if(id == 12 || id == -12) { continue; }
+            if(id == 14 || id == -14) { continue; }
+            if(id == 16 || id == -16) { continue; }
+
+            double dEta = GenTau.visEta - P4.Eta();
+            double dPhi = reco::deltaPhi(GenTau.visPhi, P4.Phi());
+            double dR2 = dEta*dEta + dPhi*dPhi;
+            
+            if (dR2 < 0.09) { Isolation += P4.Pt(); }
+        }
+
+        Isolation  = Isolation / GenTau.visPt - 1.;
+
+        if (Isolation < 0.15) { GenTausCollection->push_back(GenTau); }
     }
 
     iEvent.put(std::move(GenTausCollection),  "GenTausCollection");
