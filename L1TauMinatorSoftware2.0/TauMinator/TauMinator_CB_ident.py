@@ -152,20 +152,26 @@ if __name__ == "__main__" :
         if N <  5 and M >= 5: wndw = (1,2)
         if N <  5 and M <  5: wndw = (1,1)
 
-        x = layers.Conv2D(4, wndw, input_shape=(N, M, 3), use_bias=False, name="CNNlayer1")(images)
+        x = layers.Conv2D(16, (2,3), input_shape=(N, M, 3), use_bias=False, name="CNNlayer1")(images)
         x = layers.BatchNormalization(name='BN_CNNlayer1')(x)
         x = layers.Activation('relu', name='RELU_CNNlayer1')(x)
-        x = layers.MaxPooling2D(wndw, name="MP_CNNlayer1")(x)
-        x = layers.Conv2D(8, wndw, use_bias=False, name="CNNlayer2")(x)
+        # x = layers.MaxPooling2D((2,2), name="MP_CNNlayer1")(x)
+        x = layers.Conv2D(32, (2,3), use_bias=False, name="CNNlayer2")(x)
         x = layers.BatchNormalization(name='BN_CNNlayer2')(x)
         x = layers.Activation('relu', name='RELU_CNNlayer2')(x)
+        # x = layers.MaxPooling2D((2,2), name="MP_CNNlayer2")(x)
+        x = layers.Conv2D(32, (2,3), use_bias=False, name="CNNlayer3")(x)
+        x = layers.BatchNormalization(name='BN_CNNlayer3')(x)
+        x = layers.Activation('relu', name='RELU_CNNlayer3')(x)
         x = layers.Flatten(name="CNNflattened")(x)
         x = layers.Concatenate(axis=1, name='middleMan')([x, positions])
         
-        y = layers.Dense(16, use_bias=False, name="IDlayer1")(x)
+        y = layers.Dense(64, use_bias=False, name="IDlayer1")(x)
         y = layers.Activation('relu', name='RELU_IDlayer1')(y)
-        y = layers.Dense(8, use_bias=False, name="IDlayer2")(y)
+        y = layers.Dense(64, use_bias=False, name="IDlayer2")(y)
         y = layers.Activation('relu', name='RELU_IDlayer2')(y)
+        y = layers.Dense(32, use_bias=False, name="IDlayer3")(y)
+        y = layers.Activation('relu', name='RELU_IDlayer3')(y)
         y = layers.Dense(1, use_bias=False, name="IDout")(y)
         y = layers.Activation('sigmoid', name='sigmoid_IDout')(y)
 
@@ -349,7 +355,9 @@ if __name__ == "__main__" :
     df = pd.DataFrame()
     df['score'] = valid_ident.ravel()
     df['true']  = Yid_valid.ravel()
-    df['gen_dm'] = Y_valid[:,4].ravel()
+    df['gen_pt'] = Y_valid[:,0].ravel()
+    df['L1_et'] = np.sum(np.sum(np.sum(X1_valid, axis=3), axis=2), axis=1).ravel()
+    # df['gen_dm'] = Y_valid[:,4].ravel()
     
     plt.figure(figsize=(10,10))
     plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1,0.05), label='Tau', color='green', density=True, histtype='step', lw=2)
@@ -365,9 +373,23 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CB_ident_plots/CNN_score.pdf')
     plt.close()
 
+    plt.figure(figsize=(10,10))
+    plt.scatter(df[df['true']==0]['score'], df[df['true']==0]['L1_et'], color='red', alpha=0.2)
+    plt.scatter(df[df['true']==1]['score'], df[df['true']==1]['L1_et'], color='green', alpha=0.2)
+    plt.grid(linestyle=':')
+    # plt.xlim(0.5,1.001)
+    plt.ylim(17,40)
+    # plt.yscale('log')
+    # plt.xscale('log')
+    plt.xlabel(r'CNN score')
+    plt.ylabel(r'$p_{T}^{Gen. \tau}$')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_ident_plots/CNN_score_vs_l1et.pdf')
+    plt.close()
+
     ################
     ## PER DM PLOTS
-
+'''
     DMdict = {
                 0  : r'$h^{\pm}$',
                 1  : r'$h^{\pm}\pi^{0}$',
@@ -462,3 +484,4 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CB_ident_plots/validation_roc_perDM_log.pdf')
     plt.close()
 
+'''

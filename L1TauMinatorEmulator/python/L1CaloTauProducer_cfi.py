@@ -25,6 +25,9 @@ L1CaloTauProducer = cms.EDProducer("L1CaloTauProducer",
     HcalEtMinForClustering = cms.double(0.),
     EtMinForSeeding = cms.double(2.5),
 
+    SeedingEtaRestriction = cms.double(3.0),
+    CB_CE_split = cms.double(1.5),
+
     CNNmodel_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/CNNmodel_CB.pb"),
     DNNident_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15/DNNident_CB.pb"),
     # DNNcalib_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/v15p1/DNNcalib_CB.pb"),

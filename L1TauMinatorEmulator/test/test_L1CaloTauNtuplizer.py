@@ -44,6 +44,26 @@ options.register ('minSeedEt',
                   VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.VarParsing.varType.float,          # string, int, or float
                   "minimum seeding energy")
+options.register ('minClusteringEt',
+                  0.0, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum seeding energy")
+options.register ('etaRestriction',
+                  3.0, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum seeding energy")
+options.register ('CBCEsplit',
+                  1.5, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum seeding energy")
+options.register ('NNv',
+                  "0", # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.string,          # string, int, or float
+                  "minimum seeding energy")
 options.parseArguments()
 
 process.maxEvents = cms.untracked.PSet(
@@ -90,6 +110,15 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '125X_mcRun4_realistic_v2', '')
 
 # minimum value of seeding energy
 process.L1CaloTauProducer.EtMinForSeeding = cms.double(options.minSeedEt)
+process.L1CaloTauProducer.SeedingEtaRestriction = cms.double(options.etaRestriction)
+process.L1CaloTauProducer.CB_CE_split = cms.double(options.CBCEsplit)
+
+process.L1CaloTauProducer.CNNmodel_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/"+options.NNv+"/CNNmodel_CB.pb")
+process.L1CaloTauProducer.DNNident_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/"+options.NNv+"/DNNident_CB.pb")
+process.L1CaloTauProducer.DNNcalib_CB_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/"+options.NNv+"/DNNcalib_CB.pb")
+process.L1CaloTauProducer.CNNmodel_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/"+options.NNv+"/CNNmodel_CE.pb")
+process.L1CaloTauProducer.DNNident_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/"+options.NNv+"/DNNident_CE.pb")
+process.L1CaloTauProducer.DNNcalib_CE_path = cms.string("L1TauMinator/L1TauMinatorEmulator/data/"+options.NNv+"/DNNcalib_CE.pb")
 
 # Path and EndPath definitions
 process.raw2digi_path     = cms.Path(process.RawToDigi)

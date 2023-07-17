@@ -33,6 +33,7 @@ L1TauMinatorNtuples
         * new ntuple version
         * Phase2Fall22 125X MC samples
         * implemented new definition of hadronic taus following the Menu Tools approach
+        * intorduce eta restriction at clustering time
 
 
 **************************************************************
@@ -207,6 +208,8 @@ TauMinator Trainings
         * uses L1TauMinatorNtuples/v2 produced on the 4th of October
         * first attempt at having matching of cl3d-cltw matching before everything
 
+    >--------- from here move to Tauminator 2.0 ---------<
+
     2023_05_15_v14
         * uses L1TauMinatorNtuples/v3 produced on the 15th of May
         * first training with all the new specs:
@@ -234,18 +237,52 @@ TauMinator Trainings
         * HLS implementation with hls4ml
         * deployment on vu9p using hls4ml accelerator backend
 
-    2023_06_15_v17
+    2023_06_21_v17
         * uses L1TauMinatorNtuples/v4 produced on the 15th of June
-            -> this increase substantially the training statistics
+            -> this increases a bit the training statistics
             -> this make the definition of hadronic objects the same as in the Menu
-        *
+        * keep all the rest as for v15/v16 which are the first official version that entered CMSSW
+            -> CB CE split = 1.5
+            -> clustering eta restrinction 3.0
+        
+    2023_06_21_v17p1
+        * uses L1TauMinatorNtuples/v4 produced on the 15th of June
+        * following eta choices:
+            -> CB CE split = 1.55
+            -> clustering eta restrinction 3.0
 
+    2023_06_21_v17p2
+        * uses L1TauMinatorNtuples/v4 produced on the 15th of June
+        * following eta choices:
+            -> CB CE split = 1.61
+            -> clustering eta restrinction 3.0
+    
+    2023_06_21_v18
+        * uses L1TauMinatorNtuples/v4 produced on the 15th of June
+        * following eta choices:
+            -> CB CE split = 1.5
+            -> clustering eta restrinction 2.4
 
+    2023_06_21_v18p1
+        * uses L1TauMinatorNtuples/v4 produced on the 15th of June
+        * following eta choices:
+            -> CB CE split = 1.55
+            -> clustering eta restrinction 2.4
 
+    2023_06_21_v18p2
+        * uses L1TauMinatorNtuples/v4 produced on the 15th of June
+        * following eta choices:
+            -> CB CE split = 1.61
+            -> clustering eta restrinction 2.4
 
+    2023_06_26_v19
+    2023_06_28_v20
+        * various tests
 
+    >--------- from here move to Tauminator 3.0 ---------<
 
-
+    2023_07_04_v21
+        
 
 
 

@@ -129,6 +129,13 @@ if __name__ == "__main__" :
     Y = Y[tau_sel]
     Ycal = Ycal[tau_sel]
 
+    # FIXME #
+    pt_sel = (Ycal.reshape(1,-1)[0]>40) & (Ycal.reshape(1,-1)[0]<60)
+    X1 = X1[pt_sel]
+    X2 = X2[pt_sel]
+    Y = Y[pt_sel]
+    Ycal = Ycal[pt_sel]
+
     if options.dm_weighted:
         # create dm weights
         Ydm = Y[:,4].reshape(-1,1)
@@ -144,47 +151,105 @@ if __name__ == "__main__" :
 
         dm_weights = dm0_w*dm0 + dm1_w*dm1 + dm10_w*dm10 + dm11_w*dm11
 
-    if options.pt_weighted:
-        def customPtDownWeight(row):
-            if (row['gen_pt']<20):
-                return row['weight']*0.5
+    # if options.pt_weighted:
+    def customPtDownWeight(row):
+        if (row['gen_pt']<20):
+            return row['weight']*0.5
 
-            elif ((row['gen_pt']>100)&(row['gen_pt']<150)):
-                return row['weight']*0.5
-            
-            elif (row['gen_pt']>150):
-                return 1.0
+        elif ((row['gen_pt']>100)&(row['gen_pt']<150)):
+            return row['weight']*0.5
+        
+        elif (row['gen_pt']>150):
+            return 1.0
 
-            else:
-                return row['weight']
+        else:
+            return row['weight']
 
-        dfweights = pd.DataFrame(Y[:,0], columns=['gen_pt'])
-        weight_Ebins = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100, 110, 130, 150, 2000]
-        dfweights['gen_pt_bin'] = pd.cut(dfweights['gen_pt'], bins=weight_Ebins, labels=False, include_lowest=True)
-        dfweights['weight'] = dfweights.shape[0] / dfweights.groupby(['gen_pt_bin'])['gen_pt_bin'].transform('count')
-        dfweights['weight'] = dfweights.apply(lambda row: customPtDownWeight(row) , axis=1)
-        pt_weights = dfweights['weight'].to_numpy()
+    dfweights = pd.DataFrame(Y[:,0], columns=['gen_pt'])
+    weight_Ebins = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100, 110, 130, 150, 2000]
+    dfweights['gen_pt_bin'] = pd.cut(dfweights['gen_pt'], bins=weight_Ebins, labels=False, include_lowest=True)
+    dfweights['weight'] = dfweights.shape[0] / dfweights.groupby(['gen_pt_bin'])['gen_pt_bin'].transform('count')
+    dfweights['weight'] = dfweights.apply(lambda row: customPtDownWeight(row) , axis=1)
+    dfweights['weight'] = dfweights['weight'] / min(dfweights['weight'])
+    pt_weights = dfweights['weight'].to_numpy()
 
-        plt.figure(figsize=(10,10))
-        plt.hist(dfweights['gen_pt'], bins=weight_Ebins,                               label="Un-weighted", color='red',   lw=2, histtype='step', alpha=0.7)
-        plt.hist(dfweights['gen_pt'], bins=weight_Ebins, weights=dfweights['weight'],  label="Weighted",    color='green', lw=2, histtype='step', alpha=0.7)
-        plt.xlabel(r'$p_{T}^{Gen \tau}$')
-        plt.ylabel(r'a.u.')
-        plt.legend(loc = 'upper right', fontsize=16)
-        plt.grid(linestyle='dotted')
-        plt.yscale('log')
-        plt.xlim(0,175)
-        mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-        plt.savefig(outdir+'/TauMinator_CB_calib_plots/pt_gentau.pdf')
-        plt.close()
+    plt.figure(figsize=(10,10))
+    plt.hist(dfweights['gen_pt'], bins=weight_Ebins,                               label="Un-weighted", color='red',   lw=2, histtype='step', alpha=0.7)
+    plt.hist(dfweights['gen_pt'], bins=weight_Ebins, weights=dfweights['weight'],  label="Weighted",    color='green', lw=2, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.yscale('log')
+    plt.xlim(0,175)
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_calib_plots/pt_gentau.pdf')
+    plt.close()
 
-        del dfweights
+    del dfweights
 
-    # print(dfweights.groupby('gen_pt_bin')['weight'].mean())
+    # print(dfweights) #.groupby('gen_pt_bin')['weight'].mean())
     # exit()
 
     X1_totE = np.sum(X1, (1,2,3)).reshape(-1,1)
     Yfactor = Ycal / X1_totE
+    
+    farctor_sel = (Yfactor.reshape(1,-1)[0] < 2.4) & (Yfactor.reshape(1,-1)[0] > 0.4)
+    X1 = X1[farctor_sel]
+    X2 = X2[farctor_sel]
+    Y = Y[farctor_sel]
+    Ycal = Ycal[farctor_sel]
+    Yfactor = Yfactor[farctor_sel]
+
+    plt.figure(figsize=(10,10))
+    plt.hist(Yfactor, bins=np.arange(0,20,0.2))
+    # plt.xlabel(r'$p_{T}^{Gen \tau}$')
+    # plt.ylabel(r'a.u.')
+    # plt.legend(loc = 'upper right', fontsize=16)
+    # plt.grid(linestyle='dotted')
+    plt.yscale('log')
+    plt.xlim(0,6)
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_calib_plots/Yfactor.pdf')
+    plt.close()
+
+    plt.figure(figsize=(10,10))
+    plt.scatter(Ycal, Yfactor)
+    # plt.xlabel(r'$p_{T}^{Gen \tau}$')
+    # plt.ylabel(r'a.u.')
+    # plt.legend(loc = 'upper right', fontsize=16)
+    # plt.grid(linestyle='dotted')
+    # plt.yscale('log')
+    plt.xlim(39,61)
+    plt.ylim(0,6)
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_calib_plots/Yfactor_vs_pt.pdf')
+    plt.close()
+
+
+    dfweights = pd.DataFrame(Yfactor, columns=['yfactor'])
+    weight_Ebins = [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4]
+    dfweights['yfactorbin'] = pd.cut(dfweights['yfactor'], bins=weight_Ebins, labels=False, include_lowest=True)
+    dfweights['weight'] = dfweights.shape[0] / dfweights.groupby(['yfactorbin'])['yfactorbin'].transform('count')
+    # dfweights['weight'] = dfweights.apply(lambda row: customPtDownWeight(row) , axis=1)
+    dfweights['weight'] = dfweights['weight'] / min(dfweights['weight'])
+    yfactor_weights = dfweights['weight'].to_numpy()
+
+    plt.figure(figsize=(10,10))
+    plt.hist(dfweights['yfactor'], bins=weight_Ebins,                               label="Un-weighted", color='red',   lw=2, histtype='step', alpha=0.7)
+    plt.hist(dfweights['yfactor'], bins=weight_Ebins, weights=dfweights['weight'],  label="Weighted",    color='green', lw=2, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    plt.yscale('log')
+    plt.xlim(0,6)
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_calib_plots/Yfactor_weighted.pdf')
+    plt.close()
+
+    del dfweights
+
 
     # print(X1_totE.shape)
     # print(Ycal.shape)
@@ -202,13 +267,17 @@ if __name__ == "__main__" :
         sys.stdout = Logger(outdir+'/TauMinator_CB_calib_plots/training_calib.log')
         print(options)
 
-        middleMan = keras.Input(shape=26, name='middleMan')
+        middleMan = keras.Input(shape=194, name='middleMan')
 
-        x = layers.Dense(16, use_bias=False, name="DNNlayer1")(middleMan)
+        x = layers.Dense(128, use_bias=False, name="DNNlayer1")(middleMan)
         x = layers.Activation('relu', name='RELU_DNNlayer1')(x)
-        x = layers.Dense(8, use_bias=False, name="DNNlayer2")(x)
+        x = layers.Dense(256, use_bias=False, name="DNNlayer2")(x)
         x = layers.Activation('relu', name='RELU_DNNlayer2')(x)
-        x = layers.Dense(1, use_bias=False, name="DNNout")(x)
+        x = layers.Dense(128, use_bias=False, name="DNNlayer3")(x)
+        x = layers.Activation('relu', name='RELU_DNNlayer3')(x)
+        x = layers.Dense(64, use_bias=False, name="DNNlayer4")(x)
+        x = layers.Activation('relu', name='RELU_DNNlayer4')(x)
+        x = layers.Dense(1, use_bias=False, name="DNNout", activation='linear')(x)
         
         TauCalibrated = x
 
@@ -219,15 +288,16 @@ if __name__ == "__main__" :
 
         if options.dm_weighted or options.pt_weighted:
             TauMinatorModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
-                                    loss=custom_loss,
+                                    loss=tf.keras.losses.LogCosh(),
                                     metrics=['RootMeanSquaredError'],
                                     sample_weight_mode='sample-wise',
                                     run_eagerly=True)
 
         else:
             TauMinatorModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
-                                    loss=custom_loss,
+                                    loss=tf.keras.losses.LogCosh(),
                                     metrics=['RootMeanSquaredError'],
+                                    sample_weight_mode='sample-wise',
                                     run_eagerly=True)
 
         # print(TauMinatorModel.summary())
@@ -235,7 +305,8 @@ if __name__ == "__main__" :
 
         ############################## Model training ##############################
 
-        CNN = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/2023_05_24_v15/TauMinator_CB_cltw5x9_Training/CNNmodel', compile=False)
+        if not options.pt_weighted: CNN = keras.models.load_model(outdir+'/CNNmodel', compile=False)
+        else:                       CNN = keras.models.load_model(outdir.replace('_ptWeighted', '')+'/CNNmodel', compile=False)
         CNNprediction = CNN([X1, X2])
 
         callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, mode='min', patience=10, verbose=1, restore_best_weights=True),
@@ -248,7 +319,7 @@ if __name__ == "__main__" :
             history = TauMinatorModel.fit(CNNprediction, Yfactor, epochs=500, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks, sample_weight=pt_weights)
 
         else:
-            history = TauMinatorModel.fit(CNNprediction, Yfactor, epochs=500, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks)
+            history = TauMinatorModel.fit(CNNprediction, Yfactor, epochs=500, batch_size=1024, verbose=1, validation_split=0.25, callbacks=callbacks, sample_weight=yfactor_weights)
 
         TauMinatorModel.save(outdir+'/CAL_DNNmodel', include_optimizer=False)
         cmsml.tensorflow.save_graph(indir+'/CMSSWmodels'+tag+'/DNNcalib_CB.pb', TauMinatorModel, variables_to_constants=True)
@@ -290,7 +361,8 @@ if __name__ == "__main__" :
         sys.stdout = sys.__stdout__
 
     else:
-        CNN = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/2023_05_24_v15/TauMinator_CB_cltw5x9_Training/CNNmodel', compile=False)
+        if not options.pt_weighted: CNN = keras.models.load_model(outdir+'/CNNmodel', compile=False)
+        else:                       CNN = keras.models.load_model(outdir.replace('_ptWeighted', '')+'/CNNmodel', compile=False)
         TauMinatorModel = keras.models.load_model(outdir+'/CAL_DNNmodel', compile=False)
 
     ############################## Model validation and pots ##############################
@@ -307,6 +379,13 @@ if __name__ == "__main__" :
     X2_valid = X2_valid[tau_sel_valid]
     Y_valid = Y_valid[tau_sel_valid]
     Ycal_valid = Ycal_valid[tau_sel_valid]
+
+    # FIXME #
+    pt_sel = (Ycal_valid.reshape(1,-1)[0]>40) & (Ycal_valid.reshape(1,-1)[0]<60)
+    X1_valid = X1_valid[pt_sel]
+    X2_valid = X2_valid[pt_sel]
+    Y_valid = Y_valid[pt_sel]
+    Ycal_valid = Ycal_valid[pt_sel]
 
     train_calib = np.sum(X1, (1,2,3)).reshape(-1,1) * TauMinatorModel.predict(CNN([X1, X2]))
     valid_calib = np.sum(X1_valid, (1,2,3)).reshape(-1,1) * TauMinatorModel.predict(CNN([X1_valid, X2_valid]))
@@ -456,16 +535,18 @@ if __name__ == "__main__" :
 
 
     # L1 TO GEN MAPPING
-    bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 250, 2000]
+    # bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 250, 2000]
+    bins = [40, 45, 50, 55, 60]
     dfTrain['gen_pt_bin'] = pd.cut(dfTrain['gen_pt'], bins=bins, labels=False, include_lowest=True)
     dfValid['gen_pt_bin'] = pd.cut(dfValid['gen_pt'], bins=bins, labels=False, include_lowest=True)
 
-    pt_bins_centers = np.append(np.arange(17.5,152.5,5), [200, 1125])
+    # pt_bins_centers = np.append(np.arange(17.5,152.5,5), [200, 1125])
+    pt_bins_centers = np.array(np.arange(42.5,58.5,5))
 
-    trainL1 = dfTrain.groupby('gen_pt_bin')['calib_pt'].mean()
-    validL1 = dfValid.groupby('gen_pt_bin')['calib_pt'].mean()
-    trainL1std = dfTrain.groupby('gen_pt_bin')['calib_pt'].std()
-    validL1std = dfValid.groupby('gen_pt_bin')['calib_pt'].std()
+    trainL1 = np.array(dfTrain.groupby('gen_pt_bin')['calib_pt'].mean())
+    validL1 = np.array(dfValid.groupby('gen_pt_bin')['calib_pt'].mean())
+    trainL1std = np.array(dfTrain.groupby('gen_pt_bin')['calib_pt'].std())
+    validL1std = np.array(dfValid.groupby('gen_pt_bin')['calib_pt'].std())
 
     plt.figure(figsize=(10,10))
     plt.errorbar(pt_bins_centers, trainL1, yerr=trainL1std, label='Train. dataset', color='blue', ls='None', lw=2, marker='o')
@@ -480,10 +561,10 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CB_calib_plots/GenToCalibL1_pt.pdf')
     plt.close()
 
-    trainL1 = dfTrain.groupby('gen_pt_bin')['uncalib_pt'].mean()
-    validL1 = dfValid.groupby('gen_pt_bin')['uncalib_pt'].mean()
-    trainL1std = dfTrain.groupby('gen_pt_bin')['uncalib_pt'].std()
-    validL1std = dfValid.groupby('gen_pt_bin')['uncalib_pt'].std()
+    trainL1 = np.array(dfTrain.groupby('gen_pt_bin')['uncalib_pt'].mean())
+    validL1 = np.array(dfValid.groupby('gen_pt_bin')['uncalib_pt'].mean())
+    trainL1std = np.array(dfTrain.groupby('gen_pt_bin')['uncalib_pt'].std())
+    validL1std = np.array(dfValid.groupby('gen_pt_bin')['uncalib_pt'].std())
 
     plt.figure(figsize=(10,10))
     plt.errorbar(pt_bins_centers, trainL1, yerr=trainL1std, label='Train. dataset', color='blue', ls='None', lw=2, marker='o')
@@ -498,10 +579,15 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CB_calib_plots/GenToUncalinL1_pt.pdf')
     plt.close()
 
-    scale_vs_pt_uncalib = []
-    resol_vs_pt_uncalib = []
-    scale_vs_pt_calib = []
-    resol_vs_pt_calib = []
+    scale_vs_pt_uncalib_valid = []
+    resol_vs_pt_uncalib_valid = []
+    scale_vs_pt_calib_valid = []
+    resol_vs_pt_calib_valid = []
+
+    scale_vs_pt_uncalib_train = []
+    resol_vs_pt_uncalib_train = []
+    scale_vs_pt_calib_train = []
+    resol_vs_pt_calib_train = []
 
     for ibin in np.sort(dfValid['gen_pt_bin'].unique()):
         ledge = bins[ibin]
@@ -522,21 +608,29 @@ if __name__ == "__main__" :
         plt.savefig(outdir+'/TauMinator_CB_calib_plots/responses_comparison_'+str(ledge)+'pt'+str(uedge)+'.pdf')
         plt.close()
 
-        scale_vs_pt_uncalib.append(np.mean(tmpValid['uncalib_pt']/tmpValid['gen_pt']))
-        resol_vs_pt_uncalib.append(np.std(tmpValid['uncalib_pt']/tmpValid['gen_pt'])/np.mean(tmpValid['uncalib_pt']/tmpValid['gen_pt']))
+        scale_vs_pt_uncalib_valid.append(np.mean(tmpValid['uncalib_pt']/tmpValid['gen_pt']))
+        resol_vs_pt_uncalib_valid.append(np.std(tmpValid['uncalib_pt']/tmpValid['gen_pt'])/np.mean(tmpValid['uncalib_pt']/tmpValid['gen_pt']))
 
-        scale_vs_pt_calib.append(np.mean(tmpValid['calib_pt']/tmpValid['gen_pt']))
-        resol_vs_pt_calib.append(np.std(tmpValid['calib_pt']/tmpValid['gen_pt'])/np.mean(tmpValid['uncalib_pt']/tmpValid['gen_pt']))
+        scale_vs_pt_calib_valid.append(np.mean(tmpValid['calib_pt']/tmpValid['gen_pt']))
+        resol_vs_pt_calib_valid.append(np.std(tmpValid['calib_pt']/tmpValid['gen_pt'])/np.mean(tmpValid['uncalib_pt']/tmpValid['gen_pt']))
+
+        scale_vs_pt_uncalib_train.append(np.mean(tmpTrain['uncalib_pt']/tmpTrain['gen_pt']))
+        resol_vs_pt_uncalib_train.append(np.std(tmpTrain['uncalib_pt']/tmpTrain['gen_pt'])/np.mean(tmpTrain['uncalib_pt']/tmpTrain['gen_pt']))
+
+        scale_vs_pt_calib_train.append(np.mean(tmpTrain['calib_pt']/tmpTrain['gen_pt']))
+        resol_vs_pt_calib_train.append(np.std(tmpTrain['calib_pt']/tmpTrain['gen_pt'])/np.mean(tmpTrain['uncalib_pt']/tmpTrain['gen_pt']))
 
     def expftc(x, A,B,C):
         return A*np.exp(-x*B)+C
 
     # scale vs pt
     plt.figure(figsize=(10,10))
-    plt.errorbar(pt_bins_centers, scale_vs_pt_uncalib, xerr=2.5, label=r'Uncalibrated',  color='red',  lw=2, alpha=0.7, marker='o', ls='None')
-    plt.errorbar(pt_bins_centers, scale_vs_pt_calib, xerr=2.5,   label=r'Calibrated',    color='green', lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, scale_vs_pt_uncalib_valid, xerr=2.5, label=r'Uncalibrated Valid.',  color='red',  lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, scale_vs_pt_calib_valid, xerr=2.5,   label=r'Calibrated Valid.',    color='green', lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, scale_vs_pt_uncalib_train, xerr=2.5, label=r'Uncalibrated Train.',  color='orange',  lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, scale_vs_pt_calib_train, xerr=2.5,   label=r'Calibrated Train.',    color='blue', lw=2, alpha=0.7, marker='o', ls='None')
     p0 = [1,1,1]
-    popt, pcov = curve_fit(expftc, pt_bins_centers, scale_vs_pt_calib, p0, maxfev=5000)
+    popt, pcov = curve_fit(expftc, pt_bins_centers, scale_vs_pt_calib_train, p0, maxfev=5000)
     plt.plot(np.linspace(1,150,150), expftc(np.linspace(1,150,150), *popt), '-', label='_', lw=1.5, color='green', alpha=0.7)
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'a.u.')
@@ -550,8 +644,10 @@ if __name__ == "__main__" :
 
     # resolution vs pt
     plt.figure(figsize=(10,10))
-    plt.errorbar(pt_bins_centers, resol_vs_pt_uncalib, xerr=2.5, label=r'Uncalibrated',  color='red',  lw=2, alpha=0.7, marker='o', ls='None')
-    plt.errorbar(pt_bins_centers, resol_vs_pt_calib, xerr=2.5,   label=r'Calibrated',    color='green', lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, resol_vs_pt_uncalib_valid, xerr=2.5, label=r'Uncalibrated Valid.',  color='red',  lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, resol_vs_pt_calib_valid, xerr=2.5,   label=r'Calibrated Valid.',    color='green', lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, resol_vs_pt_uncalib_train, xerr=2.5, label=r'Uncalibrated Train.',  color='red',  lw=2, alpha=0.7, marker='o', ls='None')
+    plt.errorbar(pt_bins_centers, resol_vs_pt_calib_train, xerr=2.5,   label=r'Calibrated Train.',    color='green', lw=2, alpha=0.7, marker='o', ls='None')
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
     plt.ylabel(r'a.u.')
     plt.legend(loc = 'upper right', fontsize=16)

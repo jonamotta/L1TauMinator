@@ -1,0 +1,7 @@
+python3 FirmwareEmulatorTest/firmwareEmulatorTest_CB_Conv.py
+python3 FirmwareEmulatorTest/firmwareEmulatorTest_CB_DenseId.py
+python3 FirmwareEmulatorTest/firmwareEmulatorTest_CB_DensePt.py
+
+python3 FirmwareEmulatorTest/firmwareEmulatorTest_CE_Conv.py
+python3 FirmwareEmulatorTest/firmwareEmulatorTest_CE_DenseId.py
+python3 FirmwareEmulatorTest/firmwareEmulatorTest_CE_DensePt.py

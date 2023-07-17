@@ -67,6 +67,9 @@ class L1CaloTauProducer : public edm::stream::EDProducer<> {
         double HcalEtMinForClustering;
         double EtMinForSeeding;
 
+        double SeedingEtaRestriction;
+        double CB_CE_split;
+
         std::string CNNmodel_CB_path;
         std::string DNNident_CB_path;
         std::string DNNcalib_CB_path;
@@ -125,6 +128,9 @@ L1CaloTauProducer::L1CaloTauProducer(const edm::ParameterSet& iConfig)
       EcalEtMinForClustering(iConfig.getParameter<double>("EcalEtMinForClustering")),
       HcalEtMinForClustering(iConfig.getParameter<double>("HcalEtMinForClustering")),
       EtMinForSeeding(iConfig.getParameter<double>("EtMinForSeeding")),
+      
+      SeedingEtaRestriction(iConfig.getParameter<double>("SeedingEtaRestriction")),
+      CB_CE_split(iConfig.getParameter<double>("CB_CE_split")),
 
       CNNmodel_CB_path(iConfig.getParameter<std::string>("CNNmodel_CB_path")),
       DNNident_CB_path(iConfig.getParameter<std::string>("DNNident_CB_path")),
@@ -167,6 +173,15 @@ L1CaloTauProducer::L1CaloTauProducer(const edm::ParameterSet& iConfig)
     produces<TauHelper::TausCollection>                  ("TauMinatorTausCollection");
 
     std::cout << "EtMinForSeeding = " << EtMinForSeeding << " , HcalTpEtMin = " << HcalEtMinForClustering << " , EcalTpEtMin = " << EcalEtMinForClustering << std::endl;
+    std::cout << "SeedingEtaRestriction = " << SeedingEtaRestriction << ", CB_CE_split = " << CB_CE_split << std::endl;
+
+    std::cout << "\nMODELS:" << std::endl;
+    std::cout << "    * " << CNNmodel_CB_path << std::endl;
+    std::cout << "    * " << DNNident_CB_path << std::endl;
+    std::cout << "    * " << DNNcalib_CB_path << std::endl;
+    std::cout << "    * " << CNNmodel_CE_path << std::endl;
+    std::cout << "    * " << DNNident_CE_path << std::endl;
+    std::cout << "    * " << DNNcalib_CE_path << std::endl;
 }
 
 void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetup)
@@ -309,7 +324,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         {
             // skip seeding in towers that would make the cluster extend in HF
             // skip l1CaloTowers which are already used by this clusters' mask
-            if (abs(l1CaloTower.towerEta) > 2.83 || l1CaloTower.stale4seed) { continue; }
+            if (abs(l1CaloTower.towerEta) > 2.83 || l1CaloTower.stale4seed || abs(l1CaloTower.towerEta) > SeedingEtaRestriction) { continue; }
 
             // if not seded do the seeding
             if (!seeded)
@@ -359,8 +374,8 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
         // pushback seeds split in barrel and endcap
         if (seeded)
         {
-            if (clNxM.barrelSeeded) { l1TowerClustersNxM_CB->push_back(clNxM); }
-            else                    { AllL1TowerClustersNxM_CE.push_back(clNxM); }
+            if (abs(clNxM.seedEta) < CB_CE_split) { l1TowerClustersNxM_CB->push_back(clNxM); }
+            else                                  { AllL1TowerClustersNxM_CE.push_back(clNxM); }
         }
 
     } // end while loop of TowerClusters seeding
@@ -482,7 +497,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
     // Barrel TauMinator application
     tensorflow::setLogging("2");
     int batchSize_CB =  (int)(l1TowerClustersNxM_CB->size());
-    tensorflow::TensorShape imageShape_CB({batchSize_CB, IEta_dim, IPhi_dim, 3});
+    tensorflow::TensorShape imageShape_CB({batchSize_CB, IEta_dim, IPhi_dim, 2});
     tensorflow::TensorShape positionShape_CB({batchSize_CB, 2});
     tensorflow::Tensor TowerClusterImage_CB(tensorflow::DT_FLOAT, imageShape_CB);
     tensorflow::Tensor TowerClusterPosition_CB(tensorflow::DT_FLOAT, positionShape_CB);
@@ -496,9 +511,8 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
             for (int phi = 0; phi < IPhi_dim; ++phi)
             {
                 int towerIdx = eta*IPhi_dim + phi;
-                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 0) = inputQuantizer(clNxM.towerHits[towerIdx].l1egTowerEt, 0.25, 10);
-                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 1) = inputQuantizer(clNxM.towerHits[towerIdx].towerEm,     0.25, 10);
-                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 2) = inputQuantizer(clNxM.towerHits[towerIdx].towerHad,    0.25, 10);
+                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 0) = inputQuantizer(clNxM.towerHits[towerIdx].l1egTowerEt + clNxM.towerHits[towerIdx].towerEm, 0.25, 10);
+                TowerClusterImage_CB.tensor<float, 4>()(clIdx, eta, phi, 1) = inputQuantizer(clNxM.towerHits[towerIdx].towerHad,    0.25, 10);
 
                 if (DEBUG)
                 {
@@ -526,7 +540,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
     // Apply DNN for calibration
     std::vector<tensorflow::Tensor> DNN_CBoutputsCalib;
-    tensorflow::run(DNNcalib_CBsession, DNN_CBinputsList, {"TauMinator_CB_calib/DNNout/MatMul"}, &DNN_CBoutputsCalib);
+    tensorflow::run(DNNcalib_CBsession, DNN_CBinputsList, {"TauMinator_CB_calib/LIN_DNNout/Relu"}, &DNN_CBoutputsCalib);
 
     // Fill TauMinator output variables of TowerClusters
     clIdx = 0;
@@ -540,7 +554,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
     // Endcap TauMinator application
     int batchSize_CE =  (int)(l1TowerClustersNxM_CE->size());
-    tensorflow::TensorShape imageShape_CE({batchSize_CE, IEta_dim, IPhi_dim, 3});
+    tensorflow::TensorShape imageShape_CE({batchSize_CE, IEta_dim, IPhi_dim, 2});
     tensorflow::TensorShape positionShape_CE({batchSize_CE, 2});
     tensorflow::TensorShape cl3dfeatShape_CE({batchSize_CE, 8});
     tensorflow::Tensor TowerClusterImage_CE(tensorflow::DT_FLOAT, imageShape_CE);
@@ -559,9 +573,8 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
             for (int phi = 0; phi < IPhi_dim; ++phi)
             {
                 int towerIdx = eta*IPhi_dim + phi;
-                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 0) = inputQuantizer(clNxM.towerHits[towerIdx].l1egTowerEt, 0.25, 10);
-                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 1) = inputQuantizer(clNxM.towerHits[towerIdx].towerEm,     0.25, 10);
-                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 2) = inputQuantizer(clNxM.towerHits[towerIdx].towerHad,    0.25, 10);
+                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 0) = inputQuantizer(clNxM.towerHits[towerIdx].l1egTowerEt + clNxM.towerHits[towerIdx].towerEm, 0.25, 10);
+                TowerClusterImage_CE.tensor<float, 4>()(clIdx, eta, phi, 1) = inputQuantizer(clNxM.towerHits[towerIdx].towerHad,    0.25, 10);
 
                 if (DEBUG)
                 {
@@ -598,7 +611,7 @@ void L1CaloTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& eSetu
 
     // Apply DNN for calibration
     std::vector<tensorflow::Tensor> DNN_CEoutputsCalib;
-    tensorflow::run(DNNcalib_CEsession, DNN_CEinputsList, {"TauMinator_CE_calib/DNNout/MatMul"}, &DNN_CEoutputsCalib);
+    tensorflow::run(DNNcalib_CEsession, DNN_CEinputsList, {"TauMinator_CE_calib/LIN_DNNout/Relu"}, &DNN_CEoutputsCalib);
 
     // Fill TauMinator output variables of TowerClusters
     clIdx = 0;

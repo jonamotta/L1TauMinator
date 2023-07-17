@@ -129,6 +129,13 @@ if __name__ == "__main__" :
     Y = Y[tau_sel]
     Ycal = Ycal[tau_sel]
 
+    # FIXME #
+    pt_sel = (Ycal.reshape(1,-1)[0]>40) & (Ycal.reshape(1,-1)[0]<60)
+    X1 = X1[pt_sel]
+    X2 = X2[pt_sel]
+    Y = Y[pt_sel]
+    Ycal = Ycal[pt_sel]
+
     if options.dm_weighted:
         # create dm weights
         Ydm = Y[:,4].reshape(-1,1)
@@ -195,28 +202,31 @@ if __name__ == "__main__" :
         sys.stdout = Logger(outdir+'/TauMinator_CB_calib_plots/training_calib.log')
         print(options)
 
-        middleMan = keras.Input(shape=26, name='middleMan')
+        middleMan = keras.Input(shape=194, name='middleMan')
 
-        x = layers.Dense(16, use_bias=False, name="DNNlayer1")(middleMan)
+        x = layers.Dense(64, use_bias=False, name="DNNlayer1")(middleMan)
         x = layers.Activation('relu', name='RELU_DNNlayer1')(x)
-        x = layers.Dense(8, use_bias=False, name="DNNlayer2")(x)
+        x = layers.Dense(64, use_bias=False, name="DNNlayer2")(x)
         x = layers.Activation('relu', name='RELU_DNNlayer2')(x)
+        x = layers.Dense(32, use_bias=False, name="DNNlayer3")(x)
+        x = layers.Activation('relu', name='RELU_DNNlayer3')(x)
         x = layers.Dense(1, use_bias=False, name="DNNout")(x)
-        
+        x = layers.Activation('linear', name='LIN_DNNout')(x)
+
         TauCalibrated = x
 
         TauMinatorModel = keras.Model(inputs=middleMan, outputs=TauCalibrated, name='TauMinator_CB_calib')
 
         if options.dm_weighted or options.pt_weighted:
-            TauMinatorModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
-                                    loss=tf.keras.losses.MeanAbsolutePercentageError(),
+            TauMinatorModel.compile(optimizer=keras.optimizers.Adam(), #learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
+                                    loss=tf.keras.losses.MeanSquaredError(),
                                     metrics=['RootMeanSquaredError'],
                                     sample_weight_mode='sample-wise',
                                     run_eagerly=True)
 
         else:
-            TauMinatorModel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
-                                    loss=tf.keras.losses.MeanAbsolutePercentageError(),
+            TauMinatorModel.compile(optimizer=keras.optimizers.Adam(), #learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=True),
+                                    loss=tf.keras.losses.MeanSquaredLogarithmicError(),
                                     metrics=['RootMeanSquaredError'],
                                     run_eagerly=True)
 
@@ -225,7 +235,8 @@ if __name__ == "__main__" :
 
         ############################## Model training ##############################
 
-        CNN = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/2023_05_24_v15/TauMinator_CB_cltw5x9_Training/CNNmodel', compile=False)
+        if not options.pt_weighted: CNN = keras.models.load_model(outdir+'/CNNmodel', compile=False)
+        else:                       CNN = keras.models.load_model(outdir.replace('_ptWeighted', '')+'/CNNmodel', compile=False)
         CNNprediction = CNN([X1, X2])
 
         callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, mode='min', patience=10, verbose=1, restore_best_weights=True),
@@ -280,7 +291,8 @@ if __name__ == "__main__" :
         sys.stdout = sys.__stdout__
 
     else:
-        CNN = keras.models.load_model('/data_CMS/cms/motta/Phase2L1T/2023_05_24_v15/TauMinator_CB_cltw5x9_Training/CNNmodel', compile=False)
+        if not options.pt_weighted: CNN = keras.models.load_model(outdir+'/CNNmodel', compile=False)
+        else:                       CNN = keras.models.load_model(outdir.replace('_ptWeighted', '')+'/CNNmodel', compile=False)
         TauMinatorModel = keras.models.load_model(outdir+'/CAL_DNNmodel', compile=False)
 
     ############################## Model validation and pots ##############################
@@ -297,6 +309,13 @@ if __name__ == "__main__" :
     X2_valid = X2_valid[tau_sel_valid]
     Y_valid = Y_valid[tau_sel_valid]
     Ycal_valid = Ycal_valid[tau_sel_valid]
+
+    # FIXME #
+    pt_sel = (Ycal_valid.reshape(1,-1)[0]>40) & (Ycal_valid.reshape(1,-1)[0]<60)
+    X1_valid = X1_valid[pt_sel]
+    X2_valid = X2_valid[pt_sel]
+    Y_valid = Y_valid[pt_sel]
+    Ycal_valid = Ycal_valid[pt_sel]
 
     train_calib = TauMinatorModel.predict(CNN([X1, X2]))
     valid_calib = TauMinatorModel.predict(CNN([X1_valid, X2_valid]))
@@ -330,7 +349,7 @@ if __name__ == "__main__" :
     dfTrain['gen_pt']     = Y[:,0].ravel()
     dfTrain['gen_eta']    = Y[:,2].ravel()
     dfTrain['gen_phi']    = Y[:,3].ravel()
-    dfTrain['gen_dm']     = Y[:,4].ravel()
+    # dfTrain['gen_dm']     = Y[:,4].ravel()
     
     # logpt1 = np.log(abs(dfTrain['calib_pt']))
     # logpt2 = logpt1**2
@@ -344,7 +363,7 @@ if __name__ == "__main__" :
     dfValid['gen_pt']     = Y_valid[:,0].ravel()
     dfValid['gen_eta']    = Y_valid[:,2].ravel()
     dfValid['gen_phi']    = Y_valid[:,3].ravel()
-    dfValid['gen_dm']     = Y_valid[:,4].ravel()
+    # dfValid['gen_dm']     = Y_valid[:,4].ravel()
 
     # logpt1 = np.log(abs(dfValid['calib_pt']))
     # logpt2 = logpt1**2
@@ -364,45 +383,6 @@ if __name__ == "__main__" :
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauMinator_CB_calib_plots/responses_comparison.pdf')
     plt.close()
-
-    # PLOTS PER DM
-    DMdict = {
-            0  : r'$h^{\pm}$',
-            1  : r'$h^{\pm}\pi^{0}$',
-            10 : r'$h^{\pm}h^{\mp}h^{\pm}$',
-            11 : r'$h^{\pm}h^{\mp}h^{\pm}\pi^{0}$',
-        }
-
-    tmp0 = dfValid[dfValid['gen_dm']==0]
-    tmp1 = dfValid[(dfValid['gen_dm']==1) | (dfValid['gen_dm']==2)]
-    tmp10 = dfValid[dfValid['gen_dm']==10]
-    tmp11 = dfValid[(dfValid['gen_dm']==11) | (dfValid['gen_dm']==12)]
-    plt.figure(figsize=(10,10))
-    plt.hist(tmp0['uncalib_pt']/tmp0['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[0]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp0['uncalib_pt']/tmp0['gen_pt']), np.std(tmp0['uncalib_pt']/tmp0['gen_pt'])),      color='lime',  lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp1['uncalib_pt']/tmp1['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[1]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp1['uncalib_pt']/tmp1['gen_pt']), np.std(tmp1['uncalib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp10['uncalib_pt']/tmp10['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[10]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp10['uncalib_pt']/tmp10['gen_pt']), np.std(tmp10['uncalib_pt']/tmp10['gen_pt'])), color='orange',lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp11['uncalib_pt']/tmp11['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[11]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp11['uncalib_pt']/tmp11['gen_pt']), np.std(tmp11['uncalib_pt']/tmp11['gen_pt'])), color='fuchsia',lw=2, density=True, histtype='step', alpha=0.7)
-    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
-    plt.ylabel(r'a.u.')
-    plt.legend(loc = 'upper right', fontsize=16)
-    plt.grid(linestyle='dotted')
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauMinator_CB_calib_plots/uncalibrated_DM_responses_comparison.pdf')
-    plt.close()
-
-    plt.figure(figsize=(10,10))
-    plt.hist(tmp0['calib_pt']/tmp0['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[0]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp0['calib_pt']/tmp0['gen_pt']), np.std(tmp0['calib_pt']/tmp0['gen_pt'])),      color='lime',  lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp1['calib_pt']/tmp1['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[1]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp1['calib_pt']/tmp1['gen_pt']), np.std(tmp1['calib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp10['calib_pt']/tmp10['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[10]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp10['calib_pt']/tmp10['gen_pt']), np.std(tmp10['calib_pt']/tmp10['gen_pt'])), color='orange',lw=2, density=True, histtype='step', alpha=0.7)
-    plt.hist(tmp11['calib_pt']/tmp11['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[11]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp11['calib_pt']/tmp11['gen_pt']), np.std(tmp11['calib_pt']/tmp11['gen_pt'])), color='fuchsia',lw=2, density=True, histtype='step', alpha=0.7)
-    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
-    plt.ylabel(r'a.u.')
-    plt.legend(loc = 'upper right', fontsize=16)
-    plt.grid(linestyle='dotted')
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
-    plt.savefig(outdir+'/TauMinator_CB_calib_plots/calibrated_DM_responses_comparison.pdf')
-    plt.close()
-
 
     # 2D REPOSNSE VS ETA
     plt.figure(figsize=(10,10))
@@ -446,16 +426,18 @@ if __name__ == "__main__" :
 
 
     # L1 TO GEN MAPPING
-    bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 250, 2000]
+    # bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 250, 2000]
+    bins = [40, 45, 50, 55, 60]
     dfTrain['gen_pt_bin'] = pd.cut(dfTrain['gen_pt'], bins=bins, labels=False, include_lowest=True)
     dfValid['gen_pt_bin'] = pd.cut(dfValid['gen_pt'], bins=bins, labels=False, include_lowest=True)
 
-    pt_bins_centers = np.append(np.arange(17.5,152.5,5), [200, 1125])
+    # pt_bins_centers = np.append(np.arange(17.5,152.5,5), [200, 1125])
+    pt_bins_centers = np.array(np.arange(42.5,58.5,5))
 
-    trainL1 = dfTrain.groupby('gen_pt_bin')['calib_pt'].mean()
-    validL1 = dfValid.groupby('gen_pt_bin')['calib_pt'].mean()
-    trainL1std = dfTrain.groupby('gen_pt_bin')['calib_pt'].std()
-    validL1std = dfValid.groupby('gen_pt_bin')['calib_pt'].std()
+    trainL1 = np.array(dfTrain.groupby('gen_pt_bin')['calib_pt'].mean())
+    validL1 = np.array(dfValid.groupby('gen_pt_bin')['calib_pt'].mean())
+    trainL1std = np.array(dfTrain.groupby('gen_pt_bin')['calib_pt'].std())
+    validL1std = np.array(dfValid.groupby('gen_pt_bin')['calib_pt'].std())
 
     plt.figure(figsize=(10,10))
     plt.errorbar(pt_bins_centers, trainL1, yerr=trainL1std, label='Train. dataset', color='blue', ls='None', lw=2, marker='o')
@@ -470,10 +452,10 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CB_calib_plots/GenToCalibL1_pt.pdf')
     plt.close()
 
-    trainL1 = dfTrain.groupby('gen_pt_bin')['uncalib_pt'].mean()
-    validL1 = dfValid.groupby('gen_pt_bin')['uncalib_pt'].mean()
-    trainL1std = dfTrain.groupby('gen_pt_bin')['uncalib_pt'].std()
-    validL1std = dfValid.groupby('gen_pt_bin')['uncalib_pt'].std()
+    trainL1 = np.array(dfTrain.groupby('gen_pt_bin')['uncalib_pt'].mean())
+    validL1 = np.array(dfValid.groupby('gen_pt_bin')['uncalib_pt'].mean())
+    trainL1std = np.array(dfTrain.groupby('gen_pt_bin')['uncalib_pt'].std())
+    validL1std = np.array(dfValid.groupby('gen_pt_bin')['uncalib_pt'].std())
 
     plt.figure(figsize=(10,10))
     plt.errorbar(pt_bins_centers, trainL1, yerr=trainL1std, label='Train. dataset', color='blue', ls='None', lw=2, marker='o')
@@ -635,6 +617,47 @@ if __name__ == "__main__" :
     print('        B =', popt[1])
     print('        C =', popt[2])
     print('*****************************************')
+
+'''
+    # PLOTS PER DM
+    DMdict = {
+            0  : r'$h^{\pm}$',
+            1  : r'$h^{\pm}\pi^{0}$',
+            10 : r'$h^{\pm}h^{\mp}h^{\pm}$',
+            11 : r'$h^{\pm}h^{\mp}h^{\pm}\pi^{0}$',
+        }
+
+    tmp0 = dfValid[dfValid['gen_dm']==0]
+    tmp1 = dfValid[(dfValid['gen_dm']==1) | (dfValid['gen_dm']==2)]
+    tmp10 = dfValid[dfValid['gen_dm']==10]
+    tmp11 = dfValid[(dfValid['gen_dm']==11) | (dfValid['gen_dm']==12)]
+    plt.figure(figsize=(10,10))
+    plt.hist(tmp0['uncalib_pt']/tmp0['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[0]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp0['uncalib_pt']/tmp0['gen_pt']), np.std(tmp0['uncalib_pt']/tmp0['gen_pt'])),      color='lime',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp1['uncalib_pt']/tmp1['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[1]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp1['uncalib_pt']/tmp1['gen_pt']), np.std(tmp1['uncalib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp10['uncalib_pt']/tmp10['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[10]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp10['uncalib_pt']/tmp10['gen_pt']), np.std(tmp10['uncalib_pt']/tmp10['gen_pt'])), color='orange',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp11['uncalib_pt']/tmp11['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[11]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp11['uncalib_pt']/tmp11['gen_pt']), np.std(tmp11['uncalib_pt']/tmp11['gen_pt'])), color='fuchsia',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_calib_plots/uncalibrated_DM_responses_comparison.pdf')
+    plt.close()
+
+    plt.figure(figsize=(10,10))
+    plt.hist(tmp0['calib_pt']/tmp0['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[0]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp0['calib_pt']/tmp0['gen_pt']), np.std(tmp0['calib_pt']/tmp0['gen_pt'])),      color='lime',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp1['calib_pt']/tmp1['gen_pt'],   bins=np.arange(0.05,5,0.1), label=DMdict[1]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp1['calib_pt']/tmp1['gen_pt']), np.std(tmp1['calib_pt']/tmp1['gen_pt'])),      color='blue', lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp10['calib_pt']/tmp10['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[10]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp10['calib_pt']/tmp10['gen_pt']), np.std(tmp10['calib_pt']/tmp10['gen_pt'])), color='orange',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(tmp11['calib_pt']/tmp11['gen_pt'], bins=np.arange(0.05,5,0.1), label=DMdict[11]+r' : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(tmp11['calib_pt']/tmp11['gen_pt']), np.std(tmp11['calib_pt']/tmp11['gen_pt'])), color='fuchsia',lw=2, density=True, histtype='step', alpha=0.7)
+    plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')
+    plt.ylabel(r'a.u.')
+    plt.legend(loc = 'upper right', fontsize=16)
+    plt.grid(linestyle='dotted')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_calib_plots/calibrated_DM_responses_comparison.pdf')
+    plt.close()
+'''
+
 
     # PLOTS LOGLINEARIZER
     # plt.figure(figsize=(10,10))

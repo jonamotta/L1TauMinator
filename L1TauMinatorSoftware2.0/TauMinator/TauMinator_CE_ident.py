@@ -203,8 +203,8 @@ if __name__ == "__main__" :
                                     run_eagerly=True)
 
 
-        # print(TauMinatorModel.summary())
-        # exit()
+        print(TauMinatorModel.summary())
+        exit()
 
         ############################## Model training ##############################
 
@@ -374,10 +374,12 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CE_ident_plots/validation_roc_log.pdf')
     plt.close()
 
+
     df = pd.DataFrame()
     df['score'] = valid_ident.ravel()
     df['true']  = Yid_valid.ravel()
-    df['gen_dm'] = Y_valid[:,4].ravel()
+    df['gen_pt'] = Y_valid[:,0].ravel()
+    # df['gen_dm'] = Y_valid[:,4].ravel()
     
     plt.figure(figsize=(10,10))
     plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1,0.05), label='Tau', color='green', density=True, histtype='step', lw=2)
@@ -393,9 +395,23 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CE_ident_plots/CNN_score.pdf')
     plt.close()
 
+    plt.figure(figsize=(10,10))
+    plt.scatter(df[df['true']==1]['score'].head(1000), df[df['true']==1]['gen_pt'].head(1000), label='Tau', color='green', alpha=0.2)
+    plt.grid(linestyle=':')
+    plt.legend(loc = 'upper center', fontsize=16)
+    # plt.xlim(0.85,1.001)
+    #plt.yscale('log')
+    #plt.ylim(0.01,1)
+    plt.xlabel(r'CNN score')
+    plt.ylabel(r'a.u.')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CE_ident_plots/CNN_score_vs_TAUpt.pdf')
+    plt.close()
+
+
     ################
     ## PER DM PLOTS
-
+'''
     DMdict = {
                 0  : r'$h^{\pm}$',
                 1  : r'$h^{\pm}\pi^{0}$',
@@ -494,3 +510,4 @@ if __name__ == "__main__" :
     plt.savefig(outdir+'/TauMinator_CE_ident_plots/validation_roc_perDM_log.pdf')
     plt.close()
 
+'''

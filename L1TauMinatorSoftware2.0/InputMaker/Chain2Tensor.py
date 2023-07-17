@@ -157,8 +157,8 @@ if __name__ == "__main__" :
 
                 # CLTW position
                 x2l = []
-                x2l.append(inputQuantizer(cl5x9_seedEta, EtaPhiLsb, 7))
-                x2l.append(inputQuantizer(cl5x9_seedPhi, EtaPhiLsb, 7))
+                x2l.append(cl5x9_seedEta) #    inputQuantizer(cl5x9_seedEta, EtaPhiLsb, 7))
+                x2l.append(cl5x9_seedPhi) #    inputQuantizer(cl5x9_seedPhi, EtaPhiLsb, 7))
                 x2 = np.array(x2l)
 
                 # tau target features
@@ -193,8 +193,8 @@ if __name__ == "__main__" :
 
                 # CLTW position
                 x2l = []
-                x2l.append(inputQuantizer(cl5x9_seedEta, EtaPhiLsb, 7))
-                x2l.append(inputQuantizer(cl5x9_seedPhi, EtaPhiLsb, 7))
+                x2l.append(cl5x9_seedEta) #    inputQuantizer(cl5x9_seedEta, EtaPhiLsb, 7))
+                x2l.append(cl5x9_seedPhi) #    inputQuantizer(cl5x9_seedPhi, EtaPhiLsb, 7))
                 x2 = np.array(x2l)
 
                 # CL3D features

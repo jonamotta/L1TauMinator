@@ -43,6 +43,26 @@ options.register ('minSeedEt',
                   VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.VarParsing.varType.float,          # string, int, or float
                   "minimum seeding energy")
+options.register ('minClusteringEt',
+                  0.0, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum clustering energy")
+options.register ('etaRestriction',
+                  2.4, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "maximum eta")
+options.register ('CBCEsplit',
+                  1.55, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "CB-CE eta separation")
+options.register ('NNv',
+                  "0", # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.string,          # string, int, or float
+                  "NN versioning")
 options.parseArguments()
 
 process.maxEvents = cms.untracked.PSet(

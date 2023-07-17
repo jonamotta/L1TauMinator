@@ -43,6 +43,26 @@ options.register ('minSeedEt',
                   VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.VarParsing.varType.float,          # string, int, or float
                   "minimum seeding energy")
+options.register ('minClusteringEt',
+                  0.0, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "minimum clustering energy")
+options.register ('etaRestriction',
+                  2.4, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "maximum eta")
+options.register ('CBCEsplit',
+                  1.55, # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.float,          # string, int, or float
+                  "CB-CE eta separation")
+options.register ('NNv',
+                  "0", # default value
+                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.string,          # string, int, or float
+                  "NN versioning")
 options.parseArguments()
 
 process.maxEvents = cms.untracked.PSet(
@@ -89,6 +109,19 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '125X_mcRun4_realistic_v2', '')
 
 # minimum value of seeding energy
 process.l1tNNCaloTauProducer.EtMinForSeeding = cms.double(options.minSeedEt)
+process.l1tNNCaloTauProducer.CB_CE_split = cms.double(1.50)
+process.l1tNNCaloTauProducer.CNNmodel_CB_path = cms.string("L1Trigger/L1CaloTrigger/data/Phase2_NNCaloTaus/v15/CNNmodel_CB.pb")
+process.l1tNNCaloTauProducer.DNNident_CB_path = cms.string("L1Trigger/L1CaloTrigger/data/Phase2_NNCaloTaus/v15/DNNident_CB.pb")
+process.l1tNNCaloTauProducer.DNNcalib_CB_path = cms.string("L1Trigger/L1CaloTrigger/data/Phase2_NNCaloTaus/v15/DNNcalib_CB.pb")
+process.l1tNNCaloTauProducer.CNNmodel_CE_path = cms.string("L1Trigger/L1CaloTrigger/data/Phase2_NNCaloTaus/v15/CNNmodel_CE.pb")
+process.l1tNNCaloTauProducer.DNNident_CE_path = cms.string("L1Trigger/L1CaloTrigger/data/Phase2_NNCaloTaus/v15/DNNident_CE.pb")
+process.l1tNNCaloTauProducer.DNNcalib_CE_path = cms.string("L1Trigger/L1CaloTrigger/data/Phase2_NNCaloTaus/v15/DNNcalib_CE.pb")
+process.l1tNNCaloTauProducer.IdWp90_CB = cms.double(0.7310)
+process.l1tNNCaloTauProducer.IdWp95_CB = cms.double(0.3573)
+process.l1tNNCaloTauProducer.IdWp99_CB = cms.double(0.0410)
+process.l1tNNCaloTauProducer.IdWp90_CE = cms.double(0.6243)
+process.l1tNNCaloTauProducer.IdWp95_CE = cms.double(0.2994)
+process.l1tNNCaloTauProducer.IdWp99_CE = cms.double(0.0413)
 
 # Path and EndPath definitions
 process.raw2digi_path     = cms.Path(process.RawToDigi)

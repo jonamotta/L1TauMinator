@@ -37,6 +37,7 @@ if __name__ == "__main__" :
     parser.add_option("--seedEtCut",       dest="seedEtCut",       default="2p5")
     parser.add_option("--clusteringEtCut", dest="clusteringEtCut", default="")
     parser.add_option("--etaRestriction",  dest="etaRestriction",  default="")
+    parser.add_option("--CBCEsplit",       dest="CBCEsplit",       default=1.5, type=float)
     parser.add_option("--uTauPtCut",       dest="uTauPtCut",       default=None,  type=int)
     parser.add_option("--lTauPtCut",       dest="lTauPtCut",       default=None,  type=int)
     parser.add_option("--uEtacut",         dest="uEtacut",         default=None,  type=float)
@@ -50,6 +51,7 @@ if __name__ == "__main__" :
     parser.add_option('--doDYlm',          dest='doDYlm',          default=False, action='store_true')
     parser.add_option('--doMinBias',       dest='doMinBias',       default=False, action='store_true')
     parser.add_option("--filesLim",        dest="filesLim",        default=10000, type=int)
+    parser.add_option("--outTag",          dest="outTag",          default="")
     (options, args) = parser.parse_args()
     print(options)
 
@@ -59,6 +61,7 @@ if __name__ == "__main__" :
     inlist_folders = []
 
     tag = ""
+    # if options.CBCEsplit : tag += '_CBCEsplit'+str(options.CBCEsplit) 
     if options.uTauPtCut : tag += '_uTauPtCut'+str(options.uTauPtCut) 
     if options.lTauPtCut : tag += '_lTauPtCut'+str(options.lTauPtCut) 
     if options.uEtacut   : tag += '_uEtacut'+str(options.uEtacut) 
@@ -280,26 +283,26 @@ if __name__ == "__main__" :
 
 
     if options.doBarrel:
-        os.system('mkdir -p '+outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors')
+        os.system('mkdir -p '+outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag)
 
-        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors/images_train.npz', IMAGES_train)
-        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors/posits_train.npz', POSITS_train)
-        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors/target_train.npz', TARGET_train)
+        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/images_train.npz', IMAGES_train)
+        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/posits_train.npz', POSITS_train)
+        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/target_train.npz', TARGET_train)
 
-        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors/images_valid.npz', IMAGES_valid)
-        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors/posits_valid.npz', POSITS_valid)
-        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors/target_valid.npz', TARGET_valid)
+        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/images_valid.npz', IMAGES_valid)
+        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/posits_valid.npz', POSITS_valid)
+        np.savez_compressed(outfile_base+'/TauMinator_CB_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/target_valid.npz', TARGET_valid)
 
     if options.doEndcap:
-        os.system('mkdir -p '+outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors')
+        os.system('mkdir -p '+outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag)
 
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/images_train.npz', IMAGES_train)
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/posits_train.npz', POSITS_train)
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/shapes_train.npz', SHAPES_train)
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/target_train.npz', TARGET_train)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/images_train.npz', IMAGES_train)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/posits_train.npz', POSITS_train)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/shapes_train.npz', SHAPES_train)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/target_train.npz', TARGET_train)
 
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/images_valid.npz', IMAGES_valid)
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/posits_valid.npz', POSITS_valid)
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/shapes_valid.npz', SHAPES_valid)
-        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors/target_valid.npz', TARGET_valid)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/images_valid.npz', IMAGES_valid)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/posits_valid.npz', POSITS_valid)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/shapes_valid.npz', SHAPES_valid)
+        np.savez_compressed(outfile_base+'/TauMinator_CE_cltw'+options.caloClNxM+'_Training/tensors'+options.outTag+'/target_valid.npz', TARGET_valid)
 
