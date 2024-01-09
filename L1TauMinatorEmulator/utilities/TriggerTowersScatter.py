@@ -6,6 +6,7 @@ import sys
 import os
 
 from matplotlib.legend_handler import HandlerPathCollection
+import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import mplhep
 plt.style.use(mplhep.style.CMS)
@@ -215,6 +216,29 @@ cltw_19_CB = np.array([[1.17855,2.66163],[1.17855,2.57436],[1.00395,2.92343],[1.
 cltw_20_CB = np.array([[1.26585,-0.654498],[1.35315,-1.00356],[1.17855,-0.392699],[1.35315,-0.654498],[1.09125,-0.567232],[1.26585,-0.829031],[1.17855,-0.654498],[1.35315,-0.392699],[1.09125,-0.305433],[1.26585,-0.305433],[1.17855,-0.829031],[1.26585,-0.567232],[1.44045,-0.567232],[1.17855,-0.305433],[1.44045,-0.741765],[1.09125,-0.916298],[1.17855,-1.00356],[1.09125,-0.392699],[1.26585,-0.392699],[1.44045,-0.392699],[1.17855,-0.567232],[1.35315,-0.567232],[1.09125,-0.654498],[1.44045,-0.654498],[1.44045,-0.479966],[1.09125,-0.479966],[1.17855,-0.479966],[1.26585,-0.479966],[1.35315,-0.479966],[1.35315,-0.305433],[1.44045,-0.305433],[1.09125,-1.00356],[1.26585,-1.00356],[1.44045,-1.00356],[1.17855,-0.916298],[1.26585,-0.916298],[1.35315,-0.916298],[1.44045,-0.916298],[1.09125,-0.741765],[1.17855,-0.741765],[1.26585,-0.741765],[1.35315,-0.741765],[1.09125,-0.829031],[1.35315,-0.829031],[1.44045,-0.829031]])
 cltw_21_CB = np.array([[1.17855,-1.4399],[1.26585,-1.09083],[1.00395,-1.61443],[1.35315,-1.1781],[1.09125,-1.7017],[1.17855,-1.7017],[1.00395,-1.35263],[1.09125,-1.78896],[1.26585,-1.35263],[1.35315,-1.4399],[1.00395,-1.4399],[1.09125,-1.4399],[1.26585,-1.4399],[1.09125,-1.61443],[1.17855,-1.61443],[1.26585,-1.61443],[1.35315,-1.61443],[1.00395,-1.7017],[1.26585,-1.7017],[1.35315,-1.7017],[1.00395,-1.52716],[1.09125,-1.52716],[1.17855,-1.52716],[1.26585,-1.52716],[1.35315,-1.52716],[1.00395,-1.1781],[1.09125,-1.1781],[1.17855,-1.1781],[1.26585,-1.1781],[1.00395,-1.26536],[1.09125,-1.26536],[1.17855,-1.26536],[1.26585,-1.26536],[1.35315,-1.26536],[1.00395,-1.09083],[1.09125,-1.09083],[1.17855,-1.09083],[1.35315,-1.09083],[1.09125,-1.35263],[1.17855,-1.35263],[1.35315,-1.35263],[1.00395,-1.78896],[1.17855,-1.78896],[1.26585,-1.78896],[1.35315,-1.78896]])
 
+cltw_0_CB_qlt = 3
+cltw_1_CB_qlt = 3
+cltw_2_CB_qlt = 2
+cltw_3_CB_qlt = 1
+cltw_4_CB_qlt = 1
+cltw_5_CB_qlt = 1
+cltw_6_CB_qlt = 1
+cltw_7_CB_qlt = 0
+cltw_8_CB_qlt = 1
+cltw_9_CB_qlt = 0
+cltw_10_CB_qlt = 1
+cltw_11_CB_qlt = 0
+cltw_12_CB_qlt = 0
+cltw_13_CB_qlt = 0
+cltw_14_CB_qlt = 0
+cltw_15_CB_qlt = 1
+cltw_16_CB_qlt = 0
+cltw_17_CB_qlt = 0
+cltw_18_CB_qlt = 0
+cltw_19_CB_qlt = 0
+cltw_20_CB_qlt = 1
+cltw_21_CB_qlt = 0
+
 cltw_1_CE = np.array([[-2.19725,-0.829031],[-2.36625,-1.00356],[-2.02825,-0.65449],[-2.36625,-0.47996],[-2.28175,-0.47996],[-2.1972,-0.47996],[-2.36625,-0.829031],[-2.28175,-1.09083],[-2.02825,-0.741765],[-2.19725,-0.654498],[-2.11275,-1.00356],[-2.02825,-1.1781],[-2.02825,-0.567232],[-2.36625,-1.09083],[-2.11275,-0.829031],[-2.02825,-0.916298],[-2.28175,-0.654498],[-2.02825,-1.00356],[-2.11275,-0.567232],[-2.28175,-0.741765],[-2.19725,-0.567232],[-2.36625,-0.654498],[-2.19725,-0.741765],[-2.19725,-1.00356],[-2.28175,-1.00356],[-2.02825,-1.09083],[-2.11275,-0.741765],[-2.11275,-0.916298],[-2.28175,-0.829031],[-2.36625,-1.1781],[-2.19725,-0.916298],[-2.11275,-1.1781],[-2.02825,-0.479966],[-2.36625,-0.916298],[-2.11275,-1.09083],[-2.28175,-1.1781],[-2.19725,-1.09083],[-2.36625,-0.741765],[-2.11275,-0.654498],[-2.36625,-0.567232],[-2.11275,-0.479966],[-2.02825,-0.829031],[-2.19725,-1.1781],[-2.28175,-0.916298],[-2.28175,-0.567232]])
 cltw_2_CE = np.array([[-2.02825,-2.05076],[-2.19725,-2.05076],[-2.19725,-1.7017],[-2.19725,-1.87623],[-2.02825,-1.78896],[-1.85925,-1.78896],[-2.19725,-2.31256],[-2.11275,-2.13803],[-1.85925,-2.39983],[-1.85925,-2.22529],[-2.02825,-2.39983],[-1.94375,-2.22529],[-1.94375,-1.9635],[-2.11275,-1.87623],[-2.02825,-1.9635],[-2.11275,-2.39983],[-1.94375,-2.05076],[-2.02825,-2.22529],[-1.85925,-2.05076],[-2.11275,-2.31256],[-1.94375,-2.39983],[-1.94375,-1.78896],[-2.02825,-2.13803],[-2.02825,-1.87623],[-2.11275,-1.78896],[-2.19725,-1.78896],[-1.85925,-1.9635],[-2.19725,-2.13803],[-2.02825,-2.31256],[-2.11275,-1.7017],[-2.19725,-2.22529],[-1.85925,-2.13803],[-2.11275,-1.9635],[-1.94375,-1.7017],[-1.85925,-1.7017],[-2.11275,-2.22529],[-1.85925,-1.87623],[-1.94375,-2.31256],[-1.94375,-1.87623],[-2.19725,-2.39983],[-2.02825,-1.7017],[-2.11275,-2.05076],[-1.94375,-2.13803],[-2.19725,-1.9635],[-1.85925,-2.31256]])
 cltw_3_CE = np.array([[1.94375,-2.22529],[2.02825,-2.39983],[2.11275,-1.87623],[2.11275,-2.13803],[2.02825,-2.57436],[1.85925,-2.39983],[1.85925,-2.57436],[1.94375,-1.9635],[1.77475,-2.05076],[2.11275,-2.57436],[2.11275,-2.31256],[2.02825,-2.05076],[2.02825,-1.9635],[1.77475,-2.57436],[1.77475,-2.22529],[1.85925,-2.05076],[1.77475,-2.48709],[1.94375,-2.05076],[1.94375,-2.39983],[2.02825,-2.13803],[1.77475,-2.31256],[2.02825,-2.22529],[1.77475,-1.87623],[1.77475,-1.9635],[1.94375,-2.57436],[1.85925,-2.22529],[1.85925,-1.9635],[2.11275,-2.39983],[1.85925,-2.48709],[2.11275,-2.05076],[1.77475,-2.39983],[1.85925,-2.31256],[2.02825,-2.31256],[2.11275,-2.22529],[1.94375,-2.13803],[1.85925,-2.13803],[2.02825,-2.48709],[2.11275,-2.48709],[1.85925,-1.87623],[1.94375,-2.48709],[1.77475,-2.13803],[1.94375,-1.87623],[1.94375,-2.31256],[2.11275,-1.9635],[2.02825,-1.87623]])
@@ -236,6 +260,14 @@ cltw_4_CE_matched = np.array([[2.36625,-0.829031],[2.28175,-1.17809],[2.45075,-1
 cltw_5_CE_matched = np.array([[-2.36625,1.87623],[-2.53525,1.61443],[-2.45075,1.96349],[-2.45075,2.22529],[-2.36625,1.52716],[-2.36625,1.61443],[-2.36625,2.05076],[-2.45075,1.52716],[-2.45075,1.87623],[-2.53525,2.13803],[-2.19725,1.87623],[-2.28175,2.13803],[-2.19725,1.7017],[-2.28175,1.7017],[-2.36625,2.13803],[-2.53525,1.87623],[-2.53525,1.52716],[-2.19725,2.13803],[-2.36625,1.78896],[-2.28175,1.87623],[-2.19725,1.52716],[-2.36625,1.7017],[-2.19725,1.78896],[-2.45075,1.61443],[-2.53525,1.78896],[-2.36625,2.22529],[-2.45075,1.7017],[-2.45075,2.13803],[-2.36625,1.9635],[-2.19725,1.9635],[-2.28175,1.78896],[-2.53525,1.9635],[-2.19725,1.61443],[-2.53525,1.7017],[-2.28175,1.52716],[-2.45075,2.05076],[-2.19725,2.05076],[-2.28175,1.9635],[-2.28175,1.61443],[-2.45075,1.78896],[-2.28175,2.22529],[-2.53525,2.22529],[-2.19725,2.22529],[-2.53525,2.05076],[-2.28175,2.05076]])
 cltw_6_CE_matched = np.array([[1.77475,3.01069],[1.69025,-3.09796],[1.94375,-3.09796],[1.77475,2.66162],[1.85925,2.83616],[1.94375,2.66163],[1.94375,-3.01069],[1.94375,3.01069],[1.94375,2.92343],[1.77475,-2.92343],[1.77475,2.74889],[1.85925,-3.01069],[1.77475,3.09796],[1.77475,2.92343],[1.69025,2.66163],[1.69025,-3.01069],[1.69025,3.09796],[1.69025,3.01069],[1.85925,3.09796],[1.94375,2.83616],[1.60575,-2.92343],[1.94375,3.09796],[1.85925,3.01069],[1.69025,-2.92343],[1.60575,2.83616],[1.60575,3.09796],[1.85925,2.66163],[1.69025,2.92343],[1.77475,-3.01069],[1.60575,2.92343],[1.60575,-3.01069],[1.60575,2.74889],[1.60575,3.01069],[1.69025,2.83616],[1.60575,2.66163],[1.85925,2.74889],[1.94375,2.74889],[1.85925,2.92343],[1.77475,2.83616],[1.77475,-3.09796],[1.85925,-3.09796],[1.69025,2.74889],[1.60575,-3.09796],[1.85925,-2.92343],[1.94375,-2.92343]])
 
+cltw_0_CE_matched_qlt = 3
+cltw_1_CE_matched_qlt = 3
+cltw_2_CE_matched_qlt = 3
+cltw_3_CE_matched_qlt = 1
+cltw_4_CE_matched_qlt = 0
+cltw_5_CE_matched_qlt = 0
+cltw_6_CE_matched_qlt = 2
+
 cl3d_0_matched = np.array([2.25723,2.53351])
 cl3d_1_matched = np.array([2.43105,-2.93366])
 cl3d_2_matched = np.array([-1.88568,1.95258])
@@ -249,6 +281,9 @@ clusters_CE = [cltw_1_CE, cltw_2_CE, cltw_3_CE, cltw_4_CE, cltw_5_CE, cltw_6_CE,
 clusters_CE_matched = [cltw_0_CE_matched, cltw_1_CE_matched, cltw_2_CE_matched, cltw_3_CE_matched, cltw_4_CE_matched, cltw_5_CE_matched, cltw_6_CE_matched]
 cl3ds_CE_matched = [cl3d_0_matched, cl3d_1_matched, cl3d_2_matched, cl3d_3_matched, cl3d_4_matched, cl3d_5_matched, cl3d_6_matched]
 
+clusters_CB_qlts = [cltw_0_CB_qlt, cltw_1_CB_qlt, cltw_2_CB_qlt, cltw_3_CB_qlt, cltw_4_CB_qlt, cltw_5_CB_qlt, cltw_6_CB_qlt, cltw_7_CB_qlt, cltw_8_CB_qlt, cltw_9_CB_qlt, cltw_10_CB_qlt, cltw_11_CB_qlt, cltw_12_CB_qlt, cltw_13_CB_qlt, cltw_14_CB_qlt, cltw_15_CB_qlt, cltw_16_CB_qlt, cltw_17_CB_qlt, cltw_18_CB_qlt, cltw_19_CB_qlt, cltw_20_CB_qlt, cltw_21_CB_qlt]
+clusters_CE_matched_qlts = [cltw_0_CE_matched_qlt, cltw_1_CE_matched_qlt, cltw_2_CE_matched_qlt, cltw_3_CE_matched_qlt, cltw_4_CE_matched_qlt, cltw_5_CE_matched_qlt, cltw_6_CE_matched_qlt]
+
 tau1 = [-0.120441, 2.3320009]
 tau2 = [-1.914802, 1.9683259]
 taus = [tau1, tau2]
@@ -256,11 +291,7 @@ taus = [tau1, tau2]
 os.system('mkdir -p TriggerTowersScatterDisplays')
 
 plt.figure(figsize=(12,12))
-# plt.subplots_adjust(right=0.8)
-# plt.grid(linestyle=':', zorder=1)
-# plt.vlines(1.48085,  -3.3, 3.3, color='black', alpha=0.75, zorder=1, ls='-', lw=2)
-# plt.vlines(-1.48085, -3.3, 3.3, color='black', alpha=0.75, zorder=1, ls='-', lw=2)
-plt.scatter(eta_phi[:,0], eta_phi[:,1], color='black', alpha=0.15, zorder=1, marker='s', s=55)
+plt.plot(eta_phi[:,0], eta_phi[:,1], color='white', alpha=0.15, zorder=1, marker='s', ls='None', markeredgecolor='black', markeredgewidth=1, markersize=7 )
 for i, cluster in enumerate(clusters_CB):
     plt.scatter(cluster[:,0], cluster[:,1], color=cmap[i], alpha=1., zorder=3, marker='s', s=55)
 for i, cluster in enumerate(clusters_CE):
@@ -271,26 +302,237 @@ for i, cluster in enumerate(clusters_CE_matched):
     cl3d = cl3ds_CE_matched[i]
     plt.plot(cl3d[0], cl3d[1], color=cmap[i], alpha=1., zorder=5, marker='*', ls='None', markeredgecolor='black', markeredgewidth=1, markersize=15)
 for tau in taus:
-    plt.scatter(tau[0], tau[1], color='black', alpha=1., zorder=4, marker='X', s=150)
-
-
-diff = 0.0845
-x = np.array([-4,-4,-4+diff,-4+diff])
-y = np.array([-4+diff,-4,-4,-4+diff])
-
-plt.plot([-99,-99], [-99,-99], color='black', label=r'Generator $\tau$', alpha=1., zorder=4, marker='X', ms=15, ls='None', lw=0)
-plt.scatter([-99,-99], [-99,-99], color='black', label='Trigger tower', alpha=0.15, zorder=3, marker='s', s=125)
-cl = plt.scatter([-99,-98,-99,-98], [-99,-98,-98,-99], color=cmap[-1], label=r'$CL^{5\times9}$', alpha=1., zorder=3, marker='s', s=125)
+    plt.scatter(tau[0], tau[1], color='black', alpha=1., zorder=4, marker='d', s=150)
+plt.plot([-99,-99], [-99,-99], color='black', label=r'Generator $\tau$', alpha=1., zorder=4, marker='d', ms=15, ls='None', lw=0)
+plt.plot([-99,-99], [-99,-99], label='Trigger tower', color='white', alpha=0.5, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=1, markersize=15)
+plt.scatter([-99,-98,-99,-98], [-99,-98,-98,-99], color=cmap[-1], label=r'$CL^{5\times9}$', alpha=1., zorder=3, marker='s', s=125)
 plt.plot([-99,-99], [-99,-99], color=cmap[-1], alpha=1., label=r'$CL^{3D}$', zorder=5, marker='*', ls='None', markeredgecolor='black', markeredgewidth=1, markersize=20)
-
-# plt.legend(loc='upper right', fontsize=20, bbox_to_anchor=(1.275, 1.0), frameon=True, facecolor='white', edgecolor='black')
-
 leg = plt.legend(loc='lower left', fontsize=20, frameon=True, facecolor='white', edgecolor='black')#, handler_map={cl: HandlerPathCollection(numpoints=4, marker_pad=0.3)})
-
 plt.xlabel(r'Trigger tower $\eta$')
 plt.ylabel(r'Trigger tower $\phi$')
 plt.xlim(-3.2,3.2)
 plt.ylim(-3.3,3.3)
 mplhep.cms.label('Phase-2 Simulation Preliminary', data=True, rlabel='14 TeV, 200 PU')
 plt.savefig('TriggerTowersScatterDisplays/TriggerTowers_eta_phi.pdf')
+plt.close()
+
+
+fig, ax = plt.subplots(1,1, figsize=(12,12))
+ax.plot(eta_phi[:,0], eta_phi[:,1], color='white', alpha=0.15, zorder=1, marker='s', ls='None', markeredgecolor='black', markeredgewidth=1, markersize=7 )
+for i, cluster in enumerate(clusters_CB):
+    ax.scatter(cluster[:,0], cluster[:,1], color=cmap[-1], alpha=1., zorder=3, marker='s', s=55)
+    if cluster[0,1] > -2.748893 and cluster[0,1] < 2.748893:
+        x0 = min(cluster[:,0]) - 0.0873/2
+        y0 = min(cluster[:,1]) - 0.0873/2
+        width = max(cluster[:,0])-min(cluster[:,0]) + 0.0873
+        height = max(cluster[:,1])-min(cluster[:,1]) + 0.0873
+        rect = patches.Rectangle((x0,y0), width, height, linewidth=2, edgecolor='black', facecolor='none', zorder=4)
+        ax.add_patch(rect)
+    else:
+        neg = cluster[cluster[:,1]<0]
+        pos = cluster[cluster[:,1]>0]
+        x0_neg = min(neg[:,0]) - 0.0873/2
+        y0_neg = min(neg[:,1]) - 0.0873/2
+        width_neg = max(neg[:,0])-min(neg[:,0]) + 0.0873
+        height_neg = max(neg[:,1])-min(neg[:,1]) + 0.0873
+        plt.vlines(x0_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.vlines(x0_neg+width_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=0.2,color='black', zorder=4)
+        plt.hlines(y0_neg+height_neg, x0_neg, x0_neg+width_neg, linewidth=2, alpha=0.2,color='black', zorder=4)
+        x0_pos = min(pos[:,0]) - 0.0873/2
+        y0_pos = min(pos[:,1]) - 0.0873/2
+        width_pos = max(pos[:,0])-min(pos[:,0]) + 0.0873
+        height_pos = max(pos[:,1])-min(pos[:,1]) + 0.0873
+        plt.vlines(x0_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.vlines(x0_pos+width_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.hlines(y0_pos, x0_pos, x0_pos+width_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+for i, cluster in enumerate(clusters_CE):
+    if len(cluster) != 45: print('-->', i+1, ' - ', len(cluster))
+    ax.scatter(cluster[:,0], cluster[:,1], color=cmap[3], alpha=0.2, zorder=3, marker='s', s=55)
+    if cluster[0,1] > -2.748893 and cluster[0,1] < 2.748893:
+        x0 = min(cluster[:,0]) - 0.0845/2
+        y0 = min(cluster[:,1]) - 0.0845/2
+        width = max(cluster[:,0])-min(cluster[:,0]) + 0.0845
+        height = max(cluster[:,1])-min(cluster[:,1]) + 0.0845
+        rect = patches.Rectangle((x0,y0), width, height, linewidth=2, alpha=0.2, edgecolor='black', facecolor='none', zorder=4)
+        ax.add_patch(rect)
+    else:
+        neg = cluster[cluster[:,1]<0]
+        pos = cluster[cluster[:,1]>0]
+        x0_neg = min(neg[:,0]) - 0.0845/2
+        y0_neg = min(neg[:,1]) - 0.0845/2
+        width_neg = max(neg[:,0])-min(neg[:,0]) + 0.0845
+        height_neg = max(neg[:,1])-min(neg[:,1]) + 0.0845
+        plt.vlines(x0_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.vlines(x0_neg+width_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=0.2,color='black', zorder=4)
+        plt.hlines(y0_neg+height_neg, x0_neg, x0_neg+width_neg, linewidth=2, alpha=0.2,color='black', zorder=4)
+        x0_pos = min(pos[:,0]) - 0.0845/2
+        y0_pos = min(pos[:,1]) - 0.0845/2
+        width_pos = max(pos[:,0])-min(pos[:,0]) + 0.0845
+        height_pos = max(pos[:,1])-min(pos[:,1]) + 0.0845
+        plt.vlines(x0_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.vlines(x0_pos+width_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.hlines(y0_pos, x0_pos, x0_pos+width_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+for i, cluster in enumerate(clusters_CE_matched):
+    ax.scatter(cluster[:,0], cluster[:,1], color=cmap[-1], alpha=1., zorder=3, marker='s', s=55)
+    if cluster[0,1] > -2.748893 and cluster[0,1] < 2.748893:
+        x0 = min(cluster[:,0]) - 0.0845/2
+        y0 = min(cluster[:,1]) - 0.0845/2
+        width = max(cluster[:,0])-min(cluster[:,0]) + 0.0845
+        height = max(cluster[:,1])-min(cluster[:,1]) + 0.0845
+        rect = patches.Rectangle((x0,y0), width, height, linewidth=2, edgecolor='black', facecolor='none', zorder=4)
+        ax.add_patch(rect)
+    else:
+        neg = cluster[cluster[:,1]<0]
+        pos = cluster[cluster[:,1]>0]
+        x0_neg = min(neg[:,0]) - 0.0845/2
+        y0_neg = min(neg[:,1]) - 0.0845/2
+        width_neg = max(neg[:,0])-min(neg[:,0]) + 0.0845
+        height_neg = max(neg[:,1])-min(neg[:,1]) + 0.0845
+        plt.vlines(x0_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=1, color='black', zorder=4)
+        plt.vlines(x0_neg+width_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=1, color='black', zorder=4)
+        plt.hlines(y0_neg+height_neg, x0_neg, x0_neg+width_neg, linewidth=2, alpha=1, color='black', zorder=4)
+        x0_pos = min(pos[:,0]) - 0.0845/2
+        y0_pos = min(pos[:,1]) - 0.0845/2
+        width_pos = max(pos[:,0])-min(pos[:,0]) + 0.0845
+        height_pos = max(pos[:,1])-min(pos[:,1]) + 0.0845
+        plt.vlines(x0_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=1, color='black', zorder=4)
+        plt.vlines(x0_pos+width_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=1, color='black', zorder=4)
+        plt.hlines(y0_pos, x0_pos, x0_pos+width_pos, linewidth=2, alpha=1, color='black', zorder=4)
+    cl3d = cl3ds_CE_matched[i]
+    ax.plot(cl3d[0], cl3d[1], color=cmap[-1], alpha=1., zorder=5, marker='H', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+for tau in taus:
+    ax.scatter(tau[0], tau[1], color='black', alpha=1., zorder=10, marker='d', s=150)
+ax.plot([-99,-99], [-99,-99], color='black', label=r'Generator $\tau$', alpha=1., zorder=4, marker='d', ms=15, ls='None', lw=0)
+ax.plot([-99,-99], [-99,-99], label='Trigger tower', color='white', alpha=0.5, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+ax.plot([-99,-99], [-99,-99], label=r'$CL^{5\times9}$', color=cmap[-1], alpha=1, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+ax.plot([-99,-99], [-99,-99], color=cmap[-1], alpha=1., label=r'$CL^{3D}$', zorder=5, marker='H', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=17)
+leg = plt.legend(loc='lower left', fontsize=20, frameon=True, facecolor='white', edgecolor='black')#, handler_map={cl: HandlerPathCollection(numpoints=4, marker_pad=0.3)})
+plt.xlabel(r'Trigger tower $\eta$')
+plt.ylabel(r'Trigger tower $\phi$')
+plt.xlim(-3.2,3.2)
+plt.ylim(-3.3,3.3)
+mplhep.cms.label('Phase-2 Simulation Preliminary', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig('TriggerTowersScatterDisplays/TriggerTowers_eta_phi_2colors.pdf')
+plt.close()
+
+
+
+
+
+
+
+fig, ax = plt.subplots(1,1, figsize=(12,12))
+ax.plot(eta_phi[:,0], eta_phi[:,1], color='white', alpha=0.15, zorder=1, marker='s', ls='None', markeredgecolor='black', markeredgewidth=1, markersize=7 )
+for i, cluster in enumerate(clusters_CB):
+    color = cmap[-1] if clusters_CB_qlts[i] == 3 else cmap[3]
+    alpha = 1. if clusters_CB_qlts[i] == 3 else 0.2
+    ax.scatter(cluster[:,0], cluster[:,1], color=color, alpha=alpha, zorder=3, marker='s', s=55)
+    if cluster[0,1] > -2.748893 and cluster[0,1] < 2.748893:
+        x0 = min(cluster[:,0]) - 0.0873/2
+        y0 = min(cluster[:,1]) - 0.0873/2
+        width = max(cluster[:,0])-min(cluster[:,0]) + 0.0873
+        height = max(cluster[:,1])-min(cluster[:,1]) + 0.0873
+        rect = patches.Rectangle((x0,y0), width, height, linewidth=2, edgecolor='black', facecolor='none', zorder=4, alpha=alpha)
+        ax.add_patch(rect)
+    else:
+        neg = cluster[cluster[:,1]<0]
+        pos = cluster[cluster[:,1]>0]
+        x0_neg = min(neg[:,0]) - 0.0873/2
+        y0_neg = min(neg[:,1]) - 0.0873/2
+        width_neg = max(neg[:,0])-min(neg[:,0]) + 0.0873
+        height_neg = max(neg[:,1])-min(neg[:,1]) + 0.0873
+        plt.vlines(x0_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=alpha, color='black', zorder=4)
+        plt.vlines(x0_neg+width_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=alpha,color='black', zorder=4)
+        plt.hlines(y0_neg+height_neg, x0_neg, x0_neg+width_neg, linewidth=2, alpha=alpha,color='black', zorder=4)
+        x0_pos = min(pos[:,0]) - 0.0873/2
+        y0_pos = min(pos[:,1]) - 0.0873/2
+        width_pos = max(pos[:,0])-min(pos[:,0]) + 0.0873
+        height_pos = max(pos[:,1])-min(pos[:,1]) + 0.0873
+        plt.vlines(x0_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=alpha, color='black', zorder=4)
+        plt.vlines(x0_pos+width_pos, y0_pos, y0_pos+height_pos, linewidtalpha, alpha=0.2, color='black', zorder=4)
+        plt.hlines(y0_pos, x0_pos, x0_pos+width_pos, linewidth=2, alpha=alpha, color='black', zorder=4)
+for i, cluster in enumerate(clusters_CE):
+    if len(cluster) != 45: print('-->', i+1, ' - ', len(cluster))
+    ax.scatter(cluster[:,0], cluster[:,1], color=cmap[-3], alpha=0.2, zorder=3, marker='s', s=55)
+    if cluster[0,1] > -2.748893 and cluster[0,1] < 2.748893:
+        x0 = min(cluster[:,0]) - 0.0845/2
+        y0 = min(cluster[:,1]) - 0.0845/2
+        width = max(cluster[:,0])-min(cluster[:,0]) + 0.0845
+        height = max(cluster[:,1])-min(cluster[:,1]) + 0.0845
+        rect = patches.Rectangle((x0,y0), width, height, linewidth=2, alpha=0.2, edgecolor='black', facecolor='none', zorder=4)
+        ax.add_patch(rect)
+    else:
+        neg = cluster[cluster[:,1]<0]
+        pos = cluster[cluster[:,1]>0]
+        x0_neg = min(neg[:,0]) - 0.0845/2
+        y0_neg = min(neg[:,1]) - 0.0845/2
+        width_neg = max(neg[:,0])-min(neg[:,0]) + 0.0845
+        height_neg = max(neg[:,1])-min(neg[:,1]) + 0.0845
+        plt.vlines(x0_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.vlines(x0_neg+width_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=0.2,color='black', zorder=4)
+        plt.hlines(y0_neg+height_neg, x0_neg, x0_neg+width_neg, linewidth=2, alpha=0.2,color='black', zorder=4)
+        x0_pos = min(pos[:,0]) - 0.0845/2
+        y0_pos = min(pos[:,1]) - 0.0845/2
+        width_pos = max(pos[:,0])-min(pos[:,0]) + 0.0845
+        height_pos = max(pos[:,1])-min(pos[:,1]) + 0.0845
+        plt.vlines(x0_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.vlines(x0_pos+width_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+        plt.hlines(y0_pos, x0_pos, x0_pos+width_pos, linewidth=2, alpha=0.2, color='black', zorder=4)
+for i, cluster in enumerate(clusters_CE_matched):
+    color = cmap[-1] if clusters_CE_matched_qlts[i] == 3 else cmap[3]
+    alpha = 1. if clusters_CE_matched_qlts[i] == 3 else 0.2
+    ax.scatter(cluster[:,0], cluster[:,1], color=color, alpha=alpha, zorder=3, marker='s', s=55)
+    if cluster[0,1] > -2.748893 and cluster[0,1] < 2.748893:
+        x0 = min(cluster[:,0]) - 0.0845/2
+        y0 = min(cluster[:,1]) - 0.0845/2
+        width = max(cluster[:,0])-min(cluster[:,0]) + 0.0845
+        height = max(cluster[:,1])-min(cluster[:,1]) + 0.0845
+        rect = patches.Rectangle((x0,y0), width, height, linewidth=2, edgecolor='black', facecolor='none', zorder=4, alpha=alpha)
+        ax.add_patch(rect)
+    else:
+        neg = cluster[cluster[:,1]<0]
+        pos = cluster[cluster[:,1]>0]
+        x0_neg = min(neg[:,0]) - 0.0845/2
+        y0_neg = min(neg[:,1]) - 0.0845/2
+        width_neg = max(neg[:,0])-min(neg[:,0]) + 0.0845
+        height_neg = max(neg[:,1])-min(neg[:,1]) + 0.0845
+        plt.vlines(x0_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=alpha, color='black', zorder=4)
+        plt.vlines(x0_neg+width_neg, y0_neg, y0_neg+height_neg, linewidth=2, alpha=alpha, color='black', zorder=4)
+        plt.hlines(y0_neg+height_neg, x0_neg, x0_neg+width_neg, linewidth=2, alpha=alpha, color='black', zorder=4)
+        x0_pos = min(pos[:,0]) - 0.0845/2
+        y0_pos = min(pos[:,1]) - 0.0845/2
+        width_pos = max(pos[:,0])-min(pos[:,0]) + 0.0845
+        height_pos = max(pos[:,1])-min(pos[:,1]) + 0.0845
+        plt.vlines(x0_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=alpha, color='black', zorder=4)
+        plt.vlines(x0_pos+width_pos, y0_pos, y0_pos+height_pos, linewidth=2, alpha=alpha, color='black', zorder=4)
+        plt.hlines(y0_pos, x0_pos, x0_pos+width_pos, linewidth=2, alpha=alpha, color='black', zorder=4)
+    cl3d = cl3ds_CE_matched[i]
+    ax.plot(cl3d[0], cl3d[1], color=color, alpha=alpha, zorder=5, marker='H', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+for tau in taus:
+    ax.scatter(tau[0], tau[1], color='black', alpha=1., zorder=10, marker='d', s=150)
+# ax.plot([-99,-99], [-99,-99], color='black', label=r'Generator $\tau$', alpha=1., zorder=4, marker='d', ms=15, ls='None', lw=0)
+# ax.plot([-99,-99], [-99,-99], label='Trigger tower', color='white', alpha=0.5, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+# ax.plot([-99,-99], [-99,-99], label=r'$CL^{5\times9}$', color='black', alpha=1, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+# ax.plot([-99,-99], [-99,-99], color='black', alpha=1., label=r'$CL^{3D}$', zorder=5, marker='H', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=17)
+# rect0 = patches.Rectangle((-99,-99), -1, -1, linewidth=2, edgecolor=cmap[-1], facecolor=cmap[-1], label=r'Pass TauMinator ID')
+# ax.add_patch(rect0)
+# rect1 = patches.Rectangle((-99,-99), -1, -1, linewidth=2, edgecolor=cmap[3], facecolor=cmap[3], label=r'Fail TauMinator ID')
+# ax.add_patch(rect1)
+# rect2 = patches.Rectangle((-99,-99), -1, -1, linewidth=2, edgecolor=cmap[-3], facecolor=cmap[-3], label=r'Fail reconstruction')
+# ax.add_patch(rect2)
+
+ax.plot([-99,-99], [-99,-99], color='black', label=r'Generator $\tau$', alpha=1., zorder=4, marker='d', ms=15, ls='None', lw=0)
+ax.plot([-99,-99], [-99,-99], label='Trigger tower', color='white', alpha=0.5, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+ax.plot([-99,-99], [-99,-99], color='white', alpha=1., label=r'$CL^{3D}$', zorder=5, marker='H', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=17)
+ax.plot([-99,-99], [-99,-99], label=r'Pass TauMinator ID', color=cmap[-1], alpha=1, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+ax.plot([-99,-99], [-99,-99], label=r'Fail TauMinator ID', color=cmap[3], alpha=1, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+ax.plot([-99,-99], [-99,-99], label=r'Fail reconstruction', color=cmap[-3], alpha=1, zorder=5, marker='s', ls='None', markeredgecolor='black', markeredgewidth=2, markersize=15)
+
+leg = plt.legend(loc='lower left', fontsize=16, frameon=True, facecolor='white', edgecolor='black')#, handler_map={cl: HandlerPathCollection(numpoints=4, marker_pad=0.3)})
+plt.xlabel(r'Trigger tower $\eta$')
+plt.ylabel(r'Trigger tower $\phi$')
+plt.xlim(-3.2,3.2)
+plt.ylim(-3.3,3.3)
+mplhep.cms.label('Phase-2 Simulation Preliminary', data=True, rlabel='14 TeV, 200 PU')
+plt.savefig('TriggerTowersScatterDisplays/TriggerTowers_eta_phi_3colors.pdf')
 plt.close()

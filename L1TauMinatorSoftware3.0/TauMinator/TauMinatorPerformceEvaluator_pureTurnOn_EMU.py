@@ -850,7 +850,7 @@ if __name__ == "__main__" :
     plt.xlim(0., 250.)
     # plt.xscale('log')
     plt.xlabel(r'$p_{T}^{Gen,\tau}\ [GeV]$')
-    plt.ylabel(r'Trigger efficiency')
+    plt.ylabel(r'Trigger turn-on')
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation Preliminary ', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(perfdir+'/turnons'+tag+'/DP_turnon_comparisons_overall_CB'+WP_CB+'_CE'+WP_CE+'.pdf')

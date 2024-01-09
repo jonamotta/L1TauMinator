@@ -171,8 +171,8 @@ if __name__ == "__main__" :
     ax2.grid(linestyle='dotted')
     ax2.set_yscale('log')
     # SHOWER LENGTH
-    ax3.hist(X3_id0[:,4], label="Background",         bins=np.arange(0,50,1), color='red',   lw=2.5, histtype='step')
-    ax3.hist(X3_id1[:,4], label=r"$\tau_{h}$ signal", bins=np.arange(0,50,1), color='green', lw=2.5, histtype='step')
+    ax3.hist(X3_id0[:,4], label="Background",         bins=np.arange(0,50,2), color='red',   lw=2.5, histtype='step')
+    ax3.hist(X3_id1[:,4], label=r"$\tau_{h}$ signal", bins=np.arange(0,50,2), color='green', lw=2.5, histtype='step')
     ax3.set_xlabel(r'Shower length')
     ax3.set_ylabel(r'a.u.')
     ax3.legend(loc = 'upper left', fontsize=20)
@@ -220,6 +220,8 @@ if __name__ == "__main__" :
     ax8.set_yscale('log')
     plt.savefig(outdir+'/TauMinator_CE_ident'+tag+'_plots/DP_cl3d_feats.pdf')
     plt.close()
+
+    exit()
 
     # scale features of the cl3ds
     scaler = load_obj(indir+'/CL3D_features_scaler/cl3d_features_scaler.pkl')

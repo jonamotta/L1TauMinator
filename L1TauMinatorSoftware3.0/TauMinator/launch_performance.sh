@@ -102,19 +102,19 @@
 
 
 
-python3 TauMinatorPerformceEvaluator_EMU.py            --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p50_NNv15_PRD --CBCEsplit 1.50 --WP_CB 90 --WP_CE 90 --loop
-python3 TauMinatorPerformceEvaluator_pureTurnOn_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p50_NNv15_PRD --CBCEsplit 1.50 --WP_CB 90 --WP_CE 90 --loop
-python3 TauMinatorRateEvaluator_split.py               --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p50_NNv15_PRD --CBCEsplit 1.50 --WP_CB 90 --WP_CE 90 --loop
+# python3 TauMinatorPerformceEvaluator_EMU.py            --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p50_NNv15_PRD --CBCEsplit 1.50 --WP_CB 90 --WP_CE 90 --loop
+# python3 TauMinatorPerformceEvaluator_pureTurnOn_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p50_NNv15_PRD --CBCEsplit 1.50 --WP_CB 90 --WP_CE 90 --loop
+# python3 TauMinatorRateEvaluator_split.py               --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p50_NNv15_PRD --CBCEsplit 1.50 --WP_CB 90 --WP_CE 90 --loop
 
 
 ## OFFICIALLY CHOSEN TO BE USED
-python3 TauMinatorPerformceEvaluator_EMU.py            --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 90 --loop
-python3 TauMinatorPerformceEvaluator_pureTurnOn_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 90 --loop
-python3 TauMinatorRateEvaluator_split.py               --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 90 --loop
+python3 TauMinatorPerformceEvaluator_EMU.py            --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 90 #--loop
+python3 TauMinatorPerformceEvaluator_pureTurnOn_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 90 #--loop
+python3 TauMinatorRateEvaluator_split.py               --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 90 #--loop
 
-# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 95 --loop
-# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 95 --loop
-# python3 TauMinatorRateEvaluator_split.py    --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 95 --loop
+# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 95 #--loop
+# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 95 #--loop
+# python3 TauMinatorRateEvaluator_split.py    --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 95 #--loop
 
 # python3 TauMinatorPerformceEvaluator_EMU.py            --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 95 --WP_CE 95 #--loop
 # python3 TauMinatorPerformceEvaluator_pureTurnOn_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 95 --WP_CE 95 #--loop
@@ -128,9 +128,9 @@ python3 TauMinatorRateEvaluator_split.py               --NtupleV 4 --date 2023_0
 # python3 TauMinatorPerformceEvaluator_pureTurnOn_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 99 --WP_CE 99 #--loop
 # python3 TauMinatorRateEvaluator_split.py               --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 99 --WP_CE 99 #--loop
 
-# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 99 --loop
-# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 99 --loop
-# python3 TauMinatorRateEvaluator_split.py    --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 99 --loop
+# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 99 #--loop
+# python3 TauMinatorPerformceEvaluator_EMU.py --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 99 #--loop
+# python3 TauMinatorRateEvaluator_split.py    --NtupleV 4 --date 2023_07_06 --v 22 --etaEr 2.4 --inTag _Er2p4_CBCEsplit1p55_NNv22_PRD --CBCEsplit 1.55 --WP_CB 90 --WP_CE 99 #--loop
 
 
 

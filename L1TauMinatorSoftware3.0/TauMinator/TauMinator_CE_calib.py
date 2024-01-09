@@ -161,6 +161,8 @@ if __name__ == "__main__" :
     Ycal = Ycal[farctor_sel]
     Yfactor = Yfactor[farctor_sel]
 
+    cl3d_pt_uncalib_train = X3[:,0]
+
     # nromalize entries
     # X1 = X1 / 256.
     # X2 = X2 / np.pi
@@ -348,7 +350,7 @@ if __name__ == "__main__" :
         sys.stdout = sys.__stdout__
 
     else:
-        CNN = keras.models.load_model(outdir+'/CNNmodel_sparsity'+str(options.sparsityCNN), compile=False)
+        CNN = keras.models.load_model(outdir+'/CNNmodel', compile=False)
         TauMinatorModelPruned = keras.models.load_model(outdir+'/CAL_DNNmodel'+tag, compile=False)
 
     ############################## Model validation and pots ##############################
@@ -376,6 +378,8 @@ if __name__ == "__main__" :
     Y_valid = Y_valid[pt_sel]
     Ycal_valid = Ycal_valid[pt_sel]
 
+    cl3d_pt_uncalib_valid = X3_valid[:,0]
+
     # nromalize entries
     # X1_valid = X1_valid / 256.
     # X2_valid = X2_valid / np.pi
@@ -383,13 +387,14 @@ if __name__ == "__main__" :
     X3_valid = scaler.transform(X3_valid)
     X3_valid = X3_valid[:,features2use]
 
-    train_calib = TauMinatorModelPruned.predict(CNN([X1, X2])) #, X3])) #* 256.
-    valid_calib = TauMinatorModelPruned.predict(CNN([X1_valid, X2_valid])) #, X3_valid])) #* 256.
+    train_calib = TauMinatorModelPruned.predict(CNN([X1, X2, X3])) #* 256.
+    valid_calib = TauMinatorModelPruned.predict(CNN([X1_valid, X2_valid, X3_valid])) #* 256.
 
     inspectWeights(TauMinatorModelPruned, 'kernel')
 
     dfTrain = pd.DataFrame()
     dfTrain['uncalib_pt'] = np.sum(np.sum(np.sum(X1, axis=3), axis=2), axis=1).ravel() #* 256.
+    dfTrain['cl3d_pt']    = cl3d_pt_uncalib_train.ravel()
     dfTrain['calib_pt']   = train_calib.ravel()
     dfTrain['gen_pt']     = Y[:,0].ravel()
     dfTrain['gen_eta']    = Y[:,2].ravel()
@@ -398,6 +403,7 @@ if __name__ == "__main__" :
 
     dfValid = pd.DataFrame()
     dfValid['uncalib_pt'] = np.sum(np.sum(np.sum(X1_valid, axis=3), axis=2), axis=1).ravel() #* 256.
+    dfValid['cl3d_pt']    = cl3d_pt_uncalib_valid.ravel()
     dfValid['calib_pt']   = valid_calib.ravel()
     dfValid['gen_pt']     = Y_valid[:,0].ravel()
     dfValid['gen_eta']    = Y_valid[:,2].ravel()
@@ -406,7 +412,8 @@ if __name__ == "__main__" :
 
     # PLOTS INCLUSIVE
     plt.figure(figsize=(10,10))
-    plt.hist(dfValid['uncalib_pt']/dfValid['gen_pt'], bins=np.arange(0.05,5,0.1), label=r'Uncalibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['uncalib_pt']/dfValid['gen_pt']), np.std(dfValid['uncalib_pt']/dfValid['gen_pt'])),  color='red',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfValid['uncalib_pt']/dfValid['gen_pt'], bins=np.arange(0.05,5,0.1), label=r'$CL^{5\times9}$ uncalibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['uncalib_pt']/dfValid['gen_pt']), np.std(dfValid['uncalib_pt']/dfValid['gen_pt'])),  color='red',  lw=2, density=True, histtype='step', alpha=0.7)
+    plt.hist(dfValid['cl3d_pt']/dfValid['gen_pt'], bins=np.arange(0.05,5,0.1), label=r'$CL^{3D}$ uncalibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['cl3d_pt']/dfValid['gen_pt']), np.std(dfValid['cl3d_pt']/dfValid['gen_pt'])),  color='red',  ls ='--', lw=2, density=True, histtype='step', alpha=0.7)
     plt.hist(dfTrain['calib_pt']/dfTrain['gen_pt'],   bins=np.arange(0.05,5,0.1), label=r'Train. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfTrain['calib_pt']/dfTrain['gen_pt']), np.std(dfTrain['calib_pt']/dfTrain['gen_pt'])), color='blue', lw=2, density=True, histtype='step', alpha=0.7)
     plt.hist(dfValid['calib_pt']/dfValid['gen_pt'],   bins=np.arange(0.05,5,0.1), label=r'Valid. Calibrated response : $\mu$ = %.2f, $\sigma$ =  %.2f' % (np.mean(dfValid['calib_pt']/dfValid['gen_pt']), np.std(dfValid['calib_pt']/dfValid['gen_pt'])), color='green',lw=2, density=True, histtype='step', alpha=0.7)
     plt.xlabel(r'$p_{T}^{L1 \tau} / p_{T}^{Gen \tau}$')

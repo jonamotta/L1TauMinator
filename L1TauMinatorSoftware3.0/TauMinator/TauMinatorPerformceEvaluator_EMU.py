@@ -196,6 +196,11 @@ if __name__ == "__main__" :
 
         minated_passing_etaBins = []
 
+        minated_etaResponse_CB = ROOT.TH1F("minated_etaResponse_CB","minated_etaResponse_CB", 50, -0.4, 0.4)
+        minated_phiResponse_CB = ROOT.TH1F("minated_phiResponse_CB","minated_phiResponse_CB", 50, -0.4, 0.4)
+        minated_etaResponse_CE = ROOT.TH1F("minated_etaResponse_CE","minated_etaResponse_CE", 50, -0.4, 0.4)
+        minated_phiResponse_CE = ROOT.TH1F("minated_phiResponse_CE","minated_phiResponse_CE", 50, -0.4, 0.4)
+
         for threshold in online_thresholds:
             minated_passing_ptBins.append(ROOT.TH1F("minated_passing_thr"+str(int(threshold))+"_ptBins","minated_passing_thr"+str(int(threshold))+"_ptBins",len(ptBins)-1, array('f',ptBins)))
             minated_passing_ptBins_CB.append(ROOT.TH1F("minated_passing_thr"+str(int(threshold))+"_ptBins_CB","minated_passing_thr"+str(int(threshold))+"_ptBins_CB",len(ptBins)-1, array('f',ptBins)))
@@ -283,6 +288,9 @@ if __name__ == "__main__" :
                                 minatedMatched = True
                                 highestMinatedL1Pt = l1tau.Pt()
 
+                                minated_etaResponse_CB.Fill(l1tau.Eta() - gentau.Eta())
+                                minated_phiResponse_CB.Fill(l1tau.DeltaPhi(gentau))
+
                     # fill numerator histograms for every thresholds
                     for i, thr in enumerate(online_thresholds): 
                         if minatedMatched and highestMinatedL1Pt>float(thr):
@@ -328,6 +336,9 @@ if __name__ == "__main__" :
                             if l1tau.Pt()>highestMinatedL1Pt:
                                 minatedMatched = True
                                 highestMinatedL1Pt = l1tau.Pt()
+
+                                minated_etaResponse_CE.Fill(l1tau.Eta() - gentau.Eta())
+                                minated_phiResponse_CE.Fill(l1tau.DeltaPhi(gentau))
 
                     # fill numerator histograms for every thresholds
                     for i, thr in enumerate(online_thresholds): 
@@ -410,6 +421,10 @@ if __name__ == "__main__" :
         denominator_ptBins_CB.Write()
         denominator_ptBins_CE.Write()
         denominator_etaBins.Write()
+        minated_etaResponse_CB.Write()
+        minated_phiResponse_CB.Write()
+        minated_etaResponse_CE.Write()
+        minated_phiResponse_CE.Write()
         for i, thr in enumerate(online_thresholds): 
             minated_passing_ptBins[i].Write()
             minated_passing_ptBins_CB[i].Write()
@@ -682,9 +697,9 @@ if __name__ == "__main__" :
     plt.figure(figsize=(12,12))
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
     plt.hlines(1.00, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
-    plt.errorbar(offline_pts,turnons_dict['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict['turnonAtwpAt0GeV'][1], turnons_dict['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator ('+WP_CB_text+'-'+WP_CE_text+' WP)', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
-    plt.errorbar(offline_pts,turnons_dict_CB['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CB['turnonAtwpAt0GeV'][1], turnons_dict_CB['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator ('+WP_CB_text+' WP) - Barrel', marker='s', markersize='10', lw=3, color='#f6c200', zorder=1)
-    plt.errorbar(offline_pts,turnons_dict_CE['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CE['turnonAtwpAt0GeV'][1], turnons_dict_CE['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator ('+WP_CE_text+' WP) - Endcap', marker='^', markersize='10', lw=3, color='#0086a8', zorder=2)
+    plt.errorbar(offline_pts,turnons_dict['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict['turnonAtwpAt0GeV'][1], turnons_dict['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
+    plt.errorbar(offline_pts,turnons_dict_CB['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CB['turnonAtwpAt0GeV'][1], turnons_dict_CB['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator - Barrel', marker='s', markersize='10', lw=3, color='#f6c200', zorder=1)
+    plt.errorbar(offline_pts,turnons_dict_CE['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CE['turnonAtwpAt0GeV'][1], turnons_dict_CE['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator - Endcap', marker='^', markersize='10', lw=3, color='#0086a8', zorder=2)
 
     p0 =          [10    ,    3.,   3. , 100.,     0.95,   10., 0.8,   10.]
     param_bounds=([10-10.,    1.,   0.1,   1.,     0.9 ,    0., 0.2,    1.],
@@ -879,7 +894,7 @@ if __name__ == "__main__" :
     plt.figure(figsize=(12,12))
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
     plt.hlines(1.00, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
-    plt.errorbar(offline_pts,turnons_dict_CB['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CB['turnonAtwpAt0GeV'][1], turnons_dict_CB['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator ('+WP_CB_text+' WP)', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
+    plt.errorbar(offline_pts,turnons_dict_CB['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CB['turnonAtwpAt0GeV'][1], turnons_dict_CB['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
     # plt.errorbar(MenuBarrel_d['nnTau']['xbins'], MenuBarrel_d['nnTau']['efficiency'], xerr=MenuBarrel_d['nnTau']['err_kwargs']['xerr'], yerr=MenuBarrel_d['nnTau']['efficiency_err'], ls='None', label=r'NN Tau', marker='s', markersize='10', lw=3, color='#f6c200', zorder=1)
     plt.errorbar(MenuBarrel_d['caloTau']['xbins'], MenuBarrel_d['caloTau']['efficiency'], xerr=MenuBarrel_d['caloTau']['err_kwargs']['xerr'], yerr=MenuBarrel_d['caloTau']['efficiency_err'], ls='None', label=r'Calo Tau', marker='^', markersize='10', lw=3, color='#0086a8', zorder=2)
 
@@ -911,7 +926,7 @@ if __name__ == "__main__" :
     plt.figure(figsize=(12,12))
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
     plt.hlines(1.00, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
-    plt.errorbar(offline_pts,turnons_dict_CE['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CE['turnonAtwpAt0GeV'][1], turnons_dict_CE['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator ('+WP_CE_text+' WP)', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
+    plt.errorbar(offline_pts,turnons_dict_CE['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CE['turnonAtwpAt0GeV'][1], turnons_dict_CE['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
     # plt.errorbar(MenuEndcap_d['nnTau']['xbins'], MenuEndcap_d['nnTau']['efficiency'], xerr=MenuEndcap_d['nnTau']['err_kwargs']['xerr'], yerr=MenuEndcap_d['nnTau']['efficiency_err'], ls='None', label=r'NN Tau', marker='s', markersize='10', lw=3, color='#f6c200', zorder=1)
     plt.errorbar(MenuEndcap_d['caloTau']['xbins'], MenuEndcap_d['caloTau']['efficiency'], xerr=MenuEndcap_d['caloTau']['err_kwargs']['xerr'], yerr=MenuEndcap_d['caloTau']['efficiency_err'], ls='None', label=r'Calo Tau', marker='^', markersize='10', lw=3, color='#0086a8', zorder=2)
 
@@ -943,7 +958,7 @@ if __name__ == "__main__" :
     plt.figure(figsize=(12,12))
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
     plt.hlines(1.00, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
-    plt.errorbar(offline_pts,turnons_dict['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict['turnonAtwpAt0GeV'][1], turnons_dict['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator ('+WP_CB_text+'-'+WP_CE_text+' WP)', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
+    plt.errorbar(offline_pts,turnons_dict['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict['turnonAtwpAt0GeV'][1], turnons_dict['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator', marker='o', markersize='10', lw=3, color='#d04e00', zorder=3)
     plt.errorbar(MenuOverall_d['caloTau']['xbins'], MenuOverall_d['caloTau']['efficiency'], xerr=MenuOverall_d['caloTau']['err_kwargs']['xerr'], yerr=MenuOverall_d['caloTau']['efficiency_err'], ls='None', label=r'Calo Tau', marker='^', markersize='10', lw=3, color='#0086a8', zorder=2)
 
     p0 =          [10    ,    3.,   3. ,   2.,     0.95,   10., 0.8,   10.]
@@ -971,8 +986,10 @@ if __name__ == "__main__" :
     plt.figure(figsize=(12,12))
     plt.hlines(0.90, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
     plt.hlines(1.00, 0, 2000, lw=2, color='dimgray', ls='--', zorder=0)
-    plt.errorbar(offline_pts,turnons_dict_CB['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CB['turnonAtwpAt0GeV'][1], turnons_dict_CB['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator - Barrel ('+WP_CB_text+' WP)', marker='o', markersize='10', lw=3, color='#d04e00', zorder=4)
+    plt.errorbar(offline_pts,turnons_dict_CB['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CB['turnonAtwpAt0GeV'][1], turnons_dict_CB['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator - Barrel', marker='o', markersize='10', lw=3, color='#d04e00', zorder=4)
+    plt.errorbar(offline_pts,turnons_dict_CE['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CE['turnonAtwpAt0GeV'][1], turnons_dict_CE['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator - Endcap', marker='o', markersize='10', lw=3, color='#132b69', zorder=4)
     plt.errorbar(MenuBarrel_d['caloTau']['xbins'], MenuBarrel_d['caloTau']['efficiency'], xerr=MenuBarrel_d['caloTau']['err_kwargs']['xerr'], yerr=MenuBarrel_d['caloTau']['efficiency_err'], ls='None', label=r'Calo Tau - Barrel', marker='^', markersize='10', lw=3, color='#f6c200', zorder=3)
+    plt.errorbar(MenuEndcap_d['caloTau']['xbins'], MenuEndcap_d['caloTau']['efficiency'], xerr=MenuEndcap_d['caloTau']['err_kwargs']['xerr'], yerr=MenuEndcap_d['caloTau']['efficiency_err'], ls='None', label=r'Calo Tau - Endcap', marker='^', markersize='10', lw=3, color='#0086a8', zorder=2)
 
     p0 =          [10    ,    3.,   3. ,  50.,     0.95,   10., 0.8,   10.]
     param_bounds=([10-10.,    0.,   0.1,   1.,     0.9 ,    0., 0.2,    0.],
@@ -983,22 +1000,19 @@ if __name__ == "__main__" :
     popt, pcov = curve_fit(vectCBconvATAN, MenuBarrel_d['caloTau']['xbins'][:22], MenuBarrel_d['caloTau']['efficiency'][:22], p0, maxfev=5000, bounds=param_bounds)
     plt.plot(fits_xs, vectCBconvATAN(fits_xs, *popt), '-', label='_', lw=3, color='#f6c200', zorder=3)
 
-    plt.errorbar(offline_pts,turnons_dict_CE['turnonAtwpAt0GeV'][0],xerr=2.5,yerr=[turnons_dict_CE['turnonAtwpAt0GeV'][1], turnons_dict_CE['turnonAtwpAt0GeV'][2]], ls='None', label=r'TauMinator - Endcap ('+WP_CE_text+' WP)', marker='o', markersize='10', lw=3, color='#132b69', zorder=4)
-    plt.errorbar(MenuEndcap_d['caloTau']['xbins'], MenuEndcap_d['caloTau']['efficiency'], xerr=MenuEndcap_d['caloTau']['err_kwargs']['xerr'], yerr=MenuEndcap_d['caloTau']['efficiency_err'], ls='None', label=r'Calo Tau - Endcap', marker='^', markersize='10', lw=3, color='#0086a8', zorder=2)
-
     p0 =          [10    ,    3.,   3. ,   2.,     0.95,   10., 0.8,   10.]
     param_bounds=([10-10.,    0.,   0.1,   0.,     0.9 ,    0., 0.0,    0.],
                   [10+10.,   10.,  20. ,  20.,     1.  ,   20., 1. ,   20.])
     popt, pcov = curve_fit(vectCBconvATAN, offline_pts[:30], turnons_dict_CE['turnonAtwpAt0GeV'][0][:30], p0, maxfev=5000, bounds=param_bounds)
     plt.plot(fits_xs, vectCBconvATAN(fits_xs, *popt), '-', label='_', lw=3, color='#132b69', zorder=4)
 
-    popt, pcov = curve_fit(vectCBconvATAN, MenuEndcap_d['caloTau']['xbins'][:22], MenuEndcap_d['caloTau']['efficiency'][:22], p0, sigma=MenuEndcap_d['caloTau']['efficiency_err'][0][:22], maxfev=5000, bounds=param_bounds)
+    popt, pcov = curve_fit(vectCBconvATAN, MenuEndcap_d['caloTau']['xbins'][1:22], MenuEndcap_d['caloTau']['efficiency'][1:22], p0, sigma=MenuEndcap_d['caloTau']['efficiency_err'][0][1:22], maxfev=5000, bounds=param_bounds)
     plt.plot(fits_xs, vectCBconvATAN(fits_xs, *popt), '-', label='_', lw=3, color='#0086a8', zorder=2)
 
     leg = plt.legend(loc='lower right', fontsize=20)
     leg._legend_box.align = "left"
     plt.ylim(0., 1.05)
-    plt.xlim(0., 140.)
+    plt.xlim(0., 175.)
     # plt.xscale('log')
     plt.xlabel(r'$p_{T}^{Gen,\tau}\ [GeV]$')
     plt.ylabel(r'Matching efficiency')
@@ -1061,5 +1075,120 @@ if __name__ == "__main__" :
     plt.grid()
     mplhep.cms.label('Phase-2 Simulation Preliminary ', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(perfdir+'/turnons'+tag+'/DP_efficiencyVSpt_comparisons_overall_CB'+WP_CB+'_CE'+WP_CE+'.pdf')
+    plt.close()
+
+
+
+
+
+    def DoubleCB(x, mean=1, sigma=1, alphaL=1, nL=1, alphaR=1, nR=1, norm=1):
+        t = (x - mean)/sigma
+
+        # Crystal Ball definitions
+        Al = pow(nL / abs(alphaL), nL) * np.exp(-0.5 * alphaL * alphaL)
+        Bl = nL / abs(alphaL) - abs(alphaL)
+        Ar = pow(nR / abs(alphaR), nR) * np.exp(-0.5 * alphaR * alphaR)
+        Br = nR / abs(alphaR) - abs(alphaR)
+
+        if t < -alphaL:
+            crystalBall = norm * Al * pow(Bl-t,-nL)
+        elif t < alphaR:
+            crystalBall = norm * np.exp(-0.5 * pow(t,2))
+        else:
+            crystalBall = norm * Ar * pow(Br+t,-nR)
+            
+            
+        return crystalBall
+
+    vectDoubleCB = np.vectorize(DoubleCB)
+
+    plot_x = np.arange(-1,1,0.001)
+
+    etaResponse_CB = [[],[],[]]
+    phiResponse_CB = [[],[],[]]
+    etaResponse_CE = [[],[],[]]
+    phiResponse_CE = [[],[],[]]
+
+    minated_etaResponse_CB = filein.Get("minated_etaResponse_CB")
+    minated_phiResponse_CB = filein.Get("minated_phiResponse_CB")
+    minated_etaResponse_CE = filein.Get("minated_etaResponse_CE")
+    minated_phiResponse_CE = filein.Get("minated_phiResponse_CE")
+
+    minated_etaResponse_CB.Scale(1./minated_etaResponse_CB.Integral())
+    minated_phiResponse_CB.Scale(1./minated_phiResponse_CB.Integral())
+    minated_etaResponse_CE.Scale(1./minated_etaResponse_CE.Integral())
+    minated_phiResponse_CE.Scale(1./minated_phiResponse_CE.Integral())
+
+    for ibin in range(0,minated_etaResponse_CB.GetNbinsX()):
+        etaResponse_CB[0].append(minated_etaResponse_CB.GetBinLowEdge(ibin+1)+minated_etaResponse_CB.GetBinWidth(ibin+1))
+        etaResponse_CB[1].append(minated_etaResponse_CB.GetBinContent(ibin+1))
+        etaResponse_CB[2].append(minated_etaResponse_CB.GetBinError(ibin+1))
+        phiResponse_CB[0].append(minated_phiResponse_CB.GetBinLowEdge(ibin+1)+minated_etaResponse_CB.GetBinWidth(ibin+1))
+        phiResponse_CB[1].append(minated_phiResponse_CB.GetBinContent(ibin+1))
+        phiResponse_CB[2].append(minated_phiResponse_CB.GetBinError(ibin+1))
+
+        etaResponse_CE[0].append(minated_etaResponse_CE.GetBinLowEdge(ibin+1)+minated_etaResponse_CB.GetBinWidth(ibin+1))
+        etaResponse_CE[1].append(minated_etaResponse_CE.GetBinContent(ibin+1))
+        etaResponse_CE[2].append(minated_etaResponse_CE.GetBinError(ibin+1))
+        phiResponse_CE[0].append(minated_phiResponse_CE.GetBinLowEdge(ibin+1)+minated_etaResponse_CB.GetBinWidth(ibin+1))
+        phiResponse_CE[1].append(minated_phiResponse_CE.GetBinContent(ibin+1))
+        phiResponse_CE[2].append(minated_phiResponse_CE.GetBinError(ibin+1))
+
+
+    plt.figure(figsize=(10,10))
+    
+    plt.errorbar(etaResponse_CB[0], etaResponse_CB[1], yerr=etaResponse_CB[2], ls='None', lw=2, marker='o', zorder=1, color="#d04e00", label='Barrel')
+    ##            [ mean, sigma, alphaL,    nL, alphaR,    nR,  norm]
+    p0 =          [  0.,   0.2,     1.,    1.,     1.,    1.,  0.15]
+    param_bounds=([ -1.,   0. ,     0.,    0.,     0.,    0.,  0. ],
+                  [  1.,   1. ,    10.,   50.,    10.,   50.,  1. ])
+    popt, pcov = curve_fit(vectDoubleCB, etaResponse_CB[0], etaResponse_CB[1], p0, maxfev=5000, bounds=param_bounds)
+    plt.plot(plot_x, vectDoubleCB(plot_x, *popt), '-', label='_', lw=2, color="#d04e00")
+
+    plt.errorbar(etaResponse_CE[0], etaResponse_CE[1], yerr=etaResponse_CE[2], ls='None', lw=2, marker='o', zorder=1, color="#0086a8", label='Endcap')
+    ##            [ mean, sigma, alphaL,    nL, alphaR,    nR,  norm]
+    p0 =          [  0.,   0.2,     1.,    1.,     1.,    1.,  0.15]
+    param_bounds=([ -1.,   0. ,     0.,    0.,     0.,    0.,  0. ],
+                  [  1.,   1. ,    10.,   50.,    10.,   50.,  1. ])
+    popt, pcov = curve_fit(vectDoubleCB, etaResponse_CE[0], etaResponse_CE[1], p0, maxfev=5000, bounds=param_bounds)
+    plt.plot(plot_x, vectDoubleCB(plot_x, *popt), '-', label='_', lw=2, color="#0086a8")
+
+    leg = plt.legend(loc = 'upper right', fontsize=20)
+    leg._legend_box.align = "left"
+    plt.ylim(0., 0.19)
+    plt.xlim(-0.25, 0.25)
+    plt.xlabel(r'$\eta^{L1,\tau} - \eta^{Gen,\tau}$')
+    plt.ylabel(r'a.u.')
+    plt.grid()
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(perfdir+'/turnons'+tag+'/eta_response.pdf')
+    plt.close()
+
+    plt.figure(figsize=(10,10))
+    plt.errorbar(phiResponse_CB[0], phiResponse_CB[1], yerr=phiResponse_CB[2], ls='None', lw=2, marker='o', zorder=1, color="#d04e00", label='Barrel')
+    ##            [ mean, sigma, alphaL,    nL, alphaR,    nR,  norm]
+    p0 =          [  0.,   0.2,     1.,    1.,     1.,    1.,  0.15]
+    param_bounds=([ -1.,   0. ,     0.,    0.,     0.,    0.,  0. ],
+                  [  1.,   1. ,    10.,   50.,    10.,   50.,  1. ])
+    popt, pcov = curve_fit(vectDoubleCB, phiResponse_CB[0], phiResponse_CB[1], p0, maxfev=5000, bounds=param_bounds)
+    plt.plot(plot_x, vectDoubleCB(plot_x, *popt), '-', label='_', lw=2, color="#d04e00")
+
+    plt.errorbar(phiResponse_CE[0], phiResponse_CE[1], yerr=phiResponse_CE[2], ls='None', lw=2, marker='o', zorder=1, color="#0086a8", label='Endcap')
+    ##            [ mean, sigma, alphaL,    nL, alphaR,    nR,  norm]
+    p0 =          [  0.,   0.2,     1.,    1.,     1.,    1.,  0.15]
+    param_bounds=([ -1.,   0. ,     0.,    0.,     0.,    0.,  0. ],
+                  [  1.,   1. ,    10.,   50.,    10.,   50.,  1. ])
+    popt, pcov = curve_fit(vectDoubleCB, phiResponse_CE[0], phiResponse_CE[1], p0, maxfev=5000, bounds=param_bounds)
+    plt.plot(plot_x, vectDoubleCB(plot_x, *popt), '-', label='_', lw=2, color="#0086a8")
+
+    leg = plt.legend(loc = 'upper right', fontsize=20)
+    leg._legend_box.align = "left"
+    plt.ylim(0., 0.19)
+    plt.xlim(-0.25, 0.25)
+    plt.xlabel(r'$\phi^{L1,\tau} - \phi^{Gen,\tau}$')
+    plt.ylabel(r'a.u.')
+    plt.grid()
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(perfdir+'/turnons'+tag+'/phi_response.pdf')
     plt.close()
 

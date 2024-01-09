@@ -353,8 +353,8 @@ if __name__ == "__main__" :
         X3_valid = scaler.transform(X3_valid)
         X3_valid = X3_valid[:,features2use]
 
-        y_full = np.array( TauMinatorModelPruned.predict([X1_valid, X2_valid]))  #, X3_valid]) )
-        y_split  = np.array( ID_DNNmodel(CNNmodel([X1_valid, X2_valid])) ) #, X3_valid])) )
+        y_full = np.array( TauMinatorModelPruned.predict([X1_valid, X2_valid, X3_valid]) )
+        y_split  = np.array( ID_DNNmodel(CNNmodel([X1_valid, X2_valid, X3_valid])) )
         if not np.array_equal(y_full, y_split):
             print('\n\n****************************************************************')
             print(" WARNING : Full model and split ID model outputs do not match")
@@ -383,8 +383,8 @@ if __name__ == "__main__" :
 
     ############################## Model validation and pots ##############################
 
-    train_ident = TauMinatorModelPruned.predict([X1, X2]) # X3])
-    valid_ident = TauMinatorModelPruned.predict([X1_valid, X2_valid]) # X3_valid])
+    train_ident = TauMinatorModelPruned.predict([X1, X2, X3])
+    valid_ident = TauMinatorModelPruned.predict([X1_valid, X2_valid, X3_valid])
 
     FPRtrain, TPRtrain, THRtrain = metrics.roc_curve(Yid, train_ident)
     AUCtrain = metrics.roc_auc_score(Yid, train_ident)
@@ -413,10 +413,10 @@ if __name__ == "__main__" :
     # inspectWeights(TauMinatorModelPruned, 'bias')
 
     plt.figure(figsize=(10,10))
-    plt.plot(TPRtrain, FPRtrain, label='Training ROC, AUC = %.3f' % (AUCtrain),   color='blue',lw=2)
-    plt.plot(TPRvalid, FPRvalid, label='Validation ROC, AUC = %.3f' % (AUCvalid), color='green',lw=2)
+    plt.plot(TPRtrain, FPRtrain, label='Train. ROC, AUC = %.3f' % (AUCtrain),   color='blue',lw=2)
+    plt.plot(TPRvalid, FPRvalid, label='Valid. ROC, AUC = %.3f' % (AUCvalid), color='green',lw=2)
     plt.grid(linestyle=':')
-    plt.legend(loc = 'upper left', fontsize=16)
+    plt.legend(loc = 'upper left', fontsize=20)
     plt.xlim(0.8,1.01)
     # plt.yscale('log')
     #plt.ylim(0.01,1)
@@ -453,17 +453,35 @@ if __name__ == "__main__" :
     dftr['gen_pt'] = Y[:,0].ravel()
     # dftr['gen_dm'] = Y[:,4].ravel()
     
+    weights_tr_tau = np.repeat(1/dftr[dftr['true']==1].shape[0],dftr[dftr['true']==1].shape[0])
+    weights_tr_bkg = np.repeat(1/dftr[dftr['true']==0].shape[0],dftr[dftr['true']==0].shape[0])
+    weights_tau = np.repeat(1/df[df['true']==1].shape[0],df[df['true']==1].shape[0])
+    weights_bkg = np.repeat(1/df[df['true']==0].shape[0],df[df['true']==0].shape[0])
+
     plt.figure(figsize=(10,10))
-    plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1,0.05), label='Tau', color='green', density=True, histtype='step', lw=2)
-    plt.hist(df[df['true']==0]['score'], bins=np.arange(0,1,0.05), label='PU', color='red', density=True, histtype='step', lw=2)
-    plt.hist(dftr[dftr['true']==1]['score'], bins=np.arange(0,1,0.05), label='Tau', color='green', ls='--', density=True, histtype='step', lw=2)
-    plt.hist(dftr[dftr['true']==0]['score'], bins=np.arange(0,1,0.05), label='PU', color='red', ls='--', density=True, histtype='step', lw=2)
+    plt.hist(dftr[dftr['true']==1]['score'], bins=np.arange(0,1.02,0.02), weights=weights_tr_tau, label='_', color='green', ls='-', density=False, histtype='step', lw=2)
+    plt.hist(dftr[dftr['true']==0]['score'], bins=np.arange(0,1.02,0.02), weights=weights_tr_bkg, label='_', color='red', ls='-', density=False, histtype='step', lw=2)
+
+    n,bins,patches = plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1.02,0.02), weights=weights_tau, label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    n_,_,_ = plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1.02,0.02), label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    plt.errorbar(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, yerr=np.sqrt(n_)/df[df['true']==1].shape[0], color='green', marker='o', ls='None', lw=2, label='_')
+    
+    n,bins,patches = plt.hist(df[df['true']==0]['score'], bins=np.arange(0,1.02,0.02), weights=weights_bkg, label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    n_,_,_ = plt.hist(df[df['true']==0]['score'], bins=np.arange(0,1.02,0.02), label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    plt.errorbar(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, yerr=np.sqrt(n_)/df[df['true']==0].shape[0], color='red', marker='o', ls='None', lw=2, label='_')
+    
+    
+    plt.plot([-20,-19],[-20,19], ls='-', lw=2, color='green', label='Signal')
+    plt.plot([-20,-19],[-20,19], ls='-', lw=2, color='red', label='Background')
+    plt.plot([-20,-19],[-20,19], ls='-', lw=2, color='black', label='Train. sample')
+    plt.errorbar([-20],[-20], yerr=1, ls='None', marker='o', lw=2, color='black', label='Valid. sample')
+
     plt.grid(linestyle=':')
-    plt.legend(loc = 'upper center', fontsize=16)
-    # plt.xlim(0.85,1.001)
-    #plt.yscale('log')
-    #plt.ylim(0.01,1)
-    plt.xlabel(r'CNN score')
+    plt.legend(loc = 'upper center', fontsize=20, ncol=2)
+    plt.xlim(0.,1.)
+    plt.yscale('log')
+    plt.ylim(0.001,0.9)
+    plt.xlabel(r'Score')
     plt.ylabel(r'a.u.')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauMinator_CE_ident'+tag+'_plots/CNN_score.pdf')

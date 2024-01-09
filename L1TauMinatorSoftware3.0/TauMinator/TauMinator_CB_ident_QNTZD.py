@@ -69,7 +69,7 @@ def inspectWeights(model, which):
     plt.xlabel('Weight value')
     plt.xlim(-0.7,0.5)
     plt.yscale('log')
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauMinator_CB_ident'+tag+'_plots/modelSparsity'+which+'.pdf')
     plt.close()
 

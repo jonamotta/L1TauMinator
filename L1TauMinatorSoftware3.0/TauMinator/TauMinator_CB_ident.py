@@ -66,7 +66,7 @@ def inspectWeights(model, which):
     plt.xlabel('Weight value')
     plt.xlim(-0.7,0.5)
     plt.yscale('log')
-    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    # mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauMinator_CB_ident'+tag+'_plots/modelSparsity'+which+'.pdf')
     plt.close()
 
@@ -389,16 +389,60 @@ if __name__ == "__main__" :
     # print(wp_dict)
     # exit()
 
+
+    ################ start plot phil harris ################
+
+    dfPH = pd.DataFrame()
+    dfPH['score'] = valid_ident.ravel()
+    dfPH['true']  = Yid_valid.ravel()
+    dfPH['L1_et'] = np.sum(X1_valid, (1,2,3)).ravel() #* 256.
+    dfPH['tightID'] = dfPH['score'] > WP90
+    dfPH = dfPH[dfPH['true']==0]
+
+    Ebins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 300, 600, 2000]
+    dfPH['L1_et_bin'] = pd.cut(dfPH['L1_et'], bins=Ebins, labels=False, include_lowest=True)
+
+    print(len(Ebins))
+    selected = np.array(dfPH.groupby('L1_et_bin').apply(lambda x: x[x.tightID==1].shape[0]).to_numpy())
+    total    = np.array(dfPH.groupby('L1_et_bin')['L1_et'].count().to_numpy())
+
+    BKGefficiency = selected/total
+    onlinePT = []
+    for i in range(len(Ebins)-1):
+        onlinePT.append((Ebins[i]+Ebins[i+1])/2)
+
+    print(len(total), total)
+    print(len(selected), selected)
+    print(len(onlinePT), onlinePT)
+
+    plt.figure(figsize=(10,10))
+    plt.plot(onlinePT, BKGefficiency, label='Background efficiency', color='blue',lw=2, marker='o')
+    plt.grid(linestyle=':')
+    plt.legend(loc = 'lower right', fontsize=16)
+    plt.xlim(0.,600)
+    # plt.yscale('log')
+    plt.ylim(0.0,1.05)
+    plt.xlabel(r'$CL^{5\times9} p_{T}$ [GeV]')
+    plt.ylabel('Background Efficiency')
+    mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
+    plt.savefig(outdir+'/TauMinator_CB_ident'+tag+'_plots/bkg_efficiency_vs_pt.pdf')
+    plt.close()
+
+    ################ end plot phil harris ################
+
+    # exit()
+
+
     save_obj(wp_dict, outdir+'/TauMinator_CB_ident'+tag+'_plots/CLTW_TauIdentifier_WPs.pkl')
 
     inspectWeights(TauMinatorModelPruned, 'kernel')
     # inspectWeights(TauMinatorModelPruned, 'bias')
 
     plt.figure(figsize=(10,10))
-    plt.plot(TPRtrain, FPRtrain, label='Training ROC, AUC = %.3f' % (AUCtrain),   color='blue',lw=2)
-    plt.plot(TPRvalid, FPRvalid, label='Validation ROC, AUC = %.3f' % (AUCvalid), color='green',lw=2)
+    plt.plot(TPRtrain, FPRtrain, label='Train. ROC, AUC = %.3f' % (AUCtrain),   color='blue',lw=2)
+    plt.plot(TPRvalid, FPRvalid, label='Valid. ROC, AUC = %.3f' % (AUCvalid), color='green',lw=2)
     plt.grid(linestyle=':')
-    plt.legend(loc = 'upper left', fontsize=16)
+    plt.legend(loc = 'upper left', fontsize=20)
     plt.xlim(0.8,1.01)
     # plt.yscale('log')
     #plt.ylim(0.01,1)
@@ -412,7 +456,7 @@ if __name__ == "__main__" :
     plt.plot(TPRtrain, FPRtrain, label='Training ROC, AUC = %.3f' % (AUCtrain),   color='blue',lw=2)
     plt.plot(TPRvalid, FPRvalid, label='Validation ROC, AUC = %.3f' % (AUCvalid), color='green',lw=2)
     plt.grid(linestyle=':')
-    plt.legend(loc = 'upper left', fontsize=16)
+    plt.legend(loc = 'upper left', fontsize=20)
     plt.xlim(0.8,1.01)
     plt.yscale('log')
     plt.ylim(0.01,1)
@@ -436,17 +480,35 @@ if __name__ == "__main__" :
     dftr['L1_et'] = np.sum(X1, (1,2,3)).ravel() #* 256.
     # dftr['gen_dm'] = Y[:,4].ravel()
     
+    weights_tr_tau = np.repeat(1/dftr[dftr['true']==1].shape[0],dftr[dftr['true']==1].shape[0])
+    weights_tr_bkg = np.repeat(1/dftr[dftr['true']==0].shape[0],dftr[dftr['true']==0].shape[0])
+    weights_tau = np.repeat(1/df[df['true']==1].shape[0],df[df['true']==1].shape[0])
+    weights_bkg = np.repeat(1/df[df['true']==0].shape[0],df[df['true']==0].shape[0])
+
     plt.figure(figsize=(10,10))
-    plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1,0.05), label='Tau', color='green', density=True, histtype='step', lw=2)
-    plt.hist(df[df['true']==0]['score'], bins=np.arange(0,1,0.05), label='PU', color='red', density=True, histtype='step', lw=2)
-    plt.hist(dftr[dftr['true']==1]['score'], bins=np.arange(0,1,0.05), label='Tau', color='green', ls='--', density=True, histtype='step', lw=2)
-    plt.hist(dftr[dftr['true']==0]['score'], bins=np.arange(0,1,0.05), label='PU', color='red', ls='--', density=True, histtype='step', lw=2)
+    plt.hist(dftr[dftr['true']==1]['score'], bins=np.arange(0,1.02,0.02), weights=weights_tr_tau, label='_', color='green', ls='-', density=False, histtype='step', lw=2)
+    plt.hist(dftr[dftr['true']==0]['score'], bins=np.arange(0,1.02,0.02), weights=weights_tr_bkg, label='_', color='red', ls='-', density=False, histtype='step', lw=2)
+
+    n,bins,patches = plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1.02,0.02), weights=weights_tau, label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    n_,_,_ = plt.hist(df[df['true']==1]['score'], bins=np.arange(0,1.02,0.02), label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    plt.errorbar(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, yerr=np.sqrt(n_)/df[df['true']==1].shape[0], color='green', marker='o', ls='None', lw=2, label='_')
+    
+    n,bins,patches = plt.hist(df[df['true']==0]['score'], bins=np.arange(0,1.02,0.02), weights=weights_bkg, label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    n_,_,_ = plt.hist(df[df['true']==0]['score'], bins=np.arange(0,1.02,0.02), label='_', ls='None', density=False, histtype='step', lw=0, zorder=0)
+    plt.errorbar(bins[:-1]+ 0.5*(bins[1:] - bins[:-1]), n, yerr=np.sqrt(n_)/df[df['true']==0].shape[0], color='red', marker='o', ls='None', lw=2, label='_')
+    
+    
+    plt.plot([-20,-19],[-20,19], ls='-', lw=2, color='green', label='Signal')
+    plt.plot([-20,-19],[-20,19], ls='-', lw=2, color='red', label='Background')
+    plt.plot([-20,-19],[-20,19], ls='-', lw=2, color='black', label='Train. sample')
+    plt.errorbar([-20],[-20], yerr=1, ls='None', marker='o', lw=2, color='black', label='Valid. sample')
+
     plt.grid(linestyle=':')
-    plt.legend(loc = 'upper center', fontsize=16)
-    # plt.xlim(0.85,1.001)
-    #plt.yscale('log')
-    #plt.ylim(0.01,1)
-    plt.xlabel(r'CNN score')
+    plt.legend(loc = 'upper center', fontsize=20, ncol=2)
+    plt.xlim(0.,1.)
+    plt.yscale('log')
+    plt.ylim(0.001,0.9)
+    plt.xlabel(r'Score')
     plt.ylabel(r'a.u.')
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauMinator_CB_ident'+tag+'_plots/CNN_score.pdf')
@@ -624,6 +686,7 @@ if __name__ == "__main__" :
     mplhep.cms.label('Phase-2 Simulation', data=True, rlabel='14 TeV, 200 PU')
     plt.savefig(outdir+'/TauMinator_CB_ident'+tag+'_plots/validation_roc_geq125.pdf')
     plt.close()
+
 
     ################
     ## PER DM PLOTS

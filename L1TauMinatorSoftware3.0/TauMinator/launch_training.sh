@@ -26,7 +26,7 @@
 
 # done
 
-
+python3 TauMinator_CE_calib.py --date 2023_07_04 --v 21p1 --caloClNxM 5x9 --sparsity 0.0
 
 
 # python3 TauMinator_CB_ident.py --date 2023_07_06 --v 22 --caloClNxM 5x9 --sparsity 0.0 #--train

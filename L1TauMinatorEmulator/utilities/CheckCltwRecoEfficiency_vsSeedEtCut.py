@@ -74,7 +74,7 @@ for seedTag in seedTags:
     nEntries = inChain.GetEntries()
     for evt in range(0, nEntries):
         if evt%1000==0: print(evt)
-        # if evt == 5000: break
+        if evt == 5000: break
 
         entry = inChain.GetEntry(evt)
 
@@ -255,7 +255,7 @@ for i, currEffVsEta in enumerate(efficiencies_vsEta):
         Y.append(currEffVsEta.GetPointY(ibin))
         Y_low.append(currEffVsEta.GetErrorYlow(ibin))
         Y_high.append(currEffVsEta.GetErrorYhigh(ibin))
-    ax.errorbar(X, Y, xerr=0.05, yerr=[Y_low, Y_high], lw=2, marker='o', color=cmap(i), zorder=i+2, label=r'Cluster seed $E_{T}\leq$'+'%.2f GeV'%(labels[i]))
+    ax.errorbar(X, Y, xerr=0.05, yerr=[Y_low, Y_high], lw=2, marker='o', color=cmap(i), zorder=i+2, label=r'Cluster seed $E_{T}\geq$'+'%.2f GeV'%(labels[i]))
 for xtick in ax.xaxis.get_major_ticks():
     xtick.set_pad(10)
 leg = plt.legend(loc = 'lower right', fontsize=20)
@@ -280,7 +280,7 @@ for i, currEffVsPt in enumerate(efficiencies_vsPt):
         Y.append(currEffVsPt.GetPointY(ibin))
         Y_low.append(currEffVsPt.GetErrorYlow(ibin))
         Y_high.append(currEffVsPt.GetErrorYhigh(ibin))
-    ax.errorbar(X, Y, xerr=1, yerr=[Y_low, Y_high], lw=2, marker='o', color=cmap(i), zorder=i+2, label=r'Cluster seed $E_{T}\leq$'+'%.2f GeV'%(labels[i]))
+    ax.errorbar(X, Y, xerr=1, yerr=[Y_low, Y_high], lw=2, marker='o', color=cmap(i), zorder=i+2, label=r'Cluster seed $E_{T}\geq$'+'%.2f GeV'%(labels[i]))
 for xtick in ax.xaxis.get_major_ticks():
     xtick.set_pad(10)
 leg = plt.legend(loc = 'lower right', fontsize=20)
@@ -300,7 +300,7 @@ ymax = 0
 for i, cnt in enumerate(allCltwCntVects):
     hist, edges = np.histogram(cnt, bins=np.arange(0.5,80.5,1))
     density = hist / len(cnt)
-    plt.step(edges[1:], density, label=r'Cluster seed $E_{T}\leq$'+'%.2f GeV'%(labels[i])+r' - $\mu$=%.3f , $\sigma$=%.3f'%(np.mean(cnt),np.std(cnt)), color=cmap(i), lw=2, zorder=2)
+    plt.step(edges[1:], density, label=r'Cluster seed $E_{T}\geq$'+'%.2f GeV'%(labels[i])+r' - $\mu$=%.3f , $\sigma$=%.3f'%(np.mean(cnt),np.std(cnt)), color=cmap(i), lw=2, zorder=2)
     if max(density)>ymax: ymax = max(density)
 plt.legend(loc = 'upper left', fontsize=16)
 plt.xlabel(r'Number of clusters')
@@ -317,7 +317,7 @@ ymax = 0
 for i, cnt in enumerate(allCltwCntVects_CE):
     hist, edges = np.histogram(cnt, bins=np.arange(0.5,80.5,1))
     density = hist / len(cnt)
-    plt.step(edges[1:], density, label=r'Cluster seed $E_{T}\leq$'+'%.2f GeV'%(labels[i])+r' - $\mu$=%.3f , $\sigma$=%.3f'%(np.mean(cnt),np.std(cnt)), color=cmap(i), lw=2, zorder=2)
+    plt.step(edges[1:], density, label=r'Cluster seed $E_{T}\geq$'+'%.2f GeV'%(labels[i])+r' - $\mu$=%.3f , $\sigma$=%.3f'%(np.mean(cnt),np.std(cnt)), color=cmap(i), lw=2, zorder=2)
     if max(density)>ymax: ymax = max(density)
 plt.legend(loc = 'upper left', fontsize=16)
 plt.xlabel(r'Number of clusters')
