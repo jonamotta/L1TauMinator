@@ -68,8 +68,8 @@ The three versions correspond to doifferent stages of the development, the lates
 This package has been developped by Jona Motta as part of his PhD Thesis.
 
 The TauMinator algorithm has been documented in three pubblications with different levels of precision:
-    * Jona Motta's PhD Thesis [Development of machine learning based τ trigger algorithms and search for Higgs boson pair production in the bbττ decay channel with the CMS detector at the LHC](https://cds.cern.ch/record/2881939?ln=en)
-    * CMS's Detector Perfomance Summary Note [Hadronic Tau Reconstruction in the CMS Phase-2 Level-1 Trigger using NNs with Calorimetric Information](https://cds.cern.ch/record/2868783?ln=en)
-    * Jona Motta's Proceeding of Science "Development and firmware implementation of a Machine Learning based hadronic Tau lepton Level-1 Trigger algorithm in CMS for the HL-LHC" [PoS(EPS-HEP2023)590](https://cds.cern.ch/record/2879312)
+* Jona Motta's PhD Thesis [Development of machine learning based τ trigger algorithms and search for Higgs boson pair production in the bbττ decay channel with the CMS detector at the LHC](https://cds.cern.ch/record/2881939?ln=en)
+* CMS's Detector Perfomance Summary Note [Hadronic Tau Reconstruction in the CMS Phase-2 Level-1 Trigger using NNs with Calorimetric Information](https://cds.cern.ch/record/2868783?ln=en)
+* Jona Motta's Proceeding of Science "Development and firmware implementation of a Machine Learning based hadronic Tau lepton Level-1 Trigger algorithm in CMS for the HL-LHC" [PoS(EPS-HEP2023)590](https://cds.cern.ch/record/2879312)
 
 When mentioning this work please always remember to add the due Credits and attach the correct Reference for completeness.
