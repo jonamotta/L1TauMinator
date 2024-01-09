@@ -25,28 +25,40 @@ scram b -j 12
 The package has two sub-packages:
 * the CMSSW-based sub-package: 
     * `Dataformats` containing the dataformats for the CMSSW producers
-    * `L1TauMinatorEmuator` containing the actual CMSSW producers and analyzers
+    * `L1TauMinatorEmuator` containing the CMSSW producers and analyzers that produce the input to the Python-based sub-package (don't get fooled by the name: this is not a firmware emulator!)
 * the Python-based sub-package:
-    * `L1TauMinatrSoftware` containing all the algorithm development
+    * `L1TauMinatrSoftware` containing all the Neural Networks development
 
 ## The CMSSW-based sub-package
 
 `L1TauMinatorEmuator` has the usual structure of a CMSSW package:
 * `inputFiles` contains the list of files to be used as input to the Ntuple producers
 * `plugins` contains the producers and analyzers:
-    * the `*Handlers.cc` produce the singe objects
+    * the `*Handlers.cc` produce the singe objects, i.e. tower clusters, 3d clusters, and gen paticles. (The `GenHandler` has two versions: one with a custom handling of the taus and one with the same definition of the enu Team. The difference is quite big in terms of pure definition, but the effect on the development is marginal)
     * the `Ntuplizer.cc` takes all the `*Handlers.cc` inputs and produces Ntuples to be used for the trainings
-    * the `L1CaloTau*.cc` produce the tau objects in the standard manner, applying the full algorithm 
 * the `python` folder contains all the configuration files
 * the `test` folder contains the `cmsRun` configuration and the code to submit condor jobs
-* the `utilities` folder contains some code to do debugging
+* the `utilities` folder contains some code to do debugging and optimisation of some working points (a bit messy but quite useful)
+
+The final CMSSW version of the TauMinator can be found in this [PR #42840](https://github.com/cms-sw/cmssw/pull/42840) where it is also implemented as a partial emulator (this time a real firmware emulator).
 
 ## The Python-based sub-package
 
-`L1TauMinatrSoftware` contains four differet folders:
-* `inputMaker` to read the Ntuples produced by the `L1TauMinatorEmuator` package
-* `TauDisplayer` to make tau footprints
+`L1TauMinatrSoftware*` contains all the Neural Networks development and optimisation down to the `hls4ml` implementation.
+The three versions correspond to doifferent stages of the development, the latest ois 3.0 .
+
+`L1TauMinatrSoftware3.0` contains four differet folders:
+* `inputMaker` to read the Ntuples produced by the `L1TauMinatorEmuator` package:
+    * `Chain2Tensor*` is the family of codes that reads from ROOT `TChain` and produce Python-(more-)frinedly inputs and NN readable TensorFlow tensors
+    * `*Merger` is the family of codes that takes the miriad of tensors produced with `Chain2Tensor*` and creates a single TensorFlow tensor
+    * Sidenote: this part works well as long as the tensors are not too big, if tensors get to big a more stable and elegant solution are TFRecords. They were never needed for thsi work, but an example of their use can be found in my code for the Calibraton [here](https://github.com/jonamotta/CaloL1CalibrationProducer/blob/master/L1NtupleReader/batchMerger.py).
+* `TauDisplayer` to make tau footprints (almost never used tbh, a bit cumbersome code)
 * `TauMinator` with all the code for the training of the NNs/BDTs
-    * `CLTW*.py` code is all the NN training, quantizitaion, and  pruning for the model for tower clusters
-    * `CL3D*.py` cose is all the NN/BDT training, quantizitaion, and  pruning for the model for hgcal clusters
-* `TauMinator_hls4ml` with the Jupyter notebooks for the HLS conversion and the FPGA resources usage estimate
+    * `TauMinator_CB_*` are all the codes for the training, quantizitaion, and  pruning for the model for the Barrel section
+    * `TauMinator_CE_*` are all the codes for the training, quantizitaion, and  pruning for the model for the Endcap section
+    * The sequence of use for both families of codes is:
+        * `*_ident.py` to tarin the convolutional and identification part
+        * `*_calib.py` to train the calibration part based on the convolutional of the previous step
+        * `*_QNTZD.py` are the smae thing but with pruning and quantization of the NNs
+    * `TauMinator_CB.py` and `TauMinator_CE.py` are a (failed) test to make a single NN for identification and calibration
+* `TauMinator_hls4ml` with the Jupyter notebooks for the HLS conversion and the FPGA resources usage estimate:
