@@ -63,7 +63,7 @@ The three versions correspond to doifferent stages of the development, the lates
     * `TauMinator_CB.py` and `TauMinator_CE.py` are a (failed) test to make a single NN for identification and calibration
 * `TauMinator_hls4ml` with the Jupyter notebooks for the HLS conversion and the FPGA resources usage estimate:
 
-## Final notes
+## Credits and References
 
 This package has been developped by Jona Motta as part of his PhD Thesis.
 
