@@ -5,8 +5,7 @@
 #include <cmath>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-// #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -27,8 +26,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 
-// class L1CaloTauNtuplizer : public edm::stream::EDAnalyzer<> {
-class L1CaloTauNtuplizer : public edm::EDAnalyzer {
+class L1CaloTauNtuplizer : public edm::stream::EDAnalyzer<> {
     public:
         explicit L1CaloTauNtuplizer(const edm::ParameterSet&);
         virtual ~L1CaloTauNtuplizer();
