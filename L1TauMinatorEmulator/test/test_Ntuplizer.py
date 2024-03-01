@@ -11,7 +11,7 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D95Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC14TeV_cfi')
@@ -27,7 +27,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 # re-emulation of calo tps
 # process.load('L1Trigger.L1CaloTrigger.l1tEGammaCrystalsEmulatorProducer_cfi')
 # process.load('L1Trigger.L1CaloTrigger.l1tTowerCalibrationProducer_cfi')
-# process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
+process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
 process.load('L1TauMinator.L1TauMinatorEmulator.CaloTowerHandler_cff')
 process.load('L1TauMinator.L1TauMinatorEmulator.HGClusterHandler_cff')
@@ -96,7 +96,7 @@ process.configurationMetadata = cms.untracked.PSet(
 
 # GlobalTag Info
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '125X_mcRun4_realistic_v2', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '131X_mcRun4_realistic_v9', '')
 
 # minimum value of seeding energy
 process.CaloTowerHandler.EtMinForSeeding = cms.double(options.minSeedEt)
@@ -106,7 +106,7 @@ process.CaloTowerHandler.SeedingEtaRestriction = cms.double(options.etaRestricti
 # Path and EndPath definitions
 process.raw2digi_path     = cms.Path(process.RawToDigi)
 # process.caloTpg_path      = cms.Path(process.l1tEGammaClusterEmuProducer) # re-emulation of calo tps
-# process.hgcTpg_path       = cms.Path(process.L1THGCalTriggerPrimitives)   # re-emulation of calo tps
+process.hgcTpg_path       = cms.Path(process.L1THGCalTriggerPrimitives)   # re-emulation of calo tps
 # process.caloTpgCalib_path = cms.Path(process.l1tTowerCalibrationProducer) # re-emulation of calo tps calibration
 process.towerCluster_path = cms.Path(process.CaloTowerHandler_seq)
 process.hgcalCluster_path = cms.Path(process.HGClusterHandler_seq)
@@ -118,7 +118,7 @@ process.ntuplizer_path    = cms.Path(process.Ntuplizer_seq)
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_path, 
                                 # process.caloTpg_path,      # re-emulation of calo tps
-                                # process.hgcTpg_path,       # re-emulation of calo tps
+                                process.hgcTpg_path,       # re-emulation of calo tps
                                 # process.caloTpgCalib_path, # re-emulation of calo tps calibration
                                 process.towerCluster_path,
                                 process.hgcalCluster_path,
@@ -130,6 +130,10 @@ process.schedule = cms.Schedule(process.raw2digi_path,
 # Customisation of the process.
 from L1Trigger.Configuration.customisePhase2 import addHcalTriggerPrimitives 
 process = addHcalTriggerPrimitives(process)
+
+# Include custom HGCAL towers splitting
+from L1Trigger.L1THGCal.customTowers import custom_towers_energySplit
+process = custom_towers_energySplit(process)
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
