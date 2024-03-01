@@ -136,6 +136,9 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
     iEvent.getByToken(hgcalTowersToken, hgcalTowersHandle);
     for (auto &hit : *hgcalTowersHandle.product())
     {
+        // skip towers that are produced by HGCal "in the barrel"
+        if (abs(hit.eta()) < 1.5) continue;
+
         TowerHelper::TowerHit l1Hit;
         l1Hit.isBarrel     = false;
         l1Hit.l1egTowerEt  = 0.0;
@@ -185,12 +188,12 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                 l1Hit.nL1eg        = 0;
                 // 0.043650 == first tower eta
                 // 0.08730 == eta step in the barrel
-                // 0.08080 == eta step between barrel and endcap
-                // 0.08450 == eta step in the endcap
+                // 0.08205 == eta step between barrel and endcap
+                // 0.087 == eta step in the endcap
                 int absEta = abs(iEtaProgression);
                 int sgnEta = std::copysign(1,iEtaProgression);
                 if (absEta<=17) { l1Hit.towerEta = sgnEta * (0.043650 + (absEta-1) * 0.08730); }
-                else            { l1Hit.towerEta = sgnEta * (0.043650 + 16 * 0.08730 + 0.08080 + (absEta-18) * 0.08450); }
+                else            { l1Hit.towerEta = sgnEta * (0.043650 + 16 * 0.08730 + 0.08205 + (absEta-18) * 0.087); }
                 if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
                 else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
                 l1Hit.towerEm      = 0.0;
@@ -223,12 +226,12 @@ void CaloTowerHandler::produce(edm::Event& iEvent, const edm::EventSetup& eSetup
                     l1Hit.nL1eg        = 0;
                     // 0.043650 == first tower eta
                     // 0.08730 == eta step in the barrel
-                    // 0.08080 == eta step between barrel and endcap
-                    // 0.08450 == eta step in the endcap
+                    // 0.08205 == eta step between barrel and endcap
+                    // 0.087 == eta step in the endcap
                     int absEta = abs(iEtaProgression);
                     int sgnEta = std::copysign(1,iEtaProgression);
                     if (absEta<=17) { l1Hit.towerEta = sgnEta * (0.043650 + (absEta-1) * 0.08730); }
-                    else            { l1Hit.towerEta = sgnEta * (0.043650 + 16 * 0.08730 + 0.08080 + (absEta-18) * 0.08450); }
+                    else            { l1Hit.towerEta = sgnEta * (0.043650 + 16 * 0.08730 + 0.08205 + (absEta-18) * 0.087); }
                     if (iPhi<=36) { l1Hit.towerPhi = 0.043633 + (iPhi-1) * 0.0872664; }
                     else          { l1Hit.towerPhi = 0.043633 + (iPhi-72-1) * 0.0872664; }
                     l1Hit.towerEm      = 0.0;
@@ -1680,8 +1683,8 @@ int CaloTowerHandler::endcap_iphi(float &phi) const
 
 int CaloTowerHandler::endcap_ieta(float &eta) const
 {
-    float eta_step = 0.08450;
-    return floor(abs(eta)/eta_step) * std::copysign(1,eta);
+    float eta_step = 0.0870;
+    return ceil(abs(eta)/eta_step) * std::copysign(1,eta);
 }
 
 std::vector<TowerHelper::TowerHit> CaloTowerHandler::sortPicLikeF(std::vector<TowerHelper::TowerHit> towerHits) const
