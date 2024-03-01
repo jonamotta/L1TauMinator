@@ -44,8 +44,14 @@ if options.clusteringEtCut != 0.0:
 etaRestrictionTag = ''
 if options.etaRestriction != 3.5:
     etaRestrictionTag = '_Er'+str(int(options.etaRestriction))+'p'+str(int(round((options.etaRestriction-int(options.etaRestriction))*10)))
-CBCEsplitTag = '_CBCEsplit'+str(int(options.CB_CE_split))+'p'+str(int(round((options.CB_CE_split-int(options.CB_CE_split))*100)))
-NNvtag = "_NN"+options.NNv
+if options.NNv != 1.5:
+    CBCEsplitTag = '_CBCEsplit'+str(int(options.CB_CE_split))+'p'+str(int(round((options.CB_CE_split-int(options.CB_CE_split))*100)))
+else:
+    CBCEsplitTag = ""
+if options.NNv != None:
+    NNvtag = "_NN"+options.NNv
+else:
+    NNvtag = ""
 
 version = options.NtupleV
 
@@ -61,30 +67,29 @@ list_njobs = []
 # list_folders.append(outfile_base+"test/")
 # list_njobs.append(10)
 
-# list_filelists.append(open(infile_base+"GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-# list_folders.append(outfile_base+"GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
-# list_njobs.append(350)
+list_filelists.append(open(infile_base+"GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append(outfile_base+"GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
+list_njobs.append(1000)
 
-# list_filelists.append(open(infile_base+"VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-# list_folders.append(outfile_base+"VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
-# list_njobs.append(650)
+list_filelists.append(open(infile_base+"VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append(outfile_base+"VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
+list_njobs.append(1000)
 
-# list_filelists.append(open(infile_base+"DYToLL_M-10To50_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_Pilot_125X_mcRun4_realistic_v2-v2__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-# list_folders.append(outfile_base+"DYToLL_M-10To50_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_Pilot_125X_mcRun4_realistic_v2-v2__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
-# list_njobs.append(650)
+list_filelists.append(open(infile_base+"DYToLL_M-10To50_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append(outfile_base+"DYToLL_M-10To50_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
+list_njobs.append(1000)
 
-# list_filelists.append(open(infile_base+"DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-# list_folders.append(outfile_base+"DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
-# list_njobs.append(1580)
+list_filelists.append(open(infile_base+"DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_L1TFix_Trk1GeV_131X_mcRun4_realistic_v9-v3__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append(outfile_base+"DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_L1TFix_Trk1GeV_131X_mcRun4_realistic_v9-v3__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+"/")
+list_njobs.append(1000)
 
-# list_filelists.append(open(infile_base+"GluGluToHHTo2B2Tau_node_SM_TuneCP5_14TeV-madgraph-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-# list_folders.append(outfile_base+"GluGluToHHTo2B2Tau_node_SM_TuneCP5_14TeV-madgraph-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+CBCEsplitTag+NNvtag+"/")
-# list_njobs.append(350)
+list_filelists.append(open(infile_base+"GluGluToHHTo2B2Tau_node_SM_TuneCP5_14TeV-madgraph-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+list_folders.append(outfile_base+"GluGluToHHTo2B2Tau_node_SM_TuneCP5_14TeV-madgraph-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+CBCEsplitTag+NNvtag+"/")
+list_njobs.append(1000)
 
-list_filelists.append(open(infile_base+"MinBias_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
-# list_filelists.append(open(infile_base+"MinBias_TMP.txt"))
-list_folders.append(outfile_base+"MinBias_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+CBCEsplitTag+NNvtag+"/")
-list_njobs.append(12500)
+# list_filelists.append(open(infile_base+"MinBias_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU140_L1TFix_Trk1GeV_131X_mcRun4_realistic_v9-v2__GEN-SIM-DIGI-RAW-MINIAOD.txt"))
+# list_folders.append(outfile_base+"MinBias_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU140_L1TFix_Trk1GeV_131X_mcRun4_realistic_v9-v2__GEN-SIM-DIGI-RAW-MINIAOD_"+seedEtCutTag+clusteringEtCutTag+etaRestrictionTag+CBCEsplitTag+NNvtag+"/")
+# list_njobs.append(12500)
 
 os.system('mkdir -p /data_CMS/cms/'+user+'/Phase2L1T/L1TauMinatorNtuples/v'+version)
 os.system('cp listAll.sh /data_CMS/cms/'+user+'/Phase2L1T/L1TauMinatorNtuples/v'+version)
@@ -124,8 +129,8 @@ for i in range(len(list_folders)):
         if options.TauMinatorPrd: main_config = "test_L1CaloTauNtuplizer_Producer.py"
         if options.TauMinatorEmu: main_config = "test_L1CaloTauNtuplizer_Emulator.py"
 
-        cmsRun = "cmsRun "+main_config+" maxEvents=-1 inputFiles_load="+inListName+" outputFile="+outRootName+" minSeedEt="+str(options.seedEtCut)+" minClusteringEt="+str(options.clusteringEtCut)+" etaRestriction="+str(options.etaRestriction)+" CBCEsplit="+str(options.CB_CE_split)+" NNv="+options.NNv+" >& "+outLogName
-        # cmsRun = "cmsRun "+main_config+" maxEvents=-1 inputFiles_load="+inListName+" outputFile="+outRootName+" minSeedEt="+str(options.seedEtCut)+" >& "+outLogName
+        # cmsRun = "cmsRun "+main_config+" maxEvents=-1 inputFiles_load="+inListName+" outputFile="+outRootName+" minSeedEt="+str(options.seedEtCut)+" minClusteringEt="+str(options.clusteringEtCut)+" etaRestriction="+str(options.etaRestriction)+" CBCEsplit="+str(options.CB_CE_split)+" NNv="+options.NNv+" >& "+outLogName
+        cmsRun = "cmsRun "+main_config+" maxEvents=-1 inputFiles_load="+inListName+" outputFile="+outRootName+" minSeedEt="+str(options.seedEtCut)+" >& "+outLogName
 
         skimjob = open (outJobName, 'w')
         skimjob.write ('#!/bin/bash\n')
@@ -143,4 +148,4 @@ for i in range(len(list_folders)):
         print(command)
         os.system(command)
         # break
-        if idx==5000: break
+        # if idx==5000: break

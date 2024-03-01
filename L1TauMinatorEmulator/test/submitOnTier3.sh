@@ -43,4 +43,9 @@ source /opt/exp_soft/cms/t3/t3setup
 # python submitOnTier3.py --NtupleV 4 --TauMinatorPrd --seedEtCut 2.5 --etaRestriction 2.4 --CB_CE_split 1.55 --NNv v23_PRD
 
 
-python submitOnTier3.py --NtupleV 4 --TauMinatorPrd --seedEtCut 2.5 --etaRestriction 2.4 --CB_CE_split 1.50 --NNv v15_PRD
+# python submitOnTier3.py --NtupleV 4 --TauMinatorPrd --seedEtCut 2.5 --etaRestriction 2.4 --CB_CE_split 1.50 --NNv v15_PRD
+
+
+#------------------------------------------------------------------------------------------------------------------------------------
+
+python submitOnTier3.py  --NtupleV 5 --seedEtCut 2.5 --etaRestriction 2.4

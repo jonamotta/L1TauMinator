@@ -28,9 +28,6 @@
 # cp -vr /data_CMS/cms/motta/Phase2L1T/2023_06_21_v18p2/TauMinator_CB_cltw5x9_Training /data_CMS/cms/motta/Phase2L1T/2023_06_21_v18p2/TauMinator_CB_cltw5x9_Training_ptWeighted
 # cp -vr /data_CMS/cms/motta/Phase2L1T/2023_06_21_v18p2/TauMinator_CE_cltw5x9_Training /data_CMS/cms/motta/Phase2L1T/2023_06_21_v18p2/TauMinator_CE_cltw5x9_Training_ptWeighted
 
-
-
-
 # python3 TensorMerger.py --date 2023_07_04 --v 21 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doBarrel
 # python3 TensorMerger.py --date 2023_07_04 --v 21 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doEndcap
 # cp -vr /data_CMS/cms/motta/Phase2L1T/2023_07_04_v21/TauMinator_CB_cltw5x9_Training /data_CMS/cms/motta/Phase2L1T/2023_07_04_v21/TauMinator_CB_cltw5x9_Training_ptWeighted
@@ -46,10 +43,11 @@
 # cp -vr /data_CMS/cms/motta/Phase2L1T/2023_07_04_v21p2/TauMinator_CB_cltw5x9_Training /data_CMS/cms/motta/Phase2L1T/2023_07_04_v21p2/TauMinator_CB_cltw5x9_Training_ptWeighted
 # cp -vr /data_CMS/cms/motta/Phase2L1T/2023_07_04_v21p2/TauMinator_CE_cltw5x9_Training /data_CMS/cms/motta/Phase2L1T/2023_07_04_v21p2/TauMinator_CE_cltw5x9_Training_ptWeighted
 
-
-
 # python3 TensorMerger.py --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doBarrel
 # python3 TensorMerger.py --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doEndcap
 
-python3 TensorMerger.py --date 2023_07_06 --v 23 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doBarrel
-python3 TensorMerger.py --date 2023_07_06 --v 23 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doEndcap
+# python3 TensorMerger.py --date 2023_07_06 --v 23 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doBarrel
+# python3 TensorMerger.py --date 2023_07_06 --v 23 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doEndcap
+
+python3 TensorMerger.py --date 2024_03_01 --v 25 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doBarrel
+python3 TensorMerger.py --date 2024_03_01 --v 25 --caloClNxM 5x9 --seedEtCut 2p5 --etaRestriction _Er2p4 --CBCEsplit 1.55 --uEtacut 2.4 --lTauPtCut 18 --doVBFH --doGGH --doDY --doDYlm --doEndcap

@@ -26,7 +26,7 @@
 
 # done
 
-python3 TauMinator_CE_calib.py --date 2023_07_04 --v 21p1 --caloClNxM 5x9 --sparsity 0.0
+# python3 TauMinator_CE_calib.py --date 2023_07_04 --v 21p1 --caloClNxM 5x9 --sparsity 0.0
 
 
 # python3 TauMinator_CB_ident.py --date 2023_07_06 --v 22 --caloClNxM 5x9 --sparsity 0.0 #--train
@@ -45,8 +45,8 @@ python3 TauMinator_CE_calib.py --date 2023_07_04 --v 21p1 --caloClNxM 5x9 --spar
 
 
 
-python3 TauMinator_CE_ident.py --date 2023_07_13 --v 24 --caloClNxM 5x9 --sparsity 0.0 --train
-python3 TauMinator_CE_calib.py --date 2023_07_13 --v 24 --caloClNxM 5x9 --sparsity 0.0 --pt_weighted --train
+# python3 TauMinator_CE_ident.py --date 2023_07_13 --v 24 --caloClNxM 5x9 --sparsity 0.0 --train
+# python3 TauMinator_CE_calib.py --date 2023_07_13 --v 24 --caloClNxM 5x9 --sparsity 0.0 --pt_weighted --train
 
 
 
@@ -141,3 +141,8 @@ python3 TauMinator_CE_calib.py --date 2023_07_13 --v 24 --caloClNxM 5x9 --sparsi
 
 
 
+python3 TauMinator_CB_ident.py --date 2024_03_01 --v 25 --caloClNxM 5x9 --sparsity 0.0 --train
+python3 TauMinator_CB_calib.py --date 2024_03_01 --v 25 --caloClNxM 5x9 --sparsity 0.0 --pt_weighted --train
+
+python3 TauMinator_CE_ident.py --date 2024_03_01 --v 25 --caloClNxM 5x9 --sparsity 0.0 --train
+python3 TauMinator_CE_calib.py --date 2024_03_01 --v 25 --caloClNxM 5x9 --sparsity 0.0 --pt_weighted --train

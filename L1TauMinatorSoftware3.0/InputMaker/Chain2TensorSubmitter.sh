@@ -17,7 +17,7 @@ source /opt/exp_soft/cms/t3/t3setup
 
 # python3 Chain2TensorSubmitter.py --NtupleV 3 --doEmuVal --date 2023_05_24 --v 15 --caloClNxM 5x9
 
-
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doGGH  --date 2023_06_21 --v 17 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doVBFH --date 2023_06_21 --v 17 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18
@@ -50,10 +50,6 @@ source /opt/exp_soft/cms/t3/t3setup
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doDY   --date 2023_06_21 --v 18p2 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.61 --etaRestriction _Er2p4 --uEtacut 2.4
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doDYlm --date 2023_06_21 --v 18p2 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.61 --etaRestriction _Er2p4 --uEtacut 2.4
 
-
-
-
-
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doGGH  --date 2023_07_04 --v 21 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --etaRestriction _Er2p4 --uEtacut 2.4
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doVBFH --date 2023_07_04 --v 21 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --etaRestriction _Er2p4 --uEtacut 2.4
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doDY   --date 2023_07_04 --v 21 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --etaRestriction _Er2p4 --uEtacut 2.4
@@ -70,9 +66,14 @@ source /opt/exp_soft/cms/t3/t3setup
 # python3 Chain2TensorSubmitter.py --NtupleV 4 --doDYlm --date 2023_07_04 --v 21p2 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.61 --etaRestriction _Er2p4 --uEtacut 2.4
 
 
+# python3 Chain2TensorSubmitter.py --NtupleV 4 --doGGH  --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
+# python3 Chain2TensorSubmitter.py --NtupleV 4 --doVBFH --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
+# python3 Chain2TensorSubmitter.py --NtupleV 4 --doDY   --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
+# python3 Chain2TensorSubmitter.py --NtupleV 4 --doDYlm --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-python3 Chain2TensorSubmitter.py --NtupleV 4 --doGGH  --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
-python3 Chain2TensorSubmitter.py --NtupleV 4 --doVBFH --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
-python3 Chain2TensorSubmitter.py --NtupleV 4 --doDY   --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
-python3 Chain2TensorSubmitter.py --NtupleV 4 --doDYlm --date 2023_07_06 --v 22 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
+python3 Chain2TensorSubmitter.py --NtupleV 5 --doGGH  --date 2024_03_01 --v 25 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
+python3 Chain2TensorSubmitter.py --NtupleV 5 --doVBFH --date 2024_03_01 --v 25 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
+python3 Chain2TensorSubmitter.py --NtupleV 5 --doDY   --date 2024_03_01 --v 25 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4
+python3 Chain2TensorSubmitter.py --NtupleV 5 --doDYlm --date 2024_03_01 --v 25 --caloClNxM 5x9 --seedEtCut 2p5 --lTauPtCut 18 --CBCEsplit 1.55 --etaRestriction _Er2p4 --uEtacut 2.4

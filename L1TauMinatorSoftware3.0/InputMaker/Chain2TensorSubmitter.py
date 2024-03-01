@@ -44,23 +44,23 @@ if options.uEtacut   : tag += '_uEtacut'+str(options.uEtacut)
 if options.lEtacut   : tag += '_lEtacut'+str(options.lEtacut)
 
 if options.doGGH:
-    inlist_folders.append(infile_base+"/GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
+    inlist_folders.append(infile_base+"/GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
     outlist_folders.append(outfile_base+"/GluGluHToTauTau_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
 if options.doVBFH:
-    inlist_folders.append(infile_base+"/VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
+    inlist_folders.append(infile_base+"/VBFHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
     outlist_folders.append(outfile_base+"/VBFHToTauTau_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
 if options.doDYlm:
-    inlist_folders.append(infile_base+"/DYToLL_M-10To50_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_Pilot_125X_mcRun4_realistic_v2-v2__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
+    inlist_folders.append(infile_base+"/DYToLL_M-10To50_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
     outlist_folders.append(outfile_base+"/DYlowmass_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
 if options.doDY:
-    inlist_folders.append(infile_base+"/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
+    inlist_folders.append(infile_base+"/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_L1TFix_Trk1GeV_131X_mcRun4_realistic_v9-v3__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
     outlist_folders.append(outfile_base+"/DY_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
 if options.doEmuVal:
-    inlist_folders.append(infile_base+"/GluGluToHHTo2B2Tau_node_SM_TuneCP5_14TeV-madgraph-pythia8__Phase2Fall22DRMiniAOD-PU200_125X_mcRun4_realistic_v2-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
+    inlist_folders.append(infile_base+"/GluGluToHHTo2B2Tau_node_SM_TuneCP5_14TeV-madgraph-pythia8__Phase2Spring23DIGIRECOMiniAOD-PU200_Trk1GeV_131X_mcRun4_realistic_v5-v1__GEN-SIM-DIGI-RAW-MINIAOD_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+"/")
     outlist_folders.append(outfile_base+"/HHbbtautau_cltw"+options.caloClNxM+"_seedEtCut"+options.seedEtCut+options.clusteringEtCut+options.etaRestriction+tag+"/")
 
 for i in range(len(inlist_folders)):
